@@ -3,16 +3,16 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
-    "@react-native-async-storage/async-storage": "^3.1.1",
-    "expo": "~57.0.8",
-    "expo-camera": "^57.0.3",
-    "expo-localization": "^57.0.1",
-    "expo-status-bar": "~57.0.1",
-    "react": "19.2.3",
-    "react-native": "0.86.0"
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "expo": "^54.0.25",
+    "expo-camera": "^17.0.9",
+    "expo-localization": "^17.0.9",
+    "expo-status-bar": "^3.0.9",
+    "react": "^19.1.0",
+    "react-native": "^0.81.5"
   },
   "devDependencies": {
-    "@types/react": "~19.2.2",
+    "@types/react": "^19.1.17",
     "typescript": "~6.0.3"
   },
   "scripts": {

@@ -1,3 +1,8 @@
+import {
+  useFonts,
+  Fredoka_600SemiBold,
+  Fredoka_700Bold,
+} from '@expo-google-fonts/fredoka';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, View } from 'react-native';
@@ -7,6 +12,7 @@ import { LookupErrorScreen } from './src/screens/LookupErrorScreen';
 import { MissingProductScreen } from './src/screens/MissingProductScreen';
 import { ScannerScreen } from './src/screens/ScannerScreen';
 import { lookupProduct } from './src/services/lookupProduct';
+import { colors } from './src/theme/colors';
 import type { LookupResult } from './src/types/product';
 
 type Screen =
@@ -17,6 +23,7 @@ type Screen =
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'scanner' });
+  const [fontsLoaded] = useFonts({ Fredoka_600SemiBold, Fredoka_700Bold });
 
   const runLookup = useCallback(async (barcode: string) => {
     setScreen({ name: 'loading', barcode });
@@ -34,7 +41,7 @@ export default function App() {
       case 'loading':
         return (
           <View style={styles.center}>
-            <ActivityIndicator size="large" />
+            <ActivityIndicator size="large" color={colors.mint} />
           </View>
         );
 
@@ -88,10 +95,18 @@ export default function App() {
     }
   };
 
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={colors.mint} />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       {renderScreen()}
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
     </SafeAreaView>
   );
 }
@@ -99,11 +114,12 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.cabinet,
   },
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.cabinet,
   },
 });

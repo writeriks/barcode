@@ -1,7 +1,10 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRef, useState } from 'react';
-import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { PillButton } from '../components/PillButton';
 import { submitIngredientsPhoto } from '../services/submitIngredientsPhoto';
+import { colors } from '../theme/colors';
+import { fonts } from '../theme/fonts';
 
 interface Props {
   barcode: string;
@@ -34,7 +37,7 @@ export function CaptureIngredientsScreen({ barcode, onDone, onCancel }: Props) {
     return (
       <View style={styles.center}>
         <Text style={styles.message}>We need camera access to photograph the label.</Text>
-        <Button title="Grant camera permission" onPress={requestPermission} />
+        <PillButton title="Grant camera permission" onPress={requestPermission} variant="citrus" />
       </View>
     );
   }
@@ -42,15 +45,16 @@ export function CaptureIngredientsScreen({ barcode, onDone, onCancel }: Props) {
   return (
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
+      <View style={styles.frame} pointerEvents="none" />
       <View style={styles.overlay} pointerEvents="box-none">
         <Text style={styles.hint}>Frame the ingredients label, then take a photo</Text>
         <View style={styles.actions}>
           {isCapturing ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.mint} />
           ) : (
-            <Button title="Take photo" onPress={handleCapture} />
+            <PillButton title="Take photo" onPress={handleCapture} variant="citrus" />
           )}
-          <Button title="Cancel" onPress={onCancel} color="#999" />
+          <PillButton title="Cancel" onPress={onCancel} variant="ghost" />
         </View>
       </View>
     </View>
@@ -60,7 +64,7 @@ export function CaptureIngredientsScreen({ barcode, onDone, onCancel }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: colors.cabinet,
   },
   center: {
     flex: 1,
@@ -68,9 +72,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 12,
     padding: 24,
+    backgroundColor: colors.cabinet,
   },
   message: {
     textAlign: 'center',
+    color: colors.cream,
+  },
+  frame: {
+    position: 'absolute',
+    top: '18%',
+    left: '8%',
+    right: '8%',
+    bottom: '32%',
+    borderWidth: 2,
+    borderColor: colors.mint,
+    borderRadius: 18,
   },
   overlay: {
     flex: 1,
@@ -80,13 +96,15 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   hint: {
-    color: '#fff',
-    fontSize: 16,
+    fontFamily: fonts.displayBold,
+    color: colors.cream,
+    fontSize: 15,
     textAlign: 'center',
     paddingHorizontal: 24,
   },
   actions: {
     gap: 12,
+    alignItems: 'center',
     width: '80%',
   },
 });

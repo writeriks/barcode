@@ -1,6 +1,7 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useCallback, useEffect, useRef } from 'react';
-import { Animated, Button, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { PillButton } from '../components/PillButton';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 
@@ -24,7 +25,7 @@ export function ScannerScreen({ onScanned }: Props) {
 
   const pulse = useRef(new Animated.Value(0)).current;
   const sweep = useRef(new Animated.Value(0)).current;
-  const blink = useRef(new Animated.Value(1)).current;
+  const signal = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const pulseLoop = Animated.loop(
@@ -36,21 +37,18 @@ export function ScannerScreen({ onScanned }: Props) {
     const sweepLoop = Animated.loop(
       Animated.timing(sweep, { toValue: 1, duration: 1700, easing: Easing.inOut(Easing.sin), useNativeDriver: true })
     );
-    const blinkLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(blink, { toValue: 0.35, duration: 700, useNativeDriver: true }),
-        Animated.timing(blink, { toValue: 1, duration: 700, useNativeDriver: true }),
-      ])
+    const signalLoop = Animated.loop(
+      Animated.timing(signal, { toValue: 1, duration: 1400, easing: Easing.out(Easing.ease), useNativeDriver: true })
     );
     pulseLoop.start();
     sweepLoop.start();
-    blinkLoop.start();
+    signalLoop.start();
     return () => {
       pulseLoop.stop();
       sweepLoop.stop();
-      blinkLoop.stop();
+      signalLoop.stop();
     };
-  }, [pulse, sweep, blink]);
+  }, [pulse, sweep, signal]);
 
   const handleBarcodeScanned = useCallback(
     ({ data }: { data: string }) => {
@@ -69,7 +67,7 @@ export function ScannerScreen({ onScanned }: Props) {
     return (
       <View style={styles.center}>
         <Text style={styles.message}>We need camera access to scan barcodes.</Text>
-        <Button title="Grant camera permission" onPress={requestPermission} color={colors.mint} />
+        <PillButton title="Grant camera permission" onPress={requestPermission} variant="citrus" />
       </View>
     );
   }
@@ -77,6 +75,8 @@ export function ScannerScreen({ onScanned }: Props) {
   const borderColor = pulse.interpolate({ inputRange: [0, 1], outputRange: [colors.punch, colors.mint] });
   const sweepTranslate = sweep.interpolate({ inputRange: [0, 1], outputRange: [8, VIEWFINDER_HEIGHT - 8] });
   const sweepOpacity = sweep.interpolate({ inputRange: [0, 0.12, 0.5, 0.62, 1], outputRange: [0, 1, 1, 0, 0] });
+  const signalScale = signal.interpolate({ inputRange: [0, 1], outputRange: [1, 2.4] });
+  const signalOpacity = signal.interpolate({ inputRange: [0, 0.15, 1], outputRange: [0.6, 0.45, 0] });
 
   return (
     <View style={styles.container}>
@@ -97,8 +97,13 @@ export function ScannerScreen({ onScanned }: Props) {
         </Animated.View>
         <Text style={styles.title}>Find a barcode</Text>
         <View style={styles.chip}>
-          <Animated.View style={[styles.dot, { opacity: blink }]} />
-          <Text style={styles.chipLabel}>Listening for EAN-13 / UPC-A</Text>
+          <View style={styles.signalWrap}>
+            <Animated.View
+              style={[styles.signalRing, { transform: [{ scale: signalScale }], opacity: signalOpacity }]}
+            />
+            <View style={styles.dot} />
+          </View>
+          <Text style={styles.chipLabel}>Waiting to scan</Text>
         </View>
       </View>
     </View>
@@ -159,6 +164,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 9,
     borderRadius: 999,
+  },
+  signalWrap: {
+    width: 10,
+    height: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signalRing: {
+    position: 'absolute',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.mint,
   },
   dot: {
     width: 8,

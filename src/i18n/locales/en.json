@@ -1,0 +1,54 @@
+{
+  "scanner": {
+    "cameraPermissionMessage": "We need camera access to scan barcodes.",
+    "grantPermission": "Grant camera permission",
+    "title": "Find a barcode",
+    "waitingToScan": "Waiting to scan"
+  },
+  "result": {
+    "unnamedProduct": "Unnamed product",
+    "fromLastScan": "From your last scan",
+    "nutriScore": "Nutri-Score",
+    "novaGroup": "NOVA group {{group}}",
+    "ingredients": "Ingredients",
+    "noIngredients": "No ingredients listed.",
+    "allergens": "Allergens",
+    "nutrition": "Nutrition",
+    "attribution": "Data from Open Food Facts (ODbL)",
+    "scanAnother": "Scan another product",
+    "nutriments": {
+      "energy": "Energy",
+      "fat": "Fat",
+      "saturatedFat": "Saturated fat",
+      "carbohydrates": "Carbohydrates",
+      "sugars": "Sugars",
+      "protein": "Protein",
+      "salt": "Salt"
+    },
+    "units": {
+      "kcalPer100g": "kcal / 100g",
+      "gPer100g": "g / 100g"
+    }
+  },
+  "missing": {
+    "knownName": "We know \"{{name}}\", not its ingredients yet",
+    "unknownHeadline": "Nobody's scanned this one yet",
+    "body": "Be the first — one photo of the label unlocks it for everyone who scans it next.",
+    "snapLabel": "Snap the label",
+    "scanAnother": "Scan another product",
+    "barcodeLabel": "Barcode {{barcode}}"
+  },
+  "error": {
+    "title": "Lookup failed",
+    "genericMessage": "Something went wrong. Please try again.",
+    "retry": "Retry",
+    "scanAnother": "Scan another product"
+  },
+  "capture": {
+    "cameraPermissionMessage": "We need camera access to photograph the label.",
+    "grantPermission": "Grant camera permission",
+    "hint": "Frame the ingredients label, then take a photo",
+    "takePhoto": "Take photo",
+    "cancel": "Cancel"
+  }
+}

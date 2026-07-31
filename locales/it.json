@@ -1,0 +1,10 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "Beep!",
+    "NSCameraUsageDescription": "Consenti a $(PRODUCT_NAME) di usare la fotocamera per scansionare i codici a barre dei prodotti e fotografare le etichette degli ingredienti.",
+    "NSUserTrackingUsageDescription": "Questo identificativo verrà utilizzato per mostrarti annunci più pertinenti."
+  },
+  "android": {
+    "app_name": "Beep!"
+  }
+}

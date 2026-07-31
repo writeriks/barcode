@@ -1,0 +1,54 @@
+{
+  "scanner": {
+    "cameraPermissionMessage": "Ci serve accedere alla fotocamera per scansionare i codici a barre.",
+    "grantPermission": "Consenti l'accesso alla fotocamera",
+    "title": "Trova un codice a barre",
+    "waitingToScan": "In attesa di scansione"
+  },
+  "result": {
+    "unnamedProduct": "Prodotto senza nome",
+    "fromLastScan": "Dalla tua ultima scansione",
+    "nutriScore": "Nutri-Score",
+    "novaGroup": "Gruppo NOVA {{group}}",
+    "ingredients": "Ingredienti",
+    "noIngredients": "Nessun ingrediente elencato.",
+    "allergens": "Allergeni",
+    "nutrition": "Valori nutrizionali",
+    "attribution": "Dati da Open Food Facts (ODbL)",
+    "scanAnother": "Scansiona un altro prodotto",
+    "nutriments": {
+      "energy": "Energia",
+      "fat": "Grassi",
+      "saturatedFat": "Grassi saturi",
+      "carbohydrates": "Carboidrati",
+      "sugars": "Zuccheri",
+      "protein": "Proteine",
+      "salt": "Sale"
+    },
+    "units": {
+      "kcalPer100g": "kcal / 100g",
+      "gPer100g": "g / 100g"
+    }
+  },
+  "missing": {
+    "knownName": "Conosciamo \"{{name}}\", ma non ancora i suoi ingredienti",
+    "unknownHeadline": "Nessuno ha ancora scansionato questo prodotto",
+    "body": "Sii il primo — una foto dell'etichetta la sblocca per chiunque lo scansioni in seguito.",
+    "snapLabel": "Fotografa l'etichetta",
+    "scanAnother": "Scansiona un altro prodotto",
+    "barcodeLabel": "Codice a barre {{barcode}}"
+  },
+  "error": {
+    "title": "Ricerca non riuscita",
+    "genericMessage": "Qualcosa è andato storto. Riprova.",
+    "retry": "Riprova",
+    "scanAnother": "Scansiona un altro prodotto"
+  },
+  "capture": {
+    "cameraPermissionMessage": "Ci serve accedere alla fotocamera per fotografare l'etichetta.",
+    "grantPermission": "Consenti l'accesso alla fotocamera",
+    "hint": "Inquadra l'etichetta degli ingredienti, poi scatta una foto",
+    "takePhoto": "Scatta foto",
+    "cancel": "Annulla"
+  }
+}

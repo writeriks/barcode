@@ -1,0 +1,54 @@
+{
+  "scanner": {
+    "cameraPermissionMessage": "Wir benötigen Kamerazugriff, um Barcodes zu scannen.",
+    "grantPermission": "Kamerazugriff erlauben",
+    "title": "Barcode finden",
+    "waitingToScan": "Warte auf Scan"
+  },
+  "result": {
+    "unnamedProduct": "Unbenanntes Produkt",
+    "fromLastScan": "Von deinem letzten Scan",
+    "nutriScore": "Nutri-Score",
+    "novaGroup": "NOVA-Gruppe {{group}}",
+    "ingredients": "Zutaten",
+    "noIngredients": "Keine Zutaten aufgeführt.",
+    "allergens": "Allergene",
+    "nutrition": "Nährwerte",
+    "attribution": "Daten von Open Food Facts (ODbL)",
+    "scanAnother": "Weiteres Produkt scannen",
+    "nutriments": {
+      "energy": "Energie",
+      "fat": "Fett",
+      "saturatedFat": "Gesättigte Fettsäuren",
+      "carbohydrates": "Kohlenhydrate",
+      "sugars": "Zucker",
+      "protein": "Eiweiß",
+      "salt": "Salz"
+    },
+    "units": {
+      "kcalPer100g": "kcal / 100g",
+      "gPer100g": "g / 100g"
+    }
+  },
+  "missing": {
+    "knownName": "Wir kennen \"{{name}}\", aber noch nicht die Zutaten",
+    "unknownHeadline": "Dieses Produkt wurde noch von niemandem gescannt",
+    "body": "Sei der Erste — ein Foto des Etiketts schaltet es für alle frei, die es als Nächstes scannen.",
+    "snapLabel": "Etikett fotografieren",
+    "scanAnother": "Weiteres Produkt scannen",
+    "barcodeLabel": "Barcode {{barcode}}"
+  },
+  "error": {
+    "title": "Suche fehlgeschlagen",
+    "genericMessage": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "retry": "Erneut versuchen",
+    "scanAnother": "Weiteres Produkt scannen"
+  },
+  "capture": {
+    "cameraPermissionMessage": "Wir benötigen Kamerazugriff, um das Etikett zu fotografieren.",
+    "grantPermission": "Kamerazugriff erlauben",
+    "hint": "Zutatenetikett einrahmen und dann ein Foto aufnehmen",
+    "takePhoto": "Foto aufnehmen",
+    "cancel": "Abbrechen"
+  }
+}

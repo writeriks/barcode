@@ -21,6 +21,15 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "locales": {
+      "en": "./locales/en.json",
+      "tr": "./locales/tr.json",
+      "pl": "./locales/pl.json",
+      "es": "./locales/es.json",
+      "fr": "./locales/fr.json",
+      "it": "./locales/it.json",
+      "de": "./locales/de.json"
+    },
     "plugins": [
       [
         "expo-camera",

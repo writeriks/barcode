@@ -1,3 +1,5 @@
+import './src/i18n';
+
 import {
   useFonts,
   Fredoka_600SemiBold,

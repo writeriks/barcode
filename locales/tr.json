@@ -1,0 +1,10 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "Beep!",
+    "NSCameraUsageDescription": "$(PRODUCT_NAME) uygulamasının ürün barkodlarını taramak ve içindekiler etiketlerini fotoğraflamak için kamerayı kullanmasına izin verin.",
+    "NSUserTrackingUsageDescription": "Bu tanımlayıcı, size daha uygun reklamlar sunmak için kullanılacaktır."
+  },
+  "android": {
+    "app_name": "Beep!"
+  }
+}

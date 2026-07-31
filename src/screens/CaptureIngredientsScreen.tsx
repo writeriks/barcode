@@ -1,5 +1,6 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { PillButton } from '../components/PillButton';
 import { submitIngredientsPhoto } from '../services/submitIngredientsPhoto';
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function CaptureIngredientsScreen({ barcode, onDone, onCancel }: Props) {
+  const { t } = useTranslation();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -36,8 +38,8 @@ export function CaptureIngredientsScreen({ barcode, onDone, onCancel }: Props) {
   if (!permission.granted) {
     return (
       <View style={styles.center}>
-        <Text style={styles.message}>We need camera access to photograph the label.</Text>
-        <PillButton title="Grant camera permission" onPress={requestPermission} variant="citrus" />
+        <Text style={styles.message}>{t('capture.cameraPermissionMessage')}</Text>
+        <PillButton title={t('capture.grantPermission')} onPress={requestPermission} variant="citrus" />
       </View>
     );
   }
@@ -47,14 +49,14 @@ export function CaptureIngredientsScreen({ barcode, onDone, onCancel }: Props) {
       <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
       <View style={styles.frame} pointerEvents="none" />
       <View style={styles.overlay} pointerEvents="box-none">
-        <Text style={styles.hint}>Frame the ingredients label, then take a photo</Text>
+        <Text style={styles.hint}>{t('capture.hint')}</Text>
         <View style={styles.actions}>
           {isCapturing ? (
             <ActivityIndicator color={colors.mint} />
           ) : (
-            <PillButton title="Take photo" onPress={handleCapture} variant="citrus" />
+            <PillButton title={t('capture.takePhoto')} onPress={handleCapture} variant="citrus" />
           )}
-          <PillButton title="Cancel" onPress={onCancel} variant="ghost" />
+          <PillButton title={t('capture.cancel')} onPress={onCancel} variant="ghost" />
         </View>
       </View>
     </View>

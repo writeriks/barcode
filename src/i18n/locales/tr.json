@@ -1,0 +1,54 @@
+{
+  "scanner": {
+    "cameraPermissionMessage": "Barkod taramak için kameraya erişmemiz gerekiyor.",
+    "grantPermission": "Kamera iznini ver",
+    "title": "Bir barkod bul",
+    "waitingToScan": "Taramaya hazır"
+  },
+  "result": {
+    "unnamedProduct": "İsimsiz ürün",
+    "fromLastScan": "Son taramandan",
+    "nutriScore": "Nutri-Score",
+    "novaGroup": "NOVA grubu {{group}}",
+    "ingredients": "İçindekiler",
+    "noIngredients": "İçindekiler listelenmemiş.",
+    "allergens": "Alerjenler",
+    "nutrition": "Besin değerleri",
+    "attribution": "Veriler Open Food Facts'tan (ODbL)",
+    "scanAnother": "Başka bir ürün tara",
+    "nutriments": {
+      "energy": "Enerji",
+      "fat": "Yağ",
+      "saturatedFat": "Doymuş yağ",
+      "carbohydrates": "Karbonhidrat",
+      "sugars": "Şeker",
+      "protein": "Protein",
+      "salt": "Tuz"
+    },
+    "units": {
+      "kcalPer100g": "kcal / 100g",
+      "gPer100g": "g / 100g"
+    }
+  },
+  "missing": {
+    "knownName": "\"{{name}}\" ürününü biliyoruz ama içindekileri henüz yok",
+    "unknownHeadline": "Bu ürünü henüz kimse taramadı",
+    "body": "İlk sen ol — etiketin bir fotoğrafı, bunu tarayan herkes için kilidi açar.",
+    "snapLabel": "Etiketin fotoğrafını çek",
+    "scanAnother": "Başka bir ürün tara",
+    "barcodeLabel": "Barkod {{barcode}}"
+  },
+  "error": {
+    "title": "Arama başarısız oldu",
+    "genericMessage": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+    "retry": "Tekrar dene",
+    "scanAnother": "Başka bir ürün tara"
+  },
+  "capture": {
+    "cameraPermissionMessage": "Etiketi fotoğraflamak için kameraya erişmemiz gerekiyor.",
+    "grantPermission": "Kamera iznini ver",
+    "hint": "İçindekiler etiketini kadraja al, sonra fotoğraf çek",
+    "takePhoto": "Fotoğraf çek",
+    "cancel": "İptal"
+  }
+}

@@ -1,5 +1,6 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { PillButton } from '../components/PillButton';
 import { colors } from '../theme/colors';
@@ -20,6 +21,7 @@ const VIEWFINDER_HEIGHT = 130;
  * result, which also stops the camera.
  */
 export function ScannerScreen({ onScanned }: Props) {
+  const { t } = useTranslation();
   const [permission, requestPermission] = useCameraPermissions();
   const hasHandledScanRef = useRef(false);
 
@@ -66,8 +68,8 @@ export function ScannerScreen({ onScanned }: Props) {
   if (!permission.granted) {
     return (
       <View style={styles.center}>
-        <Text style={styles.message}>We need camera access to scan barcodes.</Text>
-        <PillButton title="Grant camera permission" onPress={requestPermission} variant="citrus" />
+        <Text style={styles.message}>{t('scanner.cameraPermissionMessage')}</Text>
+        <PillButton title={t('scanner.grantPermission')} onPress={requestPermission} variant="citrus" />
       </View>
     );
   }
@@ -95,7 +97,7 @@ export function ScannerScreen({ onScanned }: Props) {
             ]}
           />
         </Animated.View>
-        <Text style={styles.title}>Find a barcode</Text>
+        <Text style={styles.title}>{t('scanner.title')}</Text>
         <View style={styles.chip}>
           <View style={styles.signalWrap}>
             <Animated.View
@@ -103,7 +105,7 @@ export function ScannerScreen({ onScanned }: Props) {
             />
             <View style={styles.dot} />
           </View>
-          <Text style={styles.chipLabel}>Waiting to scan</Text>
+          <Text style={styles.chipLabel}>{t('scanner.waitingToScan')}</Text>
         </View>
       </View>
     </View>

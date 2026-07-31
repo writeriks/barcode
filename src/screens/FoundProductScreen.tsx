@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
@@ -12,17 +13,18 @@ interface Props {
   onScanAgain: () => void;
 }
 
-const NUTRIMENT_ROWS: { key: string; label: string; unit: string }[] = [
-  { key: 'energy-kcal_100g', label: 'Energy', unit: 'kcal / 100g' },
-  { key: 'fat_100g', label: 'Fat', unit: 'g / 100g' },
-  { key: 'saturated-fat_100g', label: 'Saturated fat', unit: 'g / 100g' },
-  { key: 'carbohydrates_100g', label: 'Carbohydrates', unit: 'g / 100g' },
-  { key: 'sugars_100g', label: 'Sugars', unit: 'g / 100g' },
-  { key: 'proteins_100g', label: 'Protein', unit: 'g / 100g' },
-  { key: 'salt_100g', label: 'Salt', unit: 'g / 100g' },
+const NUTRIMENT_ROWS: { key: string; labelKey: string; unitKey: string }[] = [
+  { key: 'energy-kcal_100g', labelKey: 'result.nutriments.energy', unitKey: 'result.units.kcalPer100g' },
+  { key: 'fat_100g', labelKey: 'result.nutriments.fat', unitKey: 'result.units.gPer100g' },
+  { key: 'saturated-fat_100g', labelKey: 'result.nutriments.saturatedFat', unitKey: 'result.units.gPer100g' },
+  { key: 'carbohydrates_100g', labelKey: 'result.nutriments.carbohydrates', unitKey: 'result.units.gPer100g' },
+  { key: 'sugars_100g', labelKey: 'result.nutriments.sugars', unitKey: 'result.units.gPer100g' },
+  { key: 'proteins_100g', labelKey: 'result.nutriments.protein', unitKey: 'result.units.gPer100g' },
+  { key: 'salt_100g', labelKey: 'result.nutriments.salt', unitKey: 'result.units.gPer100g' },
 ];
 
 export function FoundProductScreen({ product, source, onScanAgain }: Props) {
+  const { t } = useTranslation();
   const nutrimentRows = NUTRIMENT_ROWS.filter(
     (row) => typeof product.nutriments?.[row.key] === 'number'
   );
@@ -38,29 +40,31 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
           ) : null}
           <View style={styles.productText}>
             <Text style={styles.name} numberOfLines={2}>
-              {product.productName ?? 'Unnamed product'}
+              {product.productName ?? t('result.unnamedProduct')}
             </Text>
             {product.brands ? <Text style={styles.brand}>{product.brands}</Text> : null}
-            {source === 'cache' ? <Text style={styles.verdict}>From your last scan</Text> : null}
+            {source === 'cache' ? <Text style={styles.verdict}>{t('result.fromLastScan')}</Text> : null}
           </View>
         </View>
 
         <View style={styles.scoreRow}>
           <ScoreReveal nutriscoreGrade={product.nutriscoreGrade} />
           <View style={styles.scoreLabelWrap}>
-            <Text style={styles.scoreLabel}>Nutri-Score</Text>
-            {product.novaGroup ? <Text style={styles.scoreSub}>NOVA group {product.novaGroup}</Text> : null}
+            <Text style={styles.scoreLabel}>{t('result.nutriScore')}</Text>
+            {product.novaGroup ? (
+              <Text style={styles.scoreSub}>{t('result.novaGroup', { group: product.novaGroup })}</Text>
+            ) : null}
           </View>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Ingredients</Text>
-          <Text style={styles.body}>{product.ingredientsText ?? 'No ingredients listed.'}</Text>
+          <Text style={styles.sectionTitle}>{t('result.ingredients')}</Text>
+          <Text style={styles.body}>{product.ingredientsText ?? t('result.noIngredients')}</Text>
         </View>
 
         {product.allergensTags && product.allergensTags.length > 0 ? (
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Allergens</Text>
+            <Text style={styles.sectionTitle}>{t('result.allergens')}</Text>
             <View style={styles.chips}>
               {product.allergensTags.map((tag) => (
                 <View key={tag} style={styles.chip}>
@@ -73,21 +77,21 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
 
         {nutrimentRows.length > 0 ? (
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Nutrition</Text>
+            <Text style={styles.sectionTitle}>{t('result.nutrition')}</Text>
             {nutrimentRows.map((row) => (
               <View key={row.key} style={styles.nutrimentRow}>
-                <Text style={styles.body}>{row.label}</Text>
+                <Text style={styles.body}>{t(row.labelKey)}</Text>
                 <Text style={styles.amount}>
-                  {product.nutriments![row.key]} {row.unit}
+                  {product.nutriments![row.key]} {t(row.unitKey)}
                 </Text>
               </View>
             ))}
           </View>
         ) : null}
 
-        <Text style={styles.attribution}>Data from Open Food Facts (ODbL)</Text>
+        <Text style={styles.attribution}>{t('result.attribution')}</Text>
 
-        <PillButton title="Scan another product" onPress={onScanAgain} variant="punch" />
+        <PillButton title={t('result.scanAnother')} onPress={onScanAgain} variant="punch" />
       </ScrollView>
       <BottomBannerAd />
     </View>

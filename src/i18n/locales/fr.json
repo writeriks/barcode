@@ -1,0 +1,54 @@
+{
+  "scanner": {
+    "cameraPermissionMessage": "Nous avons besoin d'accéder à l'appareil photo pour scanner les codes-barres.",
+    "grantPermission": "Autoriser l'appareil photo",
+    "title": "Trouver un code-barres",
+    "waitingToScan": "En attente de scan"
+  },
+  "result": {
+    "unnamedProduct": "Produit sans nom",
+    "fromLastScan": "De votre dernier scan",
+    "nutriScore": "Nutri-Score",
+    "novaGroup": "Groupe NOVA {{group}}",
+    "ingredients": "Ingrédients",
+    "noIngredients": "Aucun ingrédient répertorié.",
+    "allergens": "Allergènes",
+    "nutrition": "Valeurs nutritionnelles",
+    "attribution": "Données d'Open Food Facts (ODbL)",
+    "scanAnother": "Scanner un autre produit",
+    "nutriments": {
+      "energy": "Énergie",
+      "fat": "Matières grasses",
+      "saturatedFat": "Acides gras saturés",
+      "carbohydrates": "Glucides",
+      "sugars": "Sucres",
+      "protein": "Protéines",
+      "salt": "Sel"
+    },
+    "units": {
+      "kcalPer100g": "kcal / 100g",
+      "gPer100g": "g / 100g"
+    }
+  },
+  "missing": {
+    "knownName": "Nous connaissons \"{{name}}\", mais pas encore ses ingrédients",
+    "unknownHeadline": "Personne n'a encore scanné ce produit",
+    "body": "Soyez le premier — une photo de l'étiquette le débloque pour tous ceux qui le scanneront ensuite.",
+    "snapLabel": "Photographier l'étiquette",
+    "scanAnother": "Scanner un autre produit",
+    "barcodeLabel": "Code-barres {{barcode}}"
+  },
+  "error": {
+    "title": "Échec de la recherche",
+    "genericMessage": "Une erreur s'est produite. Veuillez réessayer.",
+    "retry": "Réessayer",
+    "scanAnother": "Scanner un autre produit"
+  },
+  "capture": {
+    "cameraPermissionMessage": "Nous avons besoin d'accéder à l'appareil photo pour photographier l'étiquette.",
+    "grantPermission": "Autoriser l'appareil photo",
+    "hint": "Cadrez l'étiquette des ingrédients, puis prenez une photo",
+    "takePhoto": "Prendre une photo",
+    "cancel": "Annuler"
+  }
+}

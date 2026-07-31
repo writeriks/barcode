@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function MissingProductScreen({ barcode, product, onCapturePhoto, onScanAgain }: Props) {
+  const { t } = useTranslation();
   const bob = useRef(new Animated.Value(0)).current;
   const glow = useRef(new Animated.Value(0)).current;
 
@@ -50,13 +52,11 @@ export function MissingProductScreen({ barcode, product, onCapturePhoto, onScanA
         </Animated.View>
 
         {product?.productName ? (
-          <Text style={styles.headline}>We know "{product.productName}", not its ingredients yet</Text>
+          <Text style={styles.headline}>{t('missing.knownName', { name: product.productName })}</Text>
         ) : (
-          <Text style={styles.headline}>Nobody's scanned this one yet</Text>
+          <Text style={styles.headline}>{t('missing.unknownHeadline')}</Text>
         )}
-        <Text style={styles.body}>
-          Be the first — one photo of the label unlocks it for everyone who scans it next.
-        </Text>
+        <Text style={styles.body}>{t('missing.body')}</Text>
 
         <View style={styles.ctaWrap}>
           <Animated.View
@@ -65,12 +65,12 @@ export function MissingProductScreen({ barcode, product, onCapturePhoto, onScanA
               { transform: [{ scale: glowScale }], opacity: glowOpacity },
             ]}
           />
-          <PillButton title="Snap the label" onPress={onCapturePhoto} variant="citrus" />
+          <PillButton title={t('missing.snapLabel')} onPress={onCapturePhoto} variant="citrus" />
         </View>
 
-        <PillButton title="Scan another product" onPress={onScanAgain} variant="ghost" />
+        <PillButton title={t('missing.scanAnother')} onPress={onScanAgain} variant="ghost" />
 
-        <Text style={styles.stat}>Barcode {barcode}</Text>
+        <Text style={styles.stat}>{t('missing.barcodeLabel', { barcode })}</Text>
       </View>
       <BottomBannerAd />
     </View>

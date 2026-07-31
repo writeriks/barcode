@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -42,45 +43,51 @@ export function MissingProductScreen({ barcode, product, onCapturePhoto, onScanA
   const glowOpacity = glow.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.55, 0.3, 0] });
 
   return (
-    <View style={styles.container}>
-      <Animated.View style={[styles.mascot, { transform: [{ translateY }, { rotate }] }]}>
-        <Text style={styles.mascotText}>?</Text>
-      </Animated.View>
+    <View style={styles.screen}>
+      <View style={styles.container}>
+        <Animated.View style={[styles.mascot, { transform: [{ translateY }, { rotate }] }]}>
+          <Text style={styles.mascotText}>?</Text>
+        </Animated.View>
 
-      {product?.productName ? (
-        <Text style={styles.headline}>We know "{product.productName}", not its ingredients yet</Text>
-      ) : (
-        <Text style={styles.headline}>Nobody's scanned this one yet</Text>
-      )}
-      <Text style={styles.body}>
-        Be the first — one photo of the label unlocks it for everyone who scans it next.
-      </Text>
+        {product?.productName ? (
+          <Text style={styles.headline}>We know "{product.productName}", not its ingredients yet</Text>
+        ) : (
+          <Text style={styles.headline}>Nobody's scanned this one yet</Text>
+        )}
+        <Text style={styles.body}>
+          Be the first — one photo of the label unlocks it for everyone who scans it next.
+        </Text>
 
-      <View style={styles.ctaWrap}>
-        <Animated.View
-          style={[
-            styles.glowRing,
-            { transform: [{ scale: glowScale }], opacity: glowOpacity },
-          ]}
-        />
-        <PillButton title="Snap the label" onPress={onCapturePhoto} variant="citrus" />
+        <View style={styles.ctaWrap}>
+          <Animated.View
+            style={[
+              styles.glowRing,
+              { transform: [{ scale: glowScale }], opacity: glowOpacity },
+            ]}
+          />
+          <PillButton title="Snap the label" onPress={onCapturePhoto} variant="citrus" />
+        </View>
+
+        <PillButton title="Scan another product" onPress={onScanAgain} variant="ghost" />
+
+        <Text style={styles.stat}>Barcode {barcode}</Text>
       </View>
-
-      <PillButton title="Scan another product" onPress={onScanAgain} variant="ghost" />
-
-      <Text style={styles.stat}>Barcode {barcode}</Text>
+      <BottomBannerAd />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.cabinet,
+  },
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 28,
     gap: 14,
-    backgroundColor: colors.cabinet,
   },
   mascot: {
     width: 66,

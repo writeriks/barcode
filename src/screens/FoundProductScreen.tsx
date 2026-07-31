@@ -1,4 +1,5 @@
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
 import { ScoreReveal } from '../components/ScoreReveal';
 import { colors } from '../theme/colors';
@@ -27,66 +28,69 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
   );
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.barcode}>{product.code}</Text>
+    <View style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.barcode}>{product.code}</Text>
 
-      <View style={styles.productCard}>
-        {product.imageUrl ? (
-          <Image source={{ uri: product.imageUrl }} style={styles.image} resizeMode="cover" />
-        ) : null}
-        <View style={styles.productText}>
-          <Text style={styles.name} numberOfLines={2}>
-            {product.productName ?? 'Unnamed product'}
-          </Text>
-          {product.brands ? <Text style={styles.brand}>{product.brands}</Text> : null}
-          {source === 'cache' ? <Text style={styles.verdict}>From your last scan</Text> : null}
+        <View style={styles.productCard}>
+          {product.imageUrl ? (
+            <Image source={{ uri: product.imageUrl }} style={styles.image} resizeMode="cover" />
+          ) : null}
+          <View style={styles.productText}>
+            <Text style={styles.name} numberOfLines={2}>
+              {product.productName ?? 'Unnamed product'}
+            </Text>
+            {product.brands ? <Text style={styles.brand}>{product.brands}</Text> : null}
+            {source === 'cache' ? <Text style={styles.verdict}>From your last scan</Text> : null}
+          </View>
         </View>
-      </View>
 
-      <View style={styles.scoreRow}>
-        <ScoreReveal nutriscoreGrade={product.nutriscoreGrade} />
-        <View style={styles.scoreLabelWrap}>
-          <Text style={styles.scoreLabel}>Nutri-Score</Text>
-          {product.novaGroup ? <Text style={styles.scoreSub}>NOVA group {product.novaGroup}</Text> : null}
+        <View style={styles.scoreRow}>
+          <ScoreReveal nutriscoreGrade={product.nutriscoreGrade} />
+          <View style={styles.scoreLabelWrap}>
+            <Text style={styles.scoreLabel}>Nutri-Score</Text>
+            {product.novaGroup ? <Text style={styles.scoreSub}>NOVA group {product.novaGroup}</Text> : null}
+          </View>
         </View>
-      </View>
 
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Ingredients</Text>
-        <Text style={styles.body}>{product.ingredientsText ?? 'No ingredients listed.'}</Text>
-      </View>
-
-      {product.allergensTags && product.allergensTags.length > 0 ? (
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Allergens</Text>
-          <View style={styles.chips}>
-            {product.allergensTags.map((tag) => (
-              <View key={tag} style={styles.chip}>
-                <Text style={styles.chipText}>{tag.replace(/^en:/, '')}</Text>
+          <Text style={styles.sectionTitle}>Ingredients</Text>
+          <Text style={styles.body}>{product.ingredientsText ?? 'No ingredients listed.'}</Text>
+        </View>
+
+        {product.allergensTags && product.allergensTags.length > 0 ? (
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Allergens</Text>
+            <View style={styles.chips}>
+              {product.allergensTags.map((tag) => (
+                <View key={tag} style={styles.chip}>
+                  <Text style={styles.chipText}>{tag.replace(/^en:/, '')}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
+
+        {nutrimentRows.length > 0 ? (
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Nutrition</Text>
+            {nutrimentRows.map((row) => (
+              <View key={row.key} style={styles.nutrimentRow}>
+                <Text style={styles.body}>{row.label}</Text>
+                <Text style={styles.amount}>
+                  {product.nutriments![row.key]} {row.unit}
+                </Text>
               </View>
             ))}
           </View>
-        </View>
-      ) : null}
+        ) : null}
 
-      {nutrimentRows.length > 0 ? (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Nutrition</Text>
-          {nutrimentRows.map((row) => (
-            <View key={row.key} style={styles.nutrimentRow}>
-              <Text style={styles.body}>{row.label}</Text>
-              <Text style={styles.amount}>
-                {product.nutriments![row.key]} {row.unit}
-              </Text>
-            </View>
-          ))}
-        </View>
-      ) : null}
+        <Text style={styles.attribution}>Data from Open Food Facts (ODbL)</Text>
 
-      <Text style={styles.attribution}>Data from Open Food Facts (ODbL)</Text>
-
-      <PillButton title="Scan another product" onPress={onScanAgain} variant="punch" />
-    </ScrollView>
+        <PillButton title="Scan another product" onPress={onScanAgain} variant="punch" />
+      </ScrollView>
+      <BottomBannerAd />
+    </View>
   );
 }
 

@@ -1,0 +1,63 @@
+import type { ExpoConfig } from 'expo/config';
+
+// Google's public sample AdMob App IDs — safe defaults so prebuild/EAS
+// builds never fail just because .env hasn't been created yet. Real values
+// go in .env (see .env.example); this file falls back to test IDs whenever
+// they're missing.
+const TEST_ADMOB_ANDROID_APP_ID = 'ca-app-pub-3940256099942544~3347511713';
+const TEST_ADMOB_IOS_APP_ID = 'ca-app-pub-3940256099942544~1458002511';
+
+const androidAppId = process.env.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID || TEST_ADMOB_ANDROID_APP_ID;
+const iosAppId = process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID || TEST_ADMOB_IOS_APP_ID;
+
+const config: ExpoConfig = {
+  name: 'Beep!',
+  slug: 'barcode',
+  version: '1.0.0',
+  orientation: 'portrait',
+  icon: './assets/icon.png',
+  userInterfaceStyle: 'dark',
+  ios: {
+    supportsTablet: true,
+  },
+  android: {
+    adaptiveIcon: {
+      backgroundColor: '#1b1330',
+      foregroundImage: './assets/android-icon-foreground.png',
+      backgroundImage: './assets/android-icon-background.png',
+      monochromeImage: './assets/android-icon-monochrome.png',
+    },
+    predictiveBackGestureEnabled: false,
+  },
+  web: {
+    favicon: './assets/favicon.png',
+  },
+  locales: {
+    en: './locales/en.json',
+    tr: './locales/tr.json',
+    pl: './locales/pl.json',
+    es: './locales/es.json',
+    fr: './locales/fr.json',
+    it: './locales/it.json',
+    de: './locales/de.json',
+  },
+  plugins: [
+    [
+      'expo-camera',
+      {
+        cameraPermission:
+          'Allow $(PRODUCT_NAME) to use the camera to scan product barcodes and photograph ingredient labels.',
+      },
+    ],
+    [
+      'react-native-google-mobile-ads',
+      {
+        androidAppId,
+        iosAppId,
+        userTrackingUsageDescription: 'This identifier will be used to deliver ads that are more relevant to you.',
+      },
+    ],
+  ],
+};
+
+export default config;

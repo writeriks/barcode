@@ -1,9 +1,15 @@
 import { useEffect, useState, type ComponentType } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { ADMOB_BANNER_UNIT_ID } from '../config/adsEnv';
 import { areAdsEnabled } from '../services/ads/adsEnabled';
 import { isExpoGo } from '../services/ads/environment';
 import { colors } from '../theme/colors';
 import type { BannerAdProps } from 'react-native-google-mobile-ads';
+
+// Reserve roughly the height of the smallest standard adaptive banner
+// (~50dp) so the layout doesn't jump once the real ad reports its size —
+// the anchored adaptive size itself already adapts to the device width.
+const PLACEHOLDER_HEIGHT = 50;
 
 interface ResolvedBanner {
   Component: ComponentType<BannerAdProps>;
@@ -11,14 +17,23 @@ interface ResolvedBanner {
   size: string;
 }
 
+type LoadState = 'pending' | 'loaded' | 'failed';
+
 /**
  * Bottom banner shown on result/miss screens only — never on the live
- * camera view. react-native-google-mobile-ads is dynamically imported so
- * this stays a no-op under Expo Go, which can't load its native module;
- * it only actually renders once running in a real dev build.
+ * camera view. Sized with AdMob's anchored adaptive banner, which fits
+ * itself to the device's width, so this works the same on phones and
+ * tablets without us hand-picking dimensions.
+ *
+ * react-native-google-mobile-ads is dynamically imported so this stays a
+ * no-op under Expo Go, which can't load its native module; it only
+ * actually renders once running in a real dev build. If the ad fails to
+ * load (bad/missing unit ID, no fill, no network), the reserved space
+ * collapses instead of leaving a broken-looking gap.
  */
 export function BottomBannerAd() {
   const [banner, setBanner] = useState<ResolvedBanner | null>(null);
+  const [loadState, setLoadState] = useState<LoadState>('pending');
 
   useEffect(() => {
     if (isExpoGo() || !areAdsEnabled()) return;
@@ -28,8 +43,7 @@ export function BottomBannerAd() {
       if (cancelled) return;
       setBanner({
         Component: BannerAd,
-        // TODO: swap for a real production ad unit ID once there's an AdMob account.
-        unitId: TestIds.ADAPTIVE_BANNER,
+        unitId: ADMOB_BANNER_UNIT_ID || TestIds.ADAPTIVE_BANNER,
         size: BannerAdSize.ANCHORED_ADAPTIVE_BANNER,
       });
     });
@@ -39,22 +53,33 @@ export function BottomBannerAd() {
     };
   }, []);
 
-  if (!banner) return null;
+  if (!banner || loadState === 'failed') {
+    return null;
+  }
 
   const { Component, unitId, size } = banner;
   return (
-    <View style={styles.wrap}>
-      <Component unitId={unitId} size={size} />
+    <View style={[styles.wrap, loadState === 'pending' && styles.wrapPending]}>
+      <Component
+        unitId={unitId}
+        size={size}
+        onAdLoaded={() => setLoadState('loaded')}
+        onAdFailedToLoad={() => setLoadState('failed')}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrap: {
+    width: '100%',
     alignItems: 'center',
     paddingTop: 6,
     borderTopWidth: 1,
     borderTopColor: colors.panelLine,
     backgroundColor: colors.cabinet,
+  },
+  wrapPending: {
+    minHeight: PLACEHOLDER_HEIGHT,
   },
 });

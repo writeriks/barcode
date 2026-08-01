@@ -29,6 +29,10 @@ export interface OpenFoodFactsProduct {
   ingredients_text?: string;
   ingredients_text_en?: string;
   allergens_tags?: string[];
+  /** Comma-separated, human-readable allergen names localized to the `lc`
+   * query param we sent. Canonical/language-independent IDs live in
+   * `allergens_tags` instead — this is the display-friendly counterpart. */
+  allergens?: string;
   nutriments?: OpenFoodFactsNutriments;
   nutriscore_grade?: string;
   nova_group?: number;

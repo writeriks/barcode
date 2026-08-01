@@ -10,6 +10,11 @@ export interface Product {
   /** Ingredients text resolved for the device's locale (see
    * resolveIngredientsText), already picked between _en and the default. */
   ingredientsText?: string;
+  /** Localized, human-readable allergen names (from OFF's `allergens`
+   * field, respecting the `lc` we requested). Prefer this for display;
+   * falls back to deriving names from `allergensTags` when OFF doesn't
+   * return a localized string for the requested language. */
+  allergens?: string[];
   allergensTags?: string[];
   nutriments?: OpenFoodFactsNutriments;
   nutriscoreGrade?: string;

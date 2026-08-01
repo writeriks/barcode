@@ -28,6 +28,10 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
   const nutrimentRows = NUTRIMENT_ROWS.filter(
     (row) => typeof product.nutriments?.[row.key] === 'number'
   );
+  // Prefer OFF's localized allergen names; fall back to the canonical
+  // English tags if OFF has no translation for the requested language.
+  const displayAllergens =
+    product.allergens ?? product.allergensTags?.map((tag) => tag.replace(/^en:/, ''));
 
   return (
     <View style={styles.screen}>
@@ -62,13 +66,13 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
           <Text style={styles.body}>{product.ingredientsText ?? t('result.noIngredients')}</Text>
         </View>
 
-        {product.allergensTags && product.allergensTags.length > 0 ? (
+        {displayAllergens && displayAllergens.length > 0 ? (
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>{t('result.allergens')}</Text>
             <View style={styles.chips}>
-              {product.allergensTags.map((tag) => (
-                <View key={tag} style={styles.chip}>
-                  <Text style={styles.chipText}>{tag.replace(/^en:/, '')}</Text>
+              {displayAllergens.map((name) => (
+                <View key={name} style={styles.chip}>
+                  <Text style={styles.chipText}>{name}</Text>
                 </View>
               ))}
             </View>

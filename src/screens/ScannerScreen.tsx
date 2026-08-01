@@ -1,13 +1,14 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import { PillButton } from '../components/PillButton';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 
 interface Props {
   onScanned: (barcode: string) => void;
+  onOpenSettings: () => void;
 }
 
 const SCANNED_BARCODE_TYPES = ['ean13', 'upc_a'] as const;
@@ -20,7 +21,7 @@ const VIEWFINDER_HEIGHT = 130;
  * expected to unmount this screen once it navigates away to look up the
  * result, which also stops the camera.
  */
-export function ScannerScreen({ onScanned }: Props) {
+export function ScannerScreen({ onScanned, onOpenSettings }: Props) {
   const { t } = useTranslation();
   const [permission, requestPermission] = useCameraPermissions();
   const hasHandledScanRef = useRef(false);
@@ -68,6 +69,9 @@ export function ScannerScreen({ onScanned }: Props) {
   if (!permission.granted) {
     return (
       <View style={styles.center}>
+        <Pressable onPress={onOpenSettings} hitSlop={12} style={styles.settingsButton}>
+          <Text style={styles.settingsGlyph}>⚙</Text>
+        </Pressable>
         <Text style={styles.message}>{t('scanner.cameraPermissionMessage')}</Text>
         <PillButton title={t('scanner.grantPermission')} onPress={requestPermission} variant="citrus" />
       </View>
@@ -88,6 +92,9 @@ export function ScannerScreen({ onScanned }: Props) {
         barcodeScannerSettings={{ barcodeTypes: [...SCANNED_BARCODE_TYPES] }}
         onBarcodeScanned={handleBarcodeScanned}
       />
+      <Pressable onPress={onOpenSettings} hitSlop={12} style={styles.settingsButton}>
+        <Text style={styles.settingsGlyph}>⚙</Text>
+      </Pressable>
       <View style={styles.overlay} pointerEvents="none">
         <Animated.View style={[styles.viewfinder, { borderColor }]}>
           <Animated.View
@@ -127,6 +134,24 @@ const styles = StyleSheet.create({
   },
   message: {
     textAlign: 'center',
+    color: colors.cream,
+  },
+  settingsButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.panel,
+    borderWidth: 1,
+    borderColor: colors.panelLine,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  settingsGlyph: {
+    fontSize: 18,
     color: colors.cream,
   },
   overlay: {

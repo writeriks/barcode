@@ -50,5 +50,10 @@
     "hint": "Zutatenetikett einrahmen und dann ein Foto aufnehmen",
     "takePhoto": "Foto aufnehmen",
     "cancel": "Abbrechen"
+  },
+  "settings": {
+    "title": "Sprache",
+    "systemDefault": "Systemstandard",
+    "close": "Schließen"
   }
 }

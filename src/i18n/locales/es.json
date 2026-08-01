@@ -50,5 +50,10 @@
     "hint": "Encuadra la etiqueta de ingredientes y toma una foto",
     "takePhoto": "Tomar foto",
     "cancel": "Cancelar"
+  },
+  "settings": {
+    "title": "Idioma",
+    "systemDefault": "Predeterminado del sistema",
+    "close": "Cerrar"
   }
 }

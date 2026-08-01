@@ -50,5 +50,10 @@
     "hint": "İçindekiler etiketini kadraja al, sonra fotoğraf çek",
     "takePhoto": "Fotoğraf çek",
     "cancel": "İptal"
+  },
+  "settings": {
+    "title": "Dil",
+    "systemDefault": "Sistem varsayılanı",
+    "close": "Kapat"
   }
 }

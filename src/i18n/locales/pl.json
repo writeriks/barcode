@@ -50,5 +50,10 @@
     "hint": "Ustaw etykietę składników w kadrze i zrób zdjęcie",
     "takePhoto": "Zrób zdjęcie",
     "cancel": "Anuluj"
+  },
+  "settings": {
+    "title": "Język",
+    "systemDefault": "Domyślny systemowy",
+    "close": "Zamknij"
   }
 }

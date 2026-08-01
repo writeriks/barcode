@@ -50,5 +50,10 @@
     "hint": "Frame the ingredients label, then take a photo",
     "takePhoto": "Take photo",
     "cancel": "Cancel"
+  },
+  "settings": {
+    "title": "Language",
+    "systemDefault": "System default",
+    "close": "Close"
   }
 }

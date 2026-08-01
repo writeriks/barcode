@@ -10,6 +10,11 @@ import pl from './locales/pl.json';
 import tr from './locales/tr.json';
 
 export const SUPPORTED_LANGUAGES = ['en', 'tr', 'pl', 'es', 'fr', 'it', 'de'] as const;
+export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+
+export function isSupportedLanguage(code: string): code is SupportedLanguage {
+  return (SUPPORTED_LANGUAGES as readonly string[]).includes(code);
+}
 
 const resources = {
   en: { translation: en },
@@ -22,9 +27,7 @@ const resources = {
 };
 
 const deviceLanguage = getDeviceLanguageCode();
-const initialLanguage = (SUPPORTED_LANGUAGES as readonly string[]).includes(deviceLanguage)
-  ? deviceLanguage
-  : 'en';
+const initialLanguage = isSupportedLanguage(deviceLanguage) ? deviceLanguage : 'en';
 
 i18n.use(initReactI18next).init({
   resources,

@@ -19,8 +19,14 @@ const config: ExpoConfig = {
   userInterfaceStyle: 'dark',
   ios: {
     supportsTablet: true,
+    // TODO: confirm/change before a real App Store submission — this must
+    // match the bundle ID registered in your Apple Developer account.
+    bundleIdentifier: 'com.writeriks.beep',
   },
   android: {
+    // TODO: confirm/change before a real Play Store submission — this must
+    // match the package name registered in your Google Play Console.
+    package: 'com.writeriks.beep',
     adaptiveIcon: {
       backgroundColor: '#1b1330',
       foregroundImage: './assets/android-icon-foreground.png',

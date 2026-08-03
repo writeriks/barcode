@@ -1,7 +1,7 @@
 {
   "ios": {
     "CFBundleDisplayName": "Beep!",
-    "NSCameraUsageDescription": "Permite que $(PRODUCT_NAME) use la cámara para escanear códigos de barras de productos y fotografiar etiquetas de ingredientes.",
+    "NSCameraUsageDescription": "Permite que $(PRODUCT_NAME) use la cámara para escanear códigos de barras y códigos QR.",
     "NSUserTrackingUsageDescription": "Este identificador se utilizará para mostrarte anuncios más relevantes."
   },
   "android": {

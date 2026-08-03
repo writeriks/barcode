@@ -53,14 +53,14 @@ export function MissingProductScreen({ barcode, onScanAgain }: Props) {
         <View style={styles.searchRow}>
           <PillButton
             title={t('missing.searchGoogle')}
-            icon="search-outline"
+            icon="logo-google"
             onPress={() => openIfSupported(googleSearchUrl(barcode))}
             variant="ghost"
             style={styles.flexButton}
           />
           <PillButton
             title={t('missing.searchAmazon')}
-            icon="search-outline"
+            icon="logo-amazon"
             onPress={() => openIfSupported(amazonSearchUrl(barcode))}
             variant="ghost"
             style={styles.flexButton}

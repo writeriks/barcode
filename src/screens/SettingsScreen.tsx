@@ -1,9 +1,11 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { LANGUAGE_NATIVE_NAMES } from '../i18n/languageNames';
+import { isPrivacyOptionsRequired, showPrivacyOptionsForm } from '../services/ads/consent';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 
@@ -15,12 +17,18 @@ interface Props {
 export function SettingsScreen({ currentOverride, onSelectLanguage }: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
+  const [showPrivacyRow, setShowPrivacyRow] = useState(false);
+
+  useEffect(() => {
+    isPrivacyOptionsRequired().then(setShowPrivacyRow);
+  }, []);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <Text style={styles.title}>{t('settings.title')}</Text>
 
       <ScrollView contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 20 }]}>
+        <Text style={styles.sectionLabel}>{t('settings.languageSection')}</Text>
         <Row
           label={t('settings.systemDefault')}
           selected={currentOverride === null}
@@ -34,6 +42,13 @@ export function SettingsScreen({ currentOverride, onSelectLanguage }: Props) {
             onPress={() => onSelectLanguage(code)}
           />
         ))}
+
+        {showPrivacyRow ? (
+          <>
+            <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.privacySection')}</Text>
+            <Row label={t('settings.privacyChoices')} selected={false} onPress={showPrivacyOptionsForm} />
+          </>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -66,6 +81,18 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: 20,
     gap: 10,
+  },
+  sectionLabel: {
+    fontFamily: fonts.displayBold,
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: colors.cream,
+    opacity: 0.5,
+    marginBottom: 2,
+  },
+  sectionLabelSpaced: {
+    marginTop: 10,
   },
   row: {
     flexDirection: 'row',

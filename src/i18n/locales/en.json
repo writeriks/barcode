@@ -53,9 +53,12 @@
     "scanAnother": "Scan another product"
   },
   "settings": {
-    "title": "Language",
+    "title": "Settings",
     "systemDefault": "System default",
-    "close": "Close"
+    "close": "Close",
+    "languageSection": "Language",
+    "privacySection": "Privacy",
+    "privacyChoices": "Privacy choices"
   },
   "tabs": {
     "scanner": "Scanner",

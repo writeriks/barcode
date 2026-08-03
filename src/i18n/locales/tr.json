@@ -53,9 +53,12 @@
     "scanAnother": "Başka bir ürün tara"
   },
   "settings": {
-    "title": "Dil",
+    "title": "Ayarlar",
     "systemDefault": "Sistem varsayılanı",
-    "close": "Kapat"
+    "close": "Kapat",
+    "languageSection": "Dil",
+    "privacySection": "Gizlilik",
+    "privacyChoices": "Gizlilik tercihleri"
   },
   "tabs": {
     "scanner": "Tarayıcı",

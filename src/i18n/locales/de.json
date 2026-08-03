@@ -53,9 +53,12 @@
     "scanAnother": "Weiteres Produkt scannen"
   },
   "settings": {
-    "title": "Sprache",
+    "title": "Einstellungen",
     "systemDefault": "Systemstandard",
-    "close": "Schließen"
+    "close": "Schließen",
+    "languageSection": "Sprache",
+    "privacySection": "Datenschutz",
+    "privacyChoices": "Datenschutzeinstellungen"
   },
   "tabs": {
     "scanner": "Scanner",

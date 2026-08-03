@@ -59,7 +59,8 @@ const config: ExpoConfig = {
       {
         androidAppId,
         iosAppId,
-        userTrackingUsageDescription: 'This identifier will be used to deliver ads that are more relevant to you.',
+        // expo-tracking-transparency owns NSUserTrackingUsageDescription instead —
+        // avoid two plugins fighting over the same Info.plist key.
       },
     ],
     [
@@ -70,6 +71,12 @@ const config: ExpoConfig = {
         // expo-camera's plugin already sets these — avoid two plugins fighting over the same Info.plist keys.
         cameraPermission: false,
         microphonePermission: false,
+      },
+    ],
+    [
+      'expo-tracking-transparency',
+      {
+        userTrackingPermission: 'This identifier will be used to deliver ads that are more relevant to you.',
       },
     ],
   ],

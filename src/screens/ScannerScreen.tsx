@@ -19,6 +19,7 @@ import {
   View,
 } from 'react-native';
 import { PillButton } from '../components/PillButton';
+import { playScanFeedback } from '../services/scanFeedback';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import type { ScanKind } from '../types/scan';
@@ -94,6 +95,7 @@ export function ScannerScreen({ onScanned }: Props) {
     ({ data, type }: { data: string; type: string }) => {
       if (hasHandledScanRef.current) return;
       hasHandledScanRef.current = true;
+      playScanFeedback();
       onScanned(data, type === 'qr' ? 'qr' : 'barcode');
     },
     [onScanned]
@@ -111,6 +113,7 @@ export function ScannerScreen({ onScanned }: Props) {
       const matches = await scanFromURLAsync(result.assets[0].uri, [...SCANNED_TYPES]);
       if (matches.length > 0 && !hasHandledScanRef.current) {
         hasHandledScanRef.current = true;
+        playScanFeedback();
         onScanned(matches[0].data, matches[0].type === 'qr' ? 'qr' : 'barcode');
       } else {
         Alert.alert(t('scanner.noBarcodeFound'));

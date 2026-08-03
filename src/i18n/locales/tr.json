@@ -58,7 +58,12 @@
     "close": "Kapat",
     "languageSection": "Dil",
     "privacySection": "Gizlilik",
-    "privacyChoices": "Gizlilik tercihleri"
+    "privacyChoices": "Gizlilik tercihleri",
+    "scanFeedbackSection": "Tarama geri bildirimi",
+    "vibrate": "Titreşim",
+    "vibrateDescription": "Tarama başarılı olduğunda titreşim ver",
+    "beep": "Bip sesi",
+    "beepDescription": "Tarama başarılı olduğunda ses çal"
   },
   "tabs": {
     "scanner": "Tarayıcı",

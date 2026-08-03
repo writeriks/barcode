@@ -58,7 +58,12 @@
     "close": "Zamknij",
     "languageSection": "Język",
     "privacySection": "Prywatność",
-    "privacyChoices": "Preferencje prywatności"
+    "privacyChoices": "Preferencje prywatności",
+    "scanFeedbackSection": "Sygnalizacja skanowania",
+    "vibrate": "Wibracje",
+    "vibrateDescription": "Wibruj po udanym skanowaniu",
+    "beep": "Sygnał dźwiękowy",
+    "beepDescription": "Odtwórz dźwięk po udanym skanowaniu"
   },
   "tabs": {
     "scanner": "Skaner",

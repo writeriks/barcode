@@ -1,11 +1,17 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { LANGUAGE_NATIVE_NAMES } from '../i18n/languageNames';
 import { isPrivacyOptionsRequired, showPrivacyOptionsForm } from '../services/ads/consent';
+import {
+  isBeepEnabled,
+  isVibrateEnabled,
+  setBeepEnabled,
+  setVibrateEnabled,
+} from '../services/scanFeedbackPreference';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 
@@ -18,17 +24,45 @@ export function SettingsScreen({ currentOverride, onSelectLanguage }: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
   const [showPrivacyRow, setShowPrivacyRow] = useState(false);
+  const [vibrateEnabled, setVibrateEnabledState] = useState(true);
+  const [beepEnabled, setBeepEnabledState] = useState(true);
 
   useEffect(() => {
     isPrivacyOptionsRequired().then(setShowPrivacyRow);
+    isVibrateEnabled().then(setVibrateEnabledState);
+    isBeepEnabled().then(setBeepEnabledState);
   }, []);
+
+  const handleToggleVibrate = (value: boolean) => {
+    setVibrateEnabledState(value);
+    setVibrateEnabled(value);
+  };
+
+  const handleToggleBeep = (value: boolean) => {
+    setBeepEnabledState(value);
+    setBeepEnabled(value);
+  };
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <Text style={styles.title}>{t('settings.title')}</Text>
 
       <ScrollView contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 20 }]}>
-        <Text style={styles.sectionLabel}>{t('settings.languageSection')}</Text>
+        <Text style={styles.sectionLabel}>{t('settings.scanFeedbackSection')}</Text>
+        <ToggleRow
+          label={t('settings.vibrate')}
+          description={t('settings.vibrateDescription')}
+          value={vibrateEnabled}
+          onValueChange={handleToggleVibrate}
+        />
+        <ToggleRow
+          label={t('settings.beep')}
+          description={t('settings.beepDescription')}
+          value={beepEnabled}
+          onValueChange={handleToggleBeep}
+        />
+
+        <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.languageSection')}</Text>
         <Row
           label={t('settings.systemDefault')}
           selected={currentOverride === null}
@@ -63,6 +97,33 @@ function Row({ label, selected, onPress }: { label: string; selected: boolean; o
       <Text style={styles.rowLabel}>{label}</Text>
       {selected ? <Text style={styles.checkmark}>✓</Text> : null}
     </Pressable>
+  );
+}
+
+function ToggleRow({
+  label,
+  description,
+  value,
+  onValueChange,
+}: {
+  label: string;
+  description: string;
+  value: boolean;
+  onValueChange: (value: boolean) => void;
+}) {
+  return (
+    <View style={styles.row}>
+      <View style={styles.toggleText}>
+        <Text style={styles.rowLabel}>{label}</Text>
+        <Text style={styles.toggleDescription}>{description}</Text>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        trackColor={{ false: colors.panelLine, true: colors.mint }}
+        thumbColor={colors.cream}
+      />
+    </View>
   );
 }
 
@@ -119,5 +180,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.mint,
     fontFamily: fonts.displayBold,
+  },
+  toggleText: {
+    flex: 1,
+    marginRight: 12,
+    gap: 3,
+  },
+  toggleDescription: {
+    fontSize: 12,
+    color: colors.cream,
+    opacity: 0.55,
   },
 });

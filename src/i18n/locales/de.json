@@ -58,7 +58,12 @@
     "close": "Schließen",
     "languageSection": "Sprache",
     "privacySection": "Datenschutz",
-    "privacyChoices": "Datenschutzeinstellungen"
+    "privacyChoices": "Datenschutzeinstellungen",
+    "scanFeedbackSection": "Scan-Feedback",
+    "vibrate": "Vibration",
+    "vibrateDescription": "Bei erfolgreichem Scan vibrieren",
+    "beep": "Signalton",
+    "beepDescription": "Bei erfolgreichem Scan einen Ton abspielen"
   },
   "tabs": {
     "scanner": "Scanner",

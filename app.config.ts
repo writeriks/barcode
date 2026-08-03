@@ -79,6 +79,13 @@ const config: ExpoConfig = {
         userTrackingPermission: 'This identifier will be used to deliver ads that are more relevant to you.',
       },
     ],
+    [
+      'expo-audio',
+      {
+        // Playback only (the scan beep) — no microphone access needed.
+        microphonePermission: false,
+      },
+    ],
   ],
 };
 

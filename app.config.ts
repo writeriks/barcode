@@ -38,6 +38,11 @@ const config: ExpoConfig = {
   web: {
     favicon: './assets/favicon.png',
   },
+  extra: {
+    eas: {
+      projectId: '0fcdbd1d-a033-4e16-9d2e-2cfaf89c0b3e',
+    },
+  },
   locales: {
     en: './locales/en.json',
     tr: './locales/tr.json',

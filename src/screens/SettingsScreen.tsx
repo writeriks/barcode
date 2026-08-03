@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SegmentedControl } from '../components/SegmentedControl';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { LANGUAGE_NATIVE_NAMES } from '../i18n/languageNames';
 import { isPrivacyOptionsRequired, showPrivacyOptionsForm } from '../services/ads/consent';
@@ -55,23 +56,14 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, themePrefere
 
       <ScrollView contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 20 }]}>
         <Text style={styles.sectionLabel}>{t('settings.appearanceSection')}</Text>
-        <Row
-          label={t('settings.systemDefault')}
-          selected={themePreference === null}
-          onPress={() => onSelectTheme(null)}
-          styles={styles}
-        />
-        <Row
-          label={t('settings.light')}
-          selected={themePreference === 'light'}
-          onPress={() => onSelectTheme('light')}
-          styles={styles}
-        />
-        <Row
-          label={t('settings.dark')}
-          selected={themePreference === 'dark'}
-          onPress={() => onSelectTheme('dark')}
-          styles={styles}
+        <SegmentedControl
+          value={themePreference}
+          onChange={onSelectTheme}
+          options={[
+            { value: null, label: t('settings.systemDefault') },
+            { value: 'light', label: t('settings.light') },
+            { value: 'dark', label: t('settings.dark') },
+          ]}
         />
 
         <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.scanFeedbackSection')}</Text>

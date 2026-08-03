@@ -75,7 +75,8 @@
     "metaQrLink": "QR link",
     "metaQrEmail": "QR email",
     "metaQrPhone": "QR phone",
-    "metaQrText": "QR text"
+    "metaQrText": "QR text",
+    "metaQrOtp": "QR 2FA code"
   },
   "myCodes": {
     "title": "My Codes",
@@ -100,6 +101,11 @@
     "copied": "Copied",
     "share": "Share",
     "decodedContent": "Decoded content",
-    "scanAgain": "Scan again"
+    "scanAgain": "Scan again",
+    "typeOtp": "2FA code",
+    "otpAccount": "Account",
+    "otpUnknownAccount": "Unknown account",
+    "otpSecret": "Secret key",
+    "copySecret": "Copy secret"
   }
 }

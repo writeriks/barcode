@@ -11,13 +11,15 @@ import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import type { HistoryStackParamList } from '../navigation/types';
 import type { ScanHistoryEntry } from '../types/history';
+import type { QrContentType } from '../utils/classifyQrContent';
 
 type Props = NativeStackScreenProps<HistoryStackParamList, 'HistoryList'>;
 
-const QR_META_KEY: Record<string, string> = {
+const QR_META_KEY: Record<QrContentType, string> = {
   link: 'history.metaQrLink',
   email: 'history.metaQrEmail',
   phone: 'history.metaQrPhone',
+  otp: 'history.metaQrOtp',
   text: 'history.metaQrText',
 };
 

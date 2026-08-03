@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Linking, Share, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
-import { classifyQrContent, resolveQrOpenUri, type QrContentType } from '../utils/classifyQrContent';
+import { classifyQrContent, parseOtpAuth, resolveQrOpenUri, type QrContentType } from '../utils/classifyQrContent';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { PillButton } from './PillButton';
@@ -12,6 +13,7 @@ const TYPE_ICON: Record<QrContentType, keyof typeof Ionicons.glyphMap> = {
   link: 'link-outline',
   email: 'mail-outline',
   phone: 'call-outline',
+  otp: 'key-outline',
   text: 'document-text-outline',
 };
 
@@ -19,6 +21,7 @@ const TYPE_COLOR: Record<QrContentType, string> = {
   link: colors.mint,
   email: colors.mint,
   phone: colors.mint,
+  otp: colors.punch,
   text: colors.citrus,
 };
 
@@ -26,6 +29,7 @@ const TYPE_LABEL_KEY: Record<QrContentType, string> = {
   link: 'qr.typeLink',
   email: 'qr.typeEmail',
   phone: 'qr.typePhone',
+  otp: 'qr.typeOtp',
   text: 'qr.typeText',
 };
 
@@ -33,8 +37,11 @@ const OPEN_LABEL_KEY: Record<QrContentType, string> = {
   link: 'qr.openLink',
   email: 'qr.openEmail',
   phone: 'qr.callNumber',
+  otp: 'qr.openLink',
   text: 'qr.openLink',
 };
+
+const SECRET_MASK = '•••• •••• •••• ••••';
 
 interface Props {
   data: string;
@@ -48,6 +55,8 @@ export function QrContentView({ data }: Props) {
   const type = classifyQrContent(data);
   const color = TYPE_COLOR[type];
   const openUri = resolveQrOpenUri(data, type);
+  const otpInfo = type === 'otp' ? parseOtpAuth(data) : null;
+  const [isSecretRevealed, setIsSecretRevealed] = useState(false);
 
   const handleOpen = async () => {
     if (!openUri) return;
@@ -58,7 +67,7 @@ export function QrContentView({ data }: Props) {
   };
 
   const handleCopy = async () => {
-    await Clipboard.setStringAsync(data);
+    await Clipboard.setStringAsync(otpInfo ? otpInfo.secret : data);
     Alert.alert(t('qr.copied'));
   };
 
@@ -77,15 +86,43 @@ export function QrContentView({ data }: Props) {
         <Text style={[styles.typeChipText, { color }]}>{t(TYPE_LABEL_KEY[type])}</Text>
       </View>
 
-      <View style={styles.contentCard}>
-        <Text style={styles.contentLabel}>{t('qr.decodedContent')}</Text>
-        <Text style={[styles.contentValue, type !== 'text' && styles.contentValueLink]}>{data}</Text>
-      </View>
+      {otpInfo ? (
+        <View style={styles.contentCard}>
+          <Text style={styles.contentLabel}>{t('qr.otpAccount')}</Text>
+          <Text style={styles.otpAccountValue}>{otpInfo.accountName ?? t('qr.otpUnknownAccount')}</Text>
+          {otpInfo.issuer ? <Text style={styles.otpIssuerValue}>{otpInfo.issuer}</Text> : null}
+
+          <View style={styles.otpDivider} />
+
+          <Text style={styles.contentLabel}>{t('qr.otpSecret')}</Text>
+          <View style={styles.otpSecretRow}>
+            <Text style={styles.otpSecretValue}>{isSecretRevealed ? otpInfo.secret : SECRET_MASK}</Text>
+            <Pressable onPress={() => setIsSecretRevealed((prev) => !prev)} hitSlop={8}>
+              <Ionicons
+                name={isSecretRevealed ? 'eye-off-outline' : 'eye-outline'}
+                size={18}
+                color={colors.cream}
+                style={styles.otpRevealIcon}
+              />
+            </Pressable>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.contentCard}>
+          <Text style={styles.contentLabel}>{t('qr.decodedContent')}</Text>
+          <Text style={[styles.contentValue, type !== 'text' && styles.contentValueLink]}>{data}</Text>
+        </View>
+      )}
 
       <View style={styles.actions}>
         {openUri ? <PillButton title={t(OPEN_LABEL_KEY[type])} onPress={handleOpen} variant="punch" /> : null}
         <View style={styles.actionRow}>
-          <PillButton title={t('qr.copy')} onPress={handleCopy} variant="ghost" style={styles.flexButton} />
+          <PillButton
+            title={t(otpInfo ? 'qr.copySecret' : 'qr.copy')}
+            onPress={handleCopy}
+            variant="ghost"
+            style={styles.flexButton}
+          />
           <PillButton title={t('qr.share')} onPress={handleShare} variant="ghost" style={styles.flexButton} />
         </View>
       </View>
@@ -146,6 +183,36 @@ const styles = StyleSheet.create({
   contentValueLink: {
     color: colors.mint,
     textDecorationLine: 'underline',
+  },
+  otpAccountValue: {
+    fontFamily: fonts.displayBold,
+    fontSize: 15,
+    color: colors.cream,
+  },
+  otpIssuerValue: {
+    fontSize: 12.5,
+    color: colors.cream,
+    opacity: 0.6,
+    marginTop: 2,
+  },
+  otpDivider: {
+    height: 1,
+    backgroundColor: colors.panelLine,
+    marginVertical: 12,
+  },
+  otpSecretRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  otpSecretValue: {
+    fontFamily: fonts.mono,
+    fontSize: 14,
+    letterSpacing: 1,
+    color: colors.cream,
+  },
+  otpRevealIcon: {
+    opacity: 0.7,
   },
   actions: {
     gap: 10,

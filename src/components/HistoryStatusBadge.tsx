@@ -17,6 +17,7 @@ const QR_TYPE_ICON: Record<QrContentType, keyof typeof Ionicons.glyphMap> = {
   link: 'link-outline',
   email: 'mail-outline',
   phone: 'call-outline',
+  otp: 'key-outline',
   text: 'document-text-outline',
 };
 
@@ -24,6 +25,7 @@ const QR_TYPE_COLOR: Record<QrContentType, string> = {
   link: colors.mint,
   email: colors.mint,
   phone: colors.mint,
+  otp: colors.punch,
   text: colors.citrus,
 };
 

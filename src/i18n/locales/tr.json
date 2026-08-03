@@ -75,7 +75,8 @@
     "metaQrLink": "QR bağlantı",
     "metaQrEmail": "QR e-posta",
     "metaQrPhone": "QR telefon",
-    "metaQrText": "QR metin"
+    "metaQrText": "QR metin",
+    "metaQrOtp": "QR 2FA kodu"
   },
   "myCodes": {
     "title": "Kodlarım",
@@ -100,6 +101,11 @@
     "copied": "Kopyalandı",
     "share": "Paylaş",
     "decodedContent": "Çözülen içerik",
-    "scanAgain": "Tekrar tara"
+    "scanAgain": "Tekrar tara",
+    "typeOtp": "2FA kodu",
+    "otpAccount": "Hesap",
+    "otpUnknownAccount": "Bilinmeyen hesap",
+    "otpSecret": "Gizli anahtar",
+    "copySecret": "Anahtarı kopyala"
   }
 }

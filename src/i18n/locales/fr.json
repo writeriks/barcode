@@ -75,7 +75,8 @@
     "metaQrLink": "Lien QR",
     "metaQrEmail": "E-mail QR",
     "metaQrPhone": "Téléphone QR",
-    "metaQrText": "Texte QR"
+    "metaQrText": "Texte QR",
+    "metaQrOtp": "QR code 2FA"
   },
   "myCodes": {
     "title": "Mes codes",
@@ -100,6 +101,11 @@
     "copied": "Copié",
     "share": "Partager",
     "decodedContent": "Contenu décodé",
-    "scanAgain": "Scanner à nouveau"
+    "scanAgain": "Scanner à nouveau",
+    "typeOtp": "Code 2FA",
+    "otpAccount": "Compte",
+    "otpUnknownAccount": "Compte inconnu",
+    "otpSecret": "Clé secrète",
+    "copySecret": "Copier la clé"
   }
 }

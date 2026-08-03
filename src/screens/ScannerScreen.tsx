@@ -182,7 +182,7 @@ export function ScannerScreen({ onScanned }: Props) {
         </View>
       </View>
 
-      <View style={[styles.toolbarWrap, { bottom: tabBarHeight + 16 }]}>
+      <View style={[styles.toolbarWrap, { bottom: tabBarHeight + 30 }]}>
         <BlurView intensity={68} tint={mode === 'light' ? 'light' : 'dark'} style={styles.toolbar}>
           <ToolbarButton
             icon="image-outline"
@@ -254,7 +254,7 @@ function ToolbarButton({
       {loading ? (
         <ActivityIndicator size="small" color={colors.text} />
       ) : (
-        <Ionicons name={icon} size={22} color={active ? colors.mint : colors.text} />
+        <Ionicons name={icon} size={17} color={active ? colors.mint : colors.text} />
       )}
     </Pressable>
   );
@@ -265,7 +265,7 @@ const toolbarButtonStyle = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 9,
   },
 });
 
@@ -363,14 +363,14 @@ function createStyles(colors: ColorTheme, mode: 'light' | 'dark') {
     toolbar: {
       flexDirection: 'row',
       alignItems: 'center',
-      borderRadius: 24,
+      borderRadius: 18,
       overflow: 'hidden',
       borderWidth: 1,
       borderColor: hairline,
     },
     toolbarDivider: {
       width: 1,
-      height: 22,
+      height: 16,
       backgroundColor: hairline,
     },
     modalBackdrop: {

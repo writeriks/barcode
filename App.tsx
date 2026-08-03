@@ -4,7 +4,7 @@ import {
   Fredoka_700Bold,
 } from '@expo-google-fonts/fredoka';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNavigationContainerRef, DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
@@ -19,24 +19,27 @@ import { ScannerFlowScreen } from './src/screens/ScannerFlowScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import i18n, { isSupportedLanguage, type SupportedLanguage } from './src/i18n';
 import { getLanguageOverride, setLanguageOverride } from './src/i18n/languagePreference';
-import { POSTHOG_API_KEY, POSTHOG_HOST } from './src/config/analyticsEnv';
+import { getAnalyticsClient } from './src/services/analytics';
 import { initializeAds } from './src/services/ads/initializeAds';
 import { ThemeProvider, useThemeColors, useThemeMode, useThemePreference } from './src/theme/ThemeContext';
 import { getDeviceLanguageCode } from './src/utils/locale';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
-const navigationRef = createNavigationContainerRef();
 
 export default function App() {
+  const analyticsClient = getAnalyticsClient();
+
+  const app = (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+
+  if (!analyticsClient) return app;
+
   return (
-    <PostHogProvider
-      apiKey={POSTHOG_API_KEY ?? ''}
-      options={{ host: POSTHOG_HOST }}
-      autocapture={{ navigationRef }}
-    >
-      <ThemeProvider>
-        <AppContent />
-      </ThemeProvider>
+    <PostHogProvider client={analyticsClient} autocapture={false}>
+      {app}
     </PostHogProvider>
   );
 }
@@ -98,7 +101,7 @@ function AppContent() {
   return (
     <GestureHandlerRootView style={styles.flex}>
       <SafeAreaProvider>
-        <NavigationContainer ref={navigationRef} theme={navTheme}>
+        <NavigationContainer theme={navTheme}>
           <Tab.Navigator
             tabBar={(props) => <GlassTabBar {...props} />}
             screenOptions={{ headerShown: false, tabBarStyle: { position: 'absolute' } }}

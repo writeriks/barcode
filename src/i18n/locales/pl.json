@@ -3,7 +3,14 @@
     "cameraPermissionMessage": "Potrzebujemy dostępu do aparatu, aby skanować kody kreskowe.",
     "grantPermission": "Zezwól na dostęp do aparatu",
     "title": "Znajdź kod kreskowy",
-    "waitingToScan": "Oczekiwanie na skan"
+    "waitingToScan": "Oczekiwanie na skan",
+    "uploadPhoto": "Prześlij zdjęcie",
+    "manualEntry": "Wpisz ręcznie",
+    "manualEntryPlaceholder": "Numer kodu kreskowego",
+    "manualEntrySubmit": "Szukaj",
+    "flashOn": "Lampa włączona",
+    "flashOff": "Lampa wyłączona",
+    "noBarcodeFound": "Nie znaleziono kodu kreskowego na tym zdjęciu"
   },
   "result": {
     "unnamedProduct": "Produkt bez nazwy",
@@ -55,5 +62,28 @@
     "title": "Język",
     "systemDefault": "Domyślny systemowy",
     "close": "Zamknij"
+  },
+  "tabs": {
+    "scanner": "Skaner",
+    "history": "Historia",
+    "myCodes": "Moje kody",
+    "settings": "Ustawienia"
+  },
+  "history": {
+    "title": "Historia",
+    "empty": "Brak skanów",
+    "emptyBody": "Zeskanowane produkty pojawią się tutaj.",
+    "clear": "Wyczyść historię"
+  },
+  "myCodes": {
+    "title": "Moje kody",
+    "empty": "Brak kodów",
+    "emptyBody": "Utwórz kod QR z dowolnego tekstu lub linku.",
+    "create": "Nowy kod",
+    "labelPlaceholder": "Etykieta",
+    "contentPlaceholder": "Tekst lub link do zakodowania",
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "delete": "Usuń"
   }
 }

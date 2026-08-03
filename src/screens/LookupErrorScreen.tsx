@@ -1,3 +1,4 @@
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
@@ -16,13 +17,14 @@ interface Props {
 
 export function LookupErrorScreen({ message, onRetry, onScanAgain }: Props) {
   const { t } = useTranslation();
+  const tabBarHeight = useBottomTabBarHeight();
 
   useEffect(() => {
     console.warn('[lookupProduct] error:', message);
   }, [message]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: 28 + tabBarHeight }]}>
       <View style={styles.badge}>
         <Text style={styles.badgeText}>!</Text>
       </View>

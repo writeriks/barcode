@@ -1,5 +1,7 @@
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { LANGUAGE_NATIVE_NAMES } from '../i18n/languageNames';
 import { colors } from '../theme/colors';
@@ -8,23 +10,17 @@ import { fonts } from '../theme/fonts';
 interface Props {
   currentOverride: SupportedLanguage | null;
   onSelectLanguage: (code: SupportedLanguage | null) => void;
-  onClose: () => void;
 }
 
-export function SettingsScreen({ currentOverride, onSelectLanguage, onClose }: Props) {
+export function SettingsScreen({ currentOverride, onSelectLanguage }: Props) {
   const { t } = useTranslation();
+  const tabBarHeight = useBottomTabBarHeight();
 
   return (
-    <View style={styles.screen}>
-      <View style={styles.header}>
-        <Pressable onPress={onClose} hitSlop={12} style={styles.closeButton}>
-          <Text style={styles.closeGlyph}>×</Text>
-        </Pressable>
-        <Text style={styles.title}>{t('settings.title')}</Text>
-        <View style={styles.closeButton} />
-      </View>
+    <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
+      <Text style={styles.title}>{t('settings.title')}</Text>
 
-      <ScrollView contentContainerStyle={styles.list}>
+      <ScrollView contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 20 }]}>
         <Row
           label={t('settings.systemDefault')}
           selected={currentOverride === null}
@@ -39,7 +35,7 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, onClose }: P
           />
         ))}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -60,32 +56,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.cabinet,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  closeButton: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  closeGlyph: {
-    fontSize: 22,
-    color: colors.cream,
-    opacity: 0.8,
-  },
   title: {
     fontFamily: fonts.displayBold,
-    fontSize: 17,
+    fontSize: 22,
     color: colors.cream,
+    padding: 20,
+    paddingBottom: 8,
   },
   list: {
-    padding: 20,
+    paddingHorizontal: 20,
     gap: 10,
   },
   row: {

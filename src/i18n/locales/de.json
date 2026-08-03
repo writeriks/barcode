@@ -3,7 +3,14 @@
     "cameraPermissionMessage": "Wir benötigen Kamerazugriff, um Barcodes zu scannen.",
     "grantPermission": "Kamerazugriff erlauben",
     "title": "Barcode finden",
-    "waitingToScan": "Warte auf Scan"
+    "waitingToScan": "Warte auf Scan",
+    "uploadPhoto": "Foto hochladen",
+    "manualEntry": "Manuell eingeben",
+    "manualEntryPlaceholder": "Barcode-Nummer",
+    "manualEntrySubmit": "Suchen",
+    "flashOn": "Blitz an",
+    "flashOff": "Blitz aus",
+    "noBarcodeFound": "Kein Barcode in diesem Foto gefunden"
   },
   "result": {
     "unnamedProduct": "Unbenanntes Produkt",
@@ -55,5 +62,28 @@
     "title": "Sprache",
     "systemDefault": "Systemstandard",
     "close": "Schließen"
+  },
+  "tabs": {
+    "scanner": "Scanner",
+    "history": "Verlauf",
+    "myCodes": "Meine Codes",
+    "settings": "Einstellungen"
+  },
+  "history": {
+    "title": "Verlauf",
+    "empty": "Noch keine Scans",
+    "emptyBody": "Gescannte Produkte erscheinen hier.",
+    "clear": "Verlauf löschen"
+  },
+  "myCodes": {
+    "title": "Meine Codes",
+    "empty": "Noch keine Codes",
+    "emptyBody": "Erstelle einen QR-Code aus beliebigem Text oder Link.",
+    "create": "Neuer Code",
+    "labelPlaceholder": "Bezeichnung",
+    "contentPlaceholder": "Text oder Link zum Codieren",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen"
   }
 }

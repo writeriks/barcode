@@ -1,3 +1,4 @@
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +16,7 @@ interface Props {
 
 export function CaptureIngredientsScreen({ barcode, onDone, onCancel }: Props) {
   const { t } = useTranslation();
+  const tabBarHeight = useBottomTabBarHeight();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -48,7 +50,7 @@ export function CaptureIngredientsScreen({ barcode, onDone, onCancel }: Props) {
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
       <View style={styles.frame} pointerEvents="none" />
-      <View style={styles.overlay} pointerEvents="box-none">
+      <View style={[styles.overlay, { paddingBottom: 40 + tabBarHeight }]} pointerEvents="box-none">
         <Text style={styles.hint}>{t('capture.hint')}</Text>
         <View style={styles.actions}>
           {isCapturing ? (

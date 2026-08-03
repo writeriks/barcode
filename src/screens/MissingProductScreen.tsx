@@ -1,3 +1,4 @@
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
@@ -18,6 +19,7 @@ interface Props {
 
 export function MissingProductScreen({ barcode, product, onCapturePhoto, onScanAgain }: Props) {
   const { t } = useTranslation();
+  const tabBarHeight = useBottomTabBarHeight();
   const bob = useRef(new Animated.Value(0)).current;
   const glow = useRef(new Animated.Value(0)).current;
 
@@ -45,7 +47,7 @@ export function MissingProductScreen({ barcode, product, onCapturePhoto, onScanA
   const glowOpacity = glow.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.55, 0.3, 0] });
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { paddingBottom: tabBarHeight }]}>
       <View style={styles.container}>
         <Animated.View style={[styles.mascot, { transform: [{ translateY }, { rotate }] }]}>
           <Text style={styles.mascotText}>?</Text>

@@ -3,7 +3,14 @@
     "cameraPermissionMessage": "We need camera access to scan barcodes.",
     "grantPermission": "Grant camera permission",
     "title": "Find a barcode",
-    "waitingToScan": "Waiting to scan"
+    "waitingToScan": "Waiting to scan",
+    "uploadPhoto": "Upload photo",
+    "manualEntry": "Enter manually",
+    "manualEntryPlaceholder": "Barcode number",
+    "manualEntrySubmit": "Look up",
+    "flashOn": "Flash on",
+    "flashOff": "Flash off",
+    "noBarcodeFound": "No barcode found in that photo"
   },
   "result": {
     "unnamedProduct": "Unnamed product",
@@ -55,5 +62,28 @@
     "title": "Language",
     "systemDefault": "System default",
     "close": "Close"
+  },
+  "tabs": {
+    "scanner": "Scanner",
+    "history": "History",
+    "myCodes": "My Codes",
+    "settings": "Settings"
+  },
+  "history": {
+    "title": "History",
+    "empty": "No scans yet",
+    "emptyBody": "Products you scan will show up here.",
+    "clear": "Clear history"
+  },
+  "myCodes": {
+    "title": "My Codes",
+    "empty": "No codes yet",
+    "emptyBody": "Create a QR code from any text or link.",
+    "create": "New code",
+    "labelPlaceholder": "Label",
+    "contentPlaceholder": "Text or link to encode",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete"
   }
 }

@@ -3,7 +3,14 @@
     "cameraPermissionMessage": "Necesitamos acceso a la cámara para escanear códigos de barras.",
     "grantPermission": "Conceder acceso a la cámara",
     "title": "Encuentra un código de barras",
-    "waitingToScan": "Esperando para escanear"
+    "waitingToScan": "Esperando para escanear",
+    "uploadPhoto": "Subir foto",
+    "manualEntry": "Introducir manualmente",
+    "manualEntryPlaceholder": "Número de código de barras",
+    "manualEntrySubmit": "Buscar",
+    "flashOn": "Flash activado",
+    "flashOff": "Flash desactivado",
+    "noBarcodeFound": "No se encontró ningún código de barras en esa foto"
   },
   "result": {
     "unnamedProduct": "Producto sin nombre",
@@ -55,5 +62,28 @@
     "title": "Idioma",
     "systemDefault": "Predeterminado del sistema",
     "close": "Cerrar"
+  },
+  "tabs": {
+    "scanner": "Escáner",
+    "history": "Historial",
+    "myCodes": "Mis códigos",
+    "settings": "Ajustes"
+  },
+  "history": {
+    "title": "Historial",
+    "empty": "Aún no hay escaneos",
+    "emptyBody": "Los productos que escanees aparecerán aquí.",
+    "clear": "Borrar historial"
+  },
+  "myCodes": {
+    "title": "Mis códigos",
+    "empty": "Aún no hay códigos",
+    "emptyBody": "Crea un código QR a partir de cualquier texto o enlace.",
+    "create": "Nuevo código",
+    "labelPlaceholder": "Etiqueta",
+    "contentPlaceholder": "Texto o enlace a codificar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar"
   }
 }

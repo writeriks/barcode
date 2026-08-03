@@ -3,37 +3,43 @@ import {
   Fredoka_600SemiBold,
   Fredoka_700Bold,
 } from '@expo-google-fonts/fredoka';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, View } from 'react-native';
-import { CaptureIngredientsScreen } from './src/screens/CaptureIngredientsScreen';
-import { FoundProductScreen } from './src/screens/FoundProductScreen';
-import { LookupErrorScreen } from './src/screens/LookupErrorScreen';
-import { MissingProductScreen } from './src/screens/MissingProductScreen';
-import { ScannerScreen } from './src/screens/ScannerScreen';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GlassTabBar } from './src/navigation/GlassTabBar';
+import { HistoryStack } from './src/navigation/HistoryStack';
+import type { RootTabParamList } from './src/navigation/types';
+import { MyCodesScreen } from './src/screens/MyCodesScreen';
+import { ScannerFlowScreen } from './src/screens/ScannerFlowScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
-import { useScanInterstitial } from './src/hooks/useScanInterstitial';
 import i18n, { isSupportedLanguage, type SupportedLanguage } from './src/i18n';
 import { getLanguageOverride, setLanguageOverride } from './src/i18n/languagePreference';
 import { initializeAds } from './src/services/ads/initializeAds';
-import { lookupProduct } from './src/services/lookupProduct';
 import { colors } from './src/theme/colors';
 import { getDeviceLanguageCode } from './src/utils/locale';
-import type { LookupResult } from './src/types/product';
 
-type Screen =
-  | { name: 'scanner' }
-  | { name: 'loading'; barcode: string }
-  | { name: 'result'; result: LookupResult }
-  | { name: 'capture'; barcode: string }
-  | { name: 'settings' };
+const Tab = createBottomTabNavigator<RootTabParamList>();
+
+const NAV_THEME = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: colors.cabinet,
+    card: colors.panel,
+    text: colors.cream,
+    border: colors.panelLine,
+    primary: colors.mint,
+  },
+};
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>({ name: 'scanner' });
   const [fontsLoaded] = useFonts({ Fredoka_600SemiBold, Fredoka_700Bold });
   const [languageOverride, setLanguageOverrideState] = useState<SupportedLanguage | null>(null);
   const [languageReady, setLanguageReady] = useState(false);
-  const { maybeShowForScan } = useScanInterstitial();
 
   useEffect(() => {
     initializeAds();
@@ -50,21 +56,6 @@ export default function App() {
     })();
   }, []);
 
-  const runLookup = useCallback(
-    async (barcode: string) => {
-      setScreen({ name: 'loading', barcode });
-      const result = await lookupProduct(barcode);
-      setScreen({ name: 'result', result });
-      maybeShowForScan();
-    },
-    [maybeShowForScan]
-  );
-
-  const goToScanner = useCallback(() => setScreen({ name: 'scanner' }), []);
-
-  const openSettings = useCallback(() => setScreen({ name: 'settings' }), []);
-  const closeSettings = useCallback(() => setScreen({ name: 'scanner' }), []);
-
   const handleSelectLanguage = useCallback(async (code: SupportedLanguage | null) => {
     await setLanguageOverride(code);
     const deviceLanguage = getDeviceLanguageCode();
@@ -72,77 +63,6 @@ export default function App() {
     await i18n.changeLanguage(next);
     setLanguageOverrideState(code);
   }, []);
-
-  const renderScreen = () => {
-    switch (screen.name) {
-      case 'scanner':
-        return <ScannerScreen onScanned={runLookup} onOpenSettings={openSettings} />;
-
-      case 'loading':
-        return (
-          <View style={styles.center}>
-            <ActivityIndicator size="large" color={colors.mint} />
-          </View>
-        );
-
-      case 'capture':
-        return (
-          <CaptureIngredientsScreen
-            barcode={screen.barcode}
-            onDone={goToScanner}
-            onCancel={goToScanner}
-          />
-        );
-
-      case 'settings':
-        return (
-          <SettingsScreen
-            currentOverride={languageOverride}
-            onSelectLanguage={handleSelectLanguage}
-            onClose={closeSettings}
-          />
-        );
-
-      case 'result': {
-        const { result } = screen;
-        switch (result.status) {
-          case 'found':
-            return (
-              <FoundProductScreen
-                product={result.product}
-                source={result.source}
-                onScanAgain={goToScanner}
-              />
-            );
-          case 'incomplete':
-            return (
-              <MissingProductScreen
-                barcode={result.product.code}
-                product={result.product}
-                onCapturePhoto={() => setScreen({ name: 'capture', barcode: result.product.code })}
-                onScanAgain={goToScanner}
-              />
-            );
-          case 'not-found':
-            return (
-              <MissingProductScreen
-                barcode={result.barcode}
-                onCapturePhoto={() => setScreen({ name: 'capture', barcode: result.barcode })}
-                onScanAgain={goToScanner}
-              />
-            );
-          case 'error':
-            return (
-              <LookupErrorScreen
-                message={result.message}
-                onRetry={() => runLookup(result.barcode)}
-                onScanAgain={goToScanner}
-              />
-            );
-        }
-      }
-    }
-  };
 
   if (!fontsLoaded || !languageReady) {
     return (
@@ -153,17 +73,30 @@ export default function App() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {renderScreen()}
-      <StatusBar style="light" />
-    </SafeAreaView>
+    <GestureHandlerRootView style={styles.flex}>
+      <SafeAreaProvider>
+        <NavigationContainer theme={NAV_THEME}>
+          <Tab.Navigator
+            tabBar={(props) => <GlassTabBar {...props} />}
+            screenOptions={{ headerShown: false, tabBarStyle: { position: 'absolute' } }}
+          >
+            <Tab.Screen name="Scanner" component={ScannerFlowScreen} />
+            <Tab.Screen name="History" component={HistoryStack} />
+            <Tab.Screen name="MyCodes" component={MyCodesScreen} />
+            <Tab.Screen name="Settings">
+              {() => <SettingsScreen currentOverride={languageOverride} onSelectLanguage={handleSelectLanguage} />}
+            </Tab.Screen>
+          </Tab.Navigator>
+        </NavigationContainer>
+        <StatusBar style="light" />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  flex: {
     flex: 1,
-    backgroundColor: colors.cabinet,
   },
   center: {
     flex: 1,

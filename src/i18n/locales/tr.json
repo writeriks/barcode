@@ -3,7 +3,14 @@
     "cameraPermissionMessage": "Barkod taramak için kameraya erişmemiz gerekiyor.",
     "grantPermission": "Kamera iznini ver",
     "title": "Bir barkod bul",
-    "waitingToScan": "Taramaya hazır"
+    "waitingToScan": "Taramaya hazır",
+    "uploadPhoto": "Fotoğraf yükle",
+    "manualEntry": "Manuel gir",
+    "manualEntryPlaceholder": "Barkod numarası",
+    "manualEntrySubmit": "Ara",
+    "flashOn": "Flaş açık",
+    "flashOff": "Flaş kapalı",
+    "noBarcodeFound": "Bu fotoğrafta barkod bulunamadı"
   },
   "result": {
     "unnamedProduct": "İsimsiz ürün",
@@ -55,5 +62,28 @@
     "title": "Dil",
     "systemDefault": "Sistem varsayılanı",
     "close": "Kapat"
+  },
+  "tabs": {
+    "scanner": "Tarayıcı",
+    "history": "Geçmiş",
+    "myCodes": "Kodlarım",
+    "settings": "Ayarlar"
+  },
+  "history": {
+    "title": "Geçmiş",
+    "empty": "Henüz tarama yok",
+    "emptyBody": "Taradığın ürünler burada görünecek.",
+    "clear": "Geçmişi temizle"
+  },
+  "myCodes": {
+    "title": "Kodlarım",
+    "empty": "Henüz kod yok",
+    "emptyBody": "Herhangi bir metin veya bağlantıdan QR kod oluştur.",
+    "create": "Yeni kod",
+    "labelPlaceholder": "Etiket",
+    "contentPlaceholder": "Kodlanacak metin veya bağlantı",
+    "save": "Kaydet",
+    "cancel": "Vazgeç",
+    "delete": "Sil"
   }
 }

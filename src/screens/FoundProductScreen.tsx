@@ -1,3 +1,4 @@
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
@@ -25,6 +26,7 @@ const NUTRIMENT_ROWS: { key: string; labelKey: string; unitKey: string }[] = [
 
 export function FoundProductScreen({ product, source, onScanAgain }: Props) {
   const { t } = useTranslation();
+  const tabBarHeight = useBottomTabBarHeight();
   const nutrimentRows = NUTRIMENT_ROWS.filter(
     (row) => typeof product.nutriments?.[row.key] === 'number'
   );
@@ -34,7 +36,7 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
     product.allergens ?? product.allergensTags?.map((tag) => tag.replace(/^en:/, ''));
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { paddingBottom: tabBarHeight }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.barcode}>{product.code}</Text>
 

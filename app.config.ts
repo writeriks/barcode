@@ -63,6 +63,16 @@ const config: ExpoConfig = {
         userTrackingUsageDescription: 'This identifier will be used to deliver ads that are more relevant to you.',
       },
     ],
+    [
+      'expo-image-picker',
+      {
+        photosPermission:
+          'Allow $(PRODUCT_NAME) to access your photos so you can look up a barcode from a saved picture.',
+        // expo-camera's plugin already sets these — avoid two plugins fighting over the same Info.plist keys.
+        cameraPermission: false,
+        microphonePermission: false,
+      },
+    ],
   ],
 };
 

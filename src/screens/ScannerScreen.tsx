@@ -23,10 +23,10 @@ import { playScanFeedback } from '../services/scanFeedback';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
-import type { ScanKind } from '../types/scan';
+import type { ScanKind, ScanMethod } from '../types/scan';
 
 interface Props {
-  onScanned: (data: string, kind: ScanKind) => void;
+  onScanned: (data: string, kind: ScanKind, method: ScanMethod) => void;
 }
 
 const SCANNED_TYPES = [
@@ -101,7 +101,7 @@ export function ScannerScreen({ onScanned }: Props) {
       if (hasHandledScanRef.current) return;
       hasHandledScanRef.current = true;
       playScanFeedback();
-      onScanned(data, type === 'qr' ? 'qr' : 'barcode');
+      onScanned(data, type === 'qr' ? 'qr' : 'barcode', 'camera');
     },
     [onScanned]
   );
@@ -119,7 +119,7 @@ export function ScannerScreen({ onScanned }: Props) {
       if (matches.length > 0 && !hasHandledScanRef.current) {
         hasHandledScanRef.current = true;
         playScanFeedback();
-        onScanned(matches[0].data, matches[0].type === 'qr' ? 'qr' : 'barcode');
+        onScanned(matches[0].data, matches[0].type === 'qr' ? 'qr' : 'barcode', 'photo');
       } else {
         Alert.alert(t('scanner.noBarcodeFound'));
       }
@@ -133,7 +133,7 @@ export function ScannerScreen({ onScanned }: Props) {
     if (!trimmed || hasHandledScanRef.current) return;
     hasHandledScanRef.current = true;
     setIsManualEntryOpen(false);
-    onScanned(trimmed, 'barcode');
+    onScanned(trimmed, 'barcode', 'manual');
   }, [manualValue, onScanned]);
 
   if (!permission) {

@@ -6,6 +6,7 @@ import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } fr
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PillButton } from '../components/PillButton';
+import { captureAnalyticsEvent } from '../services/analytics';
 import { deleteMyCode, getMyCodes, saveMyCode } from '../services/myCodes';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -40,6 +41,7 @@ export function MyCodesScreen() {
       createdAt: Date.now(),
     };
     await saveMyCode(code);
+    captureAnalyticsEvent('my_code_created');
     setLabel('');
     setContent('');
     setIsCreating(false);

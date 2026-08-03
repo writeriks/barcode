@@ -1,12 +1,13 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useScanInterstitial } from '../hooks/useScanInterstitial';
+import { captureAnalyticsEvent } from '../services/analytics';
 import { lookupProduct } from '../services/lookupProduct';
 import { addHistoryEntry } from '../services/scanHistory';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { classifyQrContent } from '../utils/classifyQrContent';
-import type { ScanKind } from '../types/scan';
+import type { ScanKind, ScanMethod } from '../types/scan';
 import type { LookupResult } from '../types/product';
 import { FoundProductScreen } from './FoundProductScreen';
 import { LookupErrorScreen } from './LookupErrorScreen';
@@ -20,6 +21,13 @@ type Screen =
   | { name: 'result'; result: LookupResult }
   | { name: 'qr-result'; data: string };
 
+/** Maps the internal lookup status to the analytics-friendly value —
+ * 'not-found' has a hyphen internally but reads oddly as an event
+ * property, so it's normalized to 'not_found'. */
+function analyticsResultValue(status: LookupResult['status']): string {
+  return status === 'not-found' ? 'not_found' : status;
+}
+
 /** The scan → result flow, self-contained so it can sit inside the
  * "Scanner" tab without knowing anything about the tab navigator around
  * it. */
@@ -28,13 +36,16 @@ export function ScannerFlowScreen() {
   const { maybeShowForScan } = useScanInterstitial();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const lastMethodRef = useRef<ScanMethod>('camera');
 
   const runLookup = useCallback(
-    async (barcode: string) => {
+    async (barcode: string, method: ScanMethod = lastMethodRef.current) => {
+      lastMethodRef.current = method;
       setScreen({ name: 'loading', barcode });
       const result = await lookupProduct(barcode);
       setScreen({ name: 'result', result });
       maybeShowForScan();
+      captureAnalyticsEvent('scan_completed', { kind: 'barcode', method, result: analyticsResultValue(result.status) });
 
       if (result.status === 'found' || result.status === 'incomplete') {
         addHistoryEntry({
@@ -52,14 +63,15 @@ export function ScannerFlowScreen() {
   );
 
   const handleScanned = useCallback(
-    (data: string, kind: ScanKind) => {
+    (data: string, kind: ScanKind, method: ScanMethod) => {
       if (kind === 'barcode') {
-        runLookup(data);
+        runLookup(data, method);
         return;
       }
 
       setScreen({ name: 'qr-result', data });
       maybeShowForScan();
+      captureAnalyticsEvent('scan_completed', { kind: 'qr', method, result: 'found' });
       addHistoryEntry({ kind: 'qr', data, timestamp: Date.now(), contentType: classifyQrContent(data) });
     },
     [runLookup, maybeShowForScan]

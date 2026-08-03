@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Linking, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { captureAnalyticsEvent } from '../services/analytics';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { classifyQrContent, parseOtpAuth, resolveQrOpenUri, type QrContentType } from '../utils/classifyQrContent';
@@ -68,6 +69,7 @@ export function QrContentView({ data }: Props) {
 
   const handleOpen = async () => {
     if (!openUri) return;
+    captureAnalyticsEvent('qr_action', { action: 'open', contentType: type });
     const supported = await Linking.canOpenURL(openUri);
     if (supported) {
       Linking.openURL(openUri);
@@ -75,11 +77,13 @@ export function QrContentView({ data }: Props) {
   };
 
   const handleCopy = async () => {
+    captureAnalyticsEvent('qr_action', { action: otpInfo ? 'copy_secret' : 'copy', contentType: type });
     await Clipboard.setStringAsync(otpInfo ? otpInfo.secret : data);
     Alert.alert(t('qr.copied'));
   };
 
   const handleShare = () => {
+    captureAnalyticsEvent('qr_action', { action: 'share', contentType: type });
     Share.share({ message: data });
   };
 

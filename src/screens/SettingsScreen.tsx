@@ -7,6 +7,7 @@ import { SegmentedControl } from '../components/SegmentedControl';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { LANGUAGE_NATIVE_NAMES } from '../i18n/languageNames';
 import { isPrivacyOptionsRequired, showPrivacyOptionsForm } from '../services/ads/consent';
+import { captureAnalyticsEvent } from '../services/analytics';
 import {
   isBeepEnabled,
   isVibrateEnabled,
@@ -43,11 +44,23 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, themePrefere
   const handleToggleVibrate = (value: boolean) => {
     setVibrateEnabledState(value);
     setVibrateEnabled(value);
+    captureAnalyticsEvent('setting_changed', { setting: 'vibrate', value });
   };
 
   const handleToggleBeep = (value: boolean) => {
     setBeepEnabledState(value);
     setBeepEnabled(value);
+    captureAnalyticsEvent('setting_changed', { setting: 'beep', value });
+  };
+
+  const handleSelectTheme = (preference: ThemePreference) => {
+    captureAnalyticsEvent('setting_changed', { setting: 'theme', value: preference ?? 'system' });
+    onSelectTheme(preference);
+  };
+
+  const handleSelectLanguage = (code: SupportedLanguage | null) => {
+    captureAnalyticsEvent('setting_changed', { setting: 'language', value: code ?? 'system' });
+    onSelectLanguage(code);
   };
 
   return (
@@ -58,7 +71,7 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, themePrefere
         <Text style={styles.sectionLabel}>{t('settings.appearanceSection')}</Text>
         <SegmentedControl
           value={themePreference}
-          onChange={onSelectTheme}
+          onChange={handleSelectTheme}
           options={[
             { value: null, label: t('settings.systemDefault') },
             { value: 'light', label: t('settings.light') },
@@ -88,7 +101,7 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, themePrefere
         <Row
           label={t('settings.systemDefault')}
           selected={currentOverride === null}
-          onPress={() => onSelectLanguage(null)}
+          onPress={() => handleSelectLanguage(null)}
           styles={styles}
         />
         {SUPPORTED_LANGUAGES.map((code) => (
@@ -96,7 +109,7 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, themePrefere
             key={code}
             label={LANGUAGE_NATIVE_NAMES[code]}
             selected={currentOverride === code}
-            onPress={() => onSelectLanguage(code)}
+            onPress={() => handleSelectLanguage(code)}
             styles={styles}
           />
         ))}

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Animated, Easing, Linking, StyleSheet, Text, View } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
+import { captureAnalyticsEvent } from '../services/analytics';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -43,6 +44,11 @@ export function MissingProductScreen({ barcode, onScanAgain }: Props) {
     if (supported) Linking.openURL(url);
   };
 
+  const handleSearch = (destination: 'google' | 'amazon', url: string) => {
+    captureAnalyticsEvent('not_found_search_clicked', { destination });
+    openIfSupported(url);
+  };
+
   return (
     <View style={[styles.screen, { paddingBottom: tabBarHeight }]}>
       <View style={styles.container}>
@@ -57,14 +63,14 @@ export function MissingProductScreen({ barcode, onScanAgain }: Props) {
           <PillButton
             title={t('missing.searchGoogle')}
             icon="logo-google"
-            onPress={() => openIfSupported(googleSearchUrl(barcode))}
+            onPress={() => handleSearch('google', googleSearchUrl(barcode))}
             variant="ghost"
             style={styles.flexButton}
           />
           <PillButton
             title={t('missing.searchAmazon')}
             icon="logo-amazon"
-            onPress={() => openIfSupported(amazonSearchUrl(barcode))}
+            onPress={() => handleSearch('amazon', amazonSearchUrl(barcode))}
             variant="ghost"
             style={styles.flexButton}
           />

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HistoryStatusBadge } from '../components/HistoryStatusBadge';
+import { captureAnalyticsEvent } from '../services/analytics';
 import { getHistory } from '../services/scanHistory';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -53,10 +54,17 @@ export function HistoryScreen({ navigation }: Props) {
           renderItem={({ item }) => {
             const name = item.kind === 'qr' ? item.data : (item.product?.productName ?? item.barcode);
             const metaKey = item.kind === 'qr' ? QR_META_KEY[item.contentType] : 'history.metaBarcode';
+            const handlePress = () => {
+              captureAnalyticsEvent('history_entry_opened', {
+                kind: item.kind,
+                ...(item.kind === 'qr' ? { contentType: item.contentType } : { status: item.status }),
+              });
+              navigation.navigate('HistoryDetail', { entry: item });
+            };
             return (
               <Pressable
                 style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-                onPress={() => navigation.navigate('HistoryDetail', { entry: item })}
+                onPress={handlePress}
               >
                 <View style={styles.rowText}>
                   <Text style={styles.name} numberOfLines={1}>

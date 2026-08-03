@@ -27,13 +27,28 @@ interface Props {
   onScanned: (data: string, kind: ScanKind) => void;
 }
 
-const SCANNED_TYPES = ['ean13', 'upc_a', 'qr'] as const;
+const SCANNED_TYPES = [
+  'qr',
+  'aztec',
+  'codabar',
+  'code39',
+  'code93',
+  'code128',
+  'datamatrix',
+  'ean8',
+  'ean13',
+  'itf14',
+  'pdf417',
+  'upc_a',
+  'upc_e',
+] as const;
 const VIEWFINDER_HEIGHT = 130;
 
 /**
- * Scans EAN-13/UPC-A barcodes. `hasHandledScanRef` makes sure a single
- * physical scan only fires `onScanned` once, even though onBarcodeScanned
- * keeps firing for every frame the barcode stays in view — the parent is
+ * Scans every barcode/QR format expo-camera supports natively (see
+ * SCANNED_TYPES). `hasHandledScanRef` makes sure a single physical scan
+ * only fires `onScanned` once, even though onBarcodeScanned keeps firing
+ * for every frame the barcode stays in view — the parent is
  * expected to unmount this screen once it navigates away to look up the
  * result, which also stops the camera.
  */

@@ -10,7 +10,8 @@
     "manualEntrySubmit": "Look up",
     "flashOn": "Flash on",
     "flashOff": "Flash off",
-    "noBarcodeFound": "No barcode found in that photo"
+    "noBarcodeFound": "No barcode found in that photo",
+    "cancel": "Cancel"
   },
   "result": {
     "unnamedProduct": "Unnamed product",
@@ -38,25 +39,18 @@
     }
   },
   "missing": {
-    "knownName": "We know \"{{name}}\", not its ingredients yet",
     "unknownHeadline": "Nobody's scanned this one yet",
-    "body": "Be the first — one photo of the label unlocks it for everyone who scans it next.",
-    "snapLabel": "Snap the label",
+    "body": "Not in Open Food Facts — try searching for it instead.",
     "scanAnother": "Scan another product",
-    "barcodeLabel": "Barcode {{barcode}}"
+    "barcodeLabel": "Barcode {{barcode}}",
+    "searchGoogle": "Google",
+    "searchAmazon": "Amazon"
   },
   "error": {
     "title": "Lookup failed",
     "genericMessage": "Something went wrong. Please try again.",
     "retry": "Retry",
     "scanAnother": "Scan another product"
-  },
-  "capture": {
-    "cameraPermissionMessage": "We need camera access to photograph the label.",
-    "grantPermission": "Grant camera permission",
-    "hint": "Frame the ingredients label, then take a photo",
-    "takePhoto": "Take photo",
-    "cancel": "Cancel"
   },
   "settings": {
     "title": "Language",

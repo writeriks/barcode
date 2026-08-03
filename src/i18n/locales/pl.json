@@ -10,7 +10,8 @@
     "manualEntrySubmit": "Szukaj",
     "flashOn": "Lampa włączona",
     "flashOff": "Lampa wyłączona",
-    "noBarcodeFound": "Nie znaleziono kodu kreskowego na tym zdjęciu"
+    "noBarcodeFound": "Nie znaleziono kodu kreskowego na tym zdjęciu",
+    "cancel": "Anuluj"
   },
   "result": {
     "unnamedProduct": "Produkt bez nazwy",
@@ -38,25 +39,18 @@
     }
   },
   "missing": {
-    "knownName": "Znamy \"{{name}}\", ale nie jego składniki",
     "unknownHeadline": "Nikt jeszcze nie zeskanował tego produktu",
-    "body": "Bądź pierwszy — jedno zdjęcie etykiety odblokowuje ją dla wszystkich, którzy zeskanują ten produkt.",
-    "snapLabel": "Zrób zdjęcie etykiety",
+    "body": "Brak w Open Food Facts — spróbuj wyszukać go zamiast tego.",
     "scanAnother": "Zeskanuj kolejny produkt",
-    "barcodeLabel": "Kod kreskowy {{barcode}}"
+    "barcodeLabel": "Kod kreskowy {{barcode}}",
+    "searchGoogle": "Google",
+    "searchAmazon": "Amazon"
   },
   "error": {
     "title": "Wyszukiwanie nie powiodło się",
     "genericMessage": "Coś poszło nie tak. Spróbuj ponownie.",
     "retry": "Spróbuj ponownie",
     "scanAnother": "Zeskanuj kolejny produkt"
-  },
-  "capture": {
-    "cameraPermissionMessage": "Potrzebujemy dostępu do aparatu, aby sfotografować etykietę.",
-    "grantPermission": "Zezwól na dostęp do aparatu",
-    "hint": "Ustaw etykietę składników w kadrze i zrób zdjęcie",
-    "takePhoto": "Zrób zdjęcie",
-    "cancel": "Anuluj"
   },
   "settings": {
     "title": "Język",

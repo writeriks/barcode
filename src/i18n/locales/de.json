@@ -10,7 +10,8 @@
     "manualEntrySubmit": "Suchen",
     "flashOn": "Blitz an",
     "flashOff": "Blitz aus",
-    "noBarcodeFound": "Kein Barcode in diesem Foto gefunden"
+    "noBarcodeFound": "Kein Barcode in diesem Foto gefunden",
+    "cancel": "Abbrechen"
   },
   "result": {
     "unnamedProduct": "Unbenanntes Produkt",
@@ -38,25 +39,18 @@
     }
   },
   "missing": {
-    "knownName": "Wir kennen \"{{name}}\", aber noch nicht die Zutaten",
     "unknownHeadline": "Dieses Produkt wurde noch von niemandem gescannt",
-    "body": "Sei der Erste — ein Foto des Etiketts schaltet es für alle frei, die es als Nächstes scannen.",
-    "snapLabel": "Etikett fotografieren",
+    "body": "Nicht bei Open Food Facts — versuch stattdessen, danach zu suchen.",
     "scanAnother": "Weiteres Produkt scannen",
-    "barcodeLabel": "Barcode {{barcode}}"
+    "barcodeLabel": "Barcode {{barcode}}",
+    "searchGoogle": "Google",
+    "searchAmazon": "Amazon"
   },
   "error": {
     "title": "Suche fehlgeschlagen",
     "genericMessage": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     "retry": "Erneut versuchen",
     "scanAnother": "Weiteres Produkt scannen"
-  },
-  "capture": {
-    "cameraPermissionMessage": "Wir benötigen Kamerazugriff, um das Etikett zu fotografieren.",
-    "grantPermission": "Kamerazugriff erlauben",
-    "hint": "Zutatenetikett einrahmen und dann ein Foto aufnehmen",
-    "takePhoto": "Foto aufnehmen",
-    "cancel": "Abbrechen"
   },
   "settings": {
     "title": "Sprache",

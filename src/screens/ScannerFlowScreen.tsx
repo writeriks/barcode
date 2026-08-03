@@ -7,7 +7,6 @@ import { colors } from '../theme/colors';
 import { classifyQrContent } from '../utils/classifyQrContent';
 import type { ScanKind } from '../types/scan';
 import type { LookupResult } from '../types/product';
-import { CaptureIngredientsScreen } from './CaptureIngredientsScreen';
 import { FoundProductScreen } from './FoundProductScreen';
 import { LookupErrorScreen } from './LookupErrorScreen';
 import { MissingProductScreen } from './MissingProductScreen';
@@ -18,12 +17,11 @@ type Screen =
   | { name: 'scanner' }
   | { name: 'loading'; barcode: string }
   | { name: 'result'; result: LookupResult }
-  | { name: 'capture'; barcode: string }
   | { name: 'qr-result'; data: string };
 
-/** The scan → result → (optional capture) flow, self-contained so it can
- * sit inside the "Scanner" tab without knowing anything about the tab
- * navigator around it. */
+/** The scan → result flow, self-contained so it can sit inside the
+ * "Scanner" tab without knowing anything about the tab navigator around
+ * it. */
 export function ScannerFlowScreen() {
   const [screen, setScreen] = useState<Screen>({ name: 'scanner' });
   const { maybeShowForScan } = useScanInterstitial();
@@ -77,11 +75,6 @@ export function ScannerFlowScreen() {
         </View>
       );
 
-    case 'capture':
-      return (
-        <CaptureIngredientsScreen barcode={screen.barcode} onDone={goToScanner} onCancel={goToScanner} />
-      );
-
     case 'qr-result':
       return <QrResultScreen data={screen.data} onScanAgain={goToScanner} />;
 
@@ -94,21 +87,10 @@ export function ScannerFlowScreen() {
           );
         case 'incomplete':
           return (
-            <MissingProductScreen
-              barcode={result.product.code}
-              product={result.product}
-              onCapturePhoto={() => setScreen({ name: 'capture', barcode: result.product.code })}
-              onScanAgain={goToScanner}
-            />
+            <FoundProductScreen product={result.product} source="network" onScanAgain={goToScanner} />
           );
         case 'not-found':
-          return (
-            <MissingProductScreen
-              barcode={result.barcode}
-              onCapturePhoto={() => setScreen({ name: 'capture', barcode: result.barcode })}
-              onScanAgain={goToScanner}
-            />
-          );
+          return <MissingProductScreen barcode={result.barcode} onScanAgain={goToScanner} />;
         case 'error':
           return (
             <LookupErrorScreen

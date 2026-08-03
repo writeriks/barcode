@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -6,10 +7,14 @@ interface Props {
   title: string;
   onPress: () => void;
   variant?: 'punch' | 'citrus' | 'ghost';
+  icon?: keyof typeof Ionicons.glyphMap;
   style?: StyleProp<ViewStyle>;
 }
 
-export function PillButton({ title, onPress, variant = 'punch', style }: Props) {
+export function PillButton({ title, onPress, variant = 'punch', icon, style }: Props) {
+  const textColor =
+    variant === 'citrus' ? colors.inkOnCream : variant === 'ghost' ? colors.cream : colors.cream;
+
   return (
     <Pressable
       onPress={onPress}
@@ -22,6 +27,7 @@ export function PillButton({ title, onPress, variant = 'punch', style }: Props) 
         style,
       ]}
     >
+      {icon ? <Ionicons name={icon} size={15} color={textColor} style={styles.icon} /> : null}
       <Text
         style={[
           styles.text,
@@ -37,11 +43,15 @@ export function PillButton({ title, onPress, variant = 'punch', style }: Props) 
 
 const styles = StyleSheet.create({
   base: {
+    flexDirection: 'row',
     paddingHorizontal: 24,
     paddingVertical: 13,
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  icon: {
+    marginRight: 7,
   },
   punch: {
     backgroundColor: colors.punch,

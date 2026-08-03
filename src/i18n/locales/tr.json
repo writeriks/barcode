@@ -10,7 +10,8 @@
     "manualEntrySubmit": "Ara",
     "flashOn": "Flaş açık",
     "flashOff": "Flaş kapalı",
-    "noBarcodeFound": "Bu fotoğrafta barkod bulunamadı"
+    "noBarcodeFound": "Bu fotoğrafta barkod bulunamadı",
+    "cancel": "İptal"
   },
   "result": {
     "unnamedProduct": "İsimsiz ürün",
@@ -38,25 +39,18 @@
     }
   },
   "missing": {
-    "knownName": "\"{{name}}\" ürününü biliyoruz ama içindekileri henüz yok",
     "unknownHeadline": "Bu ürünü henüz kimse taramadı",
-    "body": "İlk sen ol — etiketin bir fotoğrafı, bunu tarayan herkes için kilidi açar.",
-    "snapLabel": "Etiketin fotoğrafını çek",
+    "body": "Open Food Facts'te yok — bunun yerine aramayı dene.",
     "scanAnother": "Başka bir ürün tara",
-    "barcodeLabel": "Barkod {{barcode}}"
+    "barcodeLabel": "Barkod {{barcode}}",
+    "searchGoogle": "Google",
+    "searchAmazon": "Amazon"
   },
   "error": {
     "title": "Arama başarısız oldu",
     "genericMessage": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
     "retry": "Tekrar dene",
     "scanAnother": "Başka bir ürün tara"
-  },
-  "capture": {
-    "cameraPermissionMessage": "Etiketi fotoğraflamak için kameraya erişmemiz gerekiyor.",
-    "grantPermission": "Kamera iznini ver",
-    "hint": "İçindekiler etiketini kadraja al, sonra fotoğraf çek",
-    "takePhoto": "Fotoğraf çek",
-    "cancel": "İptal"
   },
   "settings": {
     "title": "Dil",

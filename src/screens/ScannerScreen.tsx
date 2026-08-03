@@ -193,7 +193,7 @@ export function ScannerScreen({ onScanned }: Props) {
             />
             <View style={styles.modalActions}>
               <PillButton
-                title={t('capture.cancel')}
+                title={t('scanner.cancel')}
                 onPress={() => {
                   setIsManualEntryOpen(false);
                   setManualValue('');

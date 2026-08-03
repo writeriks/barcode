@@ -94,6 +94,7 @@ export function ScoreReveal({ nutriscoreGrade }: Props) {
                   styles.letter,
                   i === reelLetters.length - 1 && {
                     color: landedColor,
+                    opacity: 1,
                     textShadowColor: landedColor,
                     textShadowRadius: 10,
                     textShadowOffset: { width: 0, height: 0 },

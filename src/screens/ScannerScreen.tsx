@@ -363,6 +363,7 @@ function createStyles(colors: ColorTheme, mode: 'light' | 'dark') {
     toolbar: {
       flexDirection: 'row',
       alignItems: 'center',
+      width: '50%',
       borderRadius: 18,
       overflow: 'hidden',
       borderWidth: 1,

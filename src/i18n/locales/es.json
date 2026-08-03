@@ -63,7 +63,10 @@
     "vibrate": "Vibración",
     "vibrateDescription": "Vibrar cuando un escaneo se realiza con éxito",
     "beep": "Pitido",
-    "beepDescription": "Reproducir un sonido cuando un escaneo se realiza con éxito"
+    "beepDescription": "Reproducir un sonido cuando un escaneo se realiza con éxito",
+    "appearanceSection": "Apariencia",
+    "light": "Claro",
+    "dark": "Oscuro"
   },
   "tabs": {
     "scanner": "Escáner",

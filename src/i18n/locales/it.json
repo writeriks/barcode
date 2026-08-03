@@ -63,7 +63,10 @@
     "vibrate": "Vibrazione",
     "vibrateDescription": "Vibra quando una scansione ha successo",
     "beep": "Segnale acustico",
-    "beepDescription": "Riproduci un suono quando una scansione ha successo"
+    "beepDescription": "Riproduci un suono quando una scansione ha successo",
+    "appearanceSection": "Aspetto",
+    "light": "Chiaro",
+    "dark": "Scuro"
   },
   "tabs": {
     "scanner": "Scanner",

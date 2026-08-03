@@ -1,18 +1,20 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HistoryDetailScreen } from '../screens/HistoryDetailScreen';
 import { HistoryScreen } from '../screens/HistoryScreen';
-import { colors } from '../theme/colors';
+import { useThemeColors } from '../theme/ThemeContext';
 import { fonts } from '../theme/fonts';
 import type { HistoryStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<HistoryStackParamList>();
 
 export function HistoryStack() {
+  const colors = useThemeColors();
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle: { backgroundColor: colors.cabinet },
-        headerTintColor: colors.cream,
+        headerTintColor: colors.text,
         headerTitleStyle: { fontFamily: fonts.displayBold },
         headerShadowVisible: false,
       }}

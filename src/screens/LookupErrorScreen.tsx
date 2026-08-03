@@ -1,9 +1,10 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { PillButton } from '../components/PillButton';
-import { colors } from '../theme/colors';
+import { useThemeColors } from '../theme/ThemeContext';
+import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 
 interface Props {
@@ -18,6 +19,8 @@ interface Props {
 export function LookupErrorScreen({ message, onRetry, onScanAgain }: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     console.warn('[lookupProduct] error:', message);
@@ -38,46 +41,48 @@ export function LookupErrorScreen({ message, onRetry, onScanAgain }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 28,
-    gap: 12,
-    backgroundColor: colors.cabinet,
-  },
-  badge: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 2,
-    borderColor: colors.coral,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  badgeText: {
-    fontFamily: fonts.displayBold,
-    fontSize: 22,
-    color: colors.coral,
-  },
-  title: {
-    fontFamily: fonts.displayBold,
-    fontSize: 19,
-    color: colors.cream,
-  },
-  body: {
-    fontSize: 13.5,
-    lineHeight: 20,
-    textAlign: 'center',
-    color: colors.cream,
-    opacity: 0.7,
-    maxWidth: 280,
-  },
-  actions: {
-    marginTop: 16,
-    gap: 12,
-    alignItems: 'center',
-  },
-});
+function createStyles(colors: ColorTheme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 28,
+      gap: 12,
+      backgroundColor: colors.cabinet,
+    },
+    badge: {
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+      borderWidth: 2,
+      borderColor: colors.coralText,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 4,
+    },
+    badgeText: {
+      fontFamily: fonts.displayBold,
+      fontSize: 22,
+      color: colors.coralText,
+    },
+    title: {
+      fontFamily: fonts.displayBold,
+      fontSize: 19,
+      color: colors.text,
+    },
+    body: {
+      fontSize: 13.5,
+      lineHeight: 20,
+      textAlign: 'center',
+      color: colors.text,
+      opacity: 0.7,
+      maxWidth: 280,
+    },
+    actions: {
+      marginTop: 16,
+      gap: 12,
+      alignItems: 'center',
+    },
+  });
+}

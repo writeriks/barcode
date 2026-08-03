@@ -63,7 +63,10 @@
     "vibrate": "Vibration",
     "vibrateDescription": "Bei erfolgreichem Scan vibrieren",
     "beep": "Signalton",
-    "beepDescription": "Bei erfolgreichem Scan einen Ton abspielen"
+    "beepDescription": "Bei erfolgreichem Scan einen Ton abspielen",
+    "appearanceSection": "Erscheinungsbild",
+    "light": "Hell",
+    "dark": "Dunkel"
   },
   "tabs": {
     "scanner": "Scanner",

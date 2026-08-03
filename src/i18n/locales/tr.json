@@ -63,7 +63,10 @@
     "vibrate": "Titreşim",
     "vibrateDescription": "Tarama başarılı olduğunda titreşim ver",
     "beep": "Bip sesi",
-    "beepDescription": "Tarama başarılı olduğunda ses çal"
+    "beepDescription": "Tarama başarılı olduğunda ses çal",
+    "appearanceSection": "Görünüm",
+    "light": "Açık",
+    "dark": "Koyu"
   },
   "tabs": {
     "scanner": "Tarayıcı",

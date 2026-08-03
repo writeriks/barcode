@@ -1,10 +1,12 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
 import { ScoreReveal } from '../components/ScoreReveal';
-import { colors } from '../theme/colors';
+import { useThemeColors } from '../theme/ThemeContext';
+import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import type { Product, ProductSource } from '../types/product';
 
@@ -27,6 +29,8 @@ const NUTRIMENT_ROWS: { key: string; labelKey: string; unitKey: string }[] = [
 export function FoundProductScreen({ product, source, onScanAgain }: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const nutrimentRows = NUTRIMENT_ROWS.filter(
     (row) => typeof product.nutriments?.[row.key] === 'number'
   );
@@ -104,142 +108,144 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.cabinet,
-  },
-  content: {
-    padding: 20,
-    gap: 14,
-    paddingBottom: 40,
-  },
-  barcode: {
-    fontFamily: fonts.mono,
-    fontSize: 11,
-    letterSpacing: 1,
-    color: colors.cream,
-    opacity: 0.55,
-  },
-  image: {
-    width: 64,
-    height: 64,
-    borderRadius: 12,
-  },
-  productCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.panelLine,
-    borderRadius: 20,
-    padding: 14,
-  },
-  productText: {
-    flex: 1,
-  },
-  name: {
-    fontFamily: fonts.displayBold,
-    fontSize: 16,
-    color: colors.cream,
-  },
-  brand: {
-    fontSize: 12.5,
-    color: colors.cream,
-    opacity: 0.6,
-    marginTop: 2,
-  },
-  verdict: {
-    fontFamily: fonts.mono,
-    fontSize: 10,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    color: colors.mint,
-    marginTop: 5,
-  },
-  scoreRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.panelLine,
-    borderRadius: 20,
-    padding: 14,
-  },
-  scoreLabelWrap: {
-    flex: 1,
-  },
-  scoreLabel: {
-    fontFamily: fonts.displayBold,
-    fontSize: 14,
-    color: colors.cream,
-  },
-  scoreSub: {
-    fontSize: 12,
-    color: colors.cream,
-    opacity: 0.55,
-    marginTop: 2,
-  },
-  card: {
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.panelLine,
-    borderRadius: 20,
-    padding: 16,
-    gap: 8,
-  },
-  sectionTitle: {
-    fontFamily: fonts.displayBold,
-    fontSize: 14,
-    color: colors.cream,
-  },
-  body: {
-    fontSize: 13.5,
-    lineHeight: 20,
-    color: colors.cream,
-    opacity: 0.75,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: colors.coral,
-    backgroundColor: 'rgba(255,90,90,0.12)',
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  chipText: {
-    fontFamily: fonts.mono,
-    fontSize: 10.5,
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-    color: colors.coral,
-  },
-  nutrimentRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.panelLine,
-    paddingBottom: 6,
-  },
-  amount: {
-    fontFamily: fonts.mono,
-    fontSize: 13,
-    color: colors.cream,
-    opacity: 0.65,
-  },
-  attribution: {
-    fontSize: 11,
-    color: colors.cream,
-    opacity: 0.4,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    marginTop: 4,
-  },
-});
+function createStyles(colors: ColorTheme) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.cabinet,
+    },
+    content: {
+      padding: 20,
+      gap: 14,
+      paddingBottom: 40,
+    },
+    barcode: {
+      fontFamily: fonts.mono,
+      fontSize: 11,
+      letterSpacing: 1,
+      color: colors.text,
+      opacity: 0.55,
+    },
+    image: {
+      width: 64,
+      height: 64,
+      borderRadius: 12,
+    },
+    productCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 20,
+      padding: 14,
+    },
+    productText: {
+      flex: 1,
+    },
+    name: {
+      fontFamily: fonts.displayBold,
+      fontSize: 16,
+      color: colors.text,
+    },
+    brand: {
+      fontSize: 12.5,
+      color: colors.text,
+      opacity: 0.6,
+      marginTop: 2,
+    },
+    verdict: {
+      fontFamily: fonts.mono,
+      fontSize: 10,
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+      color: colors.mintText,
+      marginTop: 5,
+    },
+    scoreRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 20,
+      padding: 14,
+    },
+    scoreLabelWrap: {
+      flex: 1,
+    },
+    scoreLabel: {
+      fontFamily: fonts.displayBold,
+      fontSize: 14,
+      color: colors.text,
+    },
+    scoreSub: {
+      fontSize: 12,
+      color: colors.text,
+      opacity: 0.55,
+      marginTop: 2,
+    },
+    card: {
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 20,
+      padding: 16,
+      gap: 8,
+    },
+    sectionTitle: {
+      fontFamily: fonts.displayBold,
+      fontSize: 14,
+      color: colors.text,
+    },
+    body: {
+      fontSize: 13.5,
+      lineHeight: 20,
+      color: colors.text,
+      opacity: 0.75,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+    },
+    chip: {
+      borderWidth: 1,
+      borderColor: colors.coralText,
+      backgroundColor: 'rgba(255,90,90,0.12)',
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+    },
+    chipText: {
+      fontFamily: fonts.mono,
+      fontSize: 10.5,
+      letterSpacing: 0.5,
+      textTransform: 'uppercase',
+      color: colors.coralText,
+    },
+    nutrimentRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      borderBottomWidth: 1,
+      borderBottomColor: colors.panelLine,
+      paddingBottom: 6,
+    },
+    amount: {
+      fontFamily: fonts.mono,
+      fontSize: 13,
+      color: colors.text,
+      opacity: 0.65,
+    },
+    attribution: {
+      fontSize: 11,
+      color: colors.text,
+      opacity: 0.4,
+      fontStyle: 'italic',
+      textAlign: 'center',
+      marginTop: 4,
+    },
+  });
+}

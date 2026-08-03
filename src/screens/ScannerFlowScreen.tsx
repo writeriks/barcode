@@ -1,9 +1,10 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useScanInterstitial } from '../hooks/useScanInterstitial';
 import { lookupProduct } from '../services/lookupProduct';
 import { addHistoryEntry } from '../services/scanHistory';
-import { colors } from '../theme/colors';
+import { useThemeColors } from '../theme/ThemeContext';
+import type { ColorTheme } from '../theme/colors';
 import { classifyQrContent } from '../utils/classifyQrContent';
 import type { ScanKind } from '../types/scan';
 import type { LookupResult } from '../types/product';
@@ -25,6 +26,8 @@ type Screen =
 export function ScannerFlowScreen() {
   const [screen, setScreen] = useState<Screen>({ name: 'scanner' });
   const { maybeShowForScan } = useScanInterstitial();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const runLookup = useCallback(
     async (barcode: string) => {
@@ -104,11 +107,13 @@ export function ScannerFlowScreen() {
   }
 }
 
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.cabinet,
-  },
-});
+function createStyles(colors: ColorTheme) {
+  return StyleSheet.create({
+    center: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.cabinet,
+    },
+  });
+}

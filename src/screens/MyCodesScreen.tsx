@@ -1,19 +1,24 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PillButton } from '../components/PillButton';
 import { deleteMyCode, getMyCodes, saveMyCode } from '../services/myCodes';
-import { colors } from '../theme/colors';
+import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
+import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import type { MyCode } from '../types/myCode';
 
 export function MyCodesScreen() {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
+  const colors = useThemeColors();
+  const mode = useThemeMode();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const placeholderColor = mode === 'light' ? 'rgba(36,25,51,0.35)' : 'rgba(255,246,233,0.4)';
   const [codes, setCodes] = useState<MyCode[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [label, setLabel] = useState('');
@@ -83,14 +88,14 @@ export function MyCodesScreen() {
           <TextInput
             style={styles.input}
             placeholder={t('myCodes.labelPlaceholder')}
-            placeholderTextColor="rgba(255,246,233,0.4)"
+            placeholderTextColor={placeholderColor}
             value={label}
             onChangeText={setLabel}
           />
           <TextInput
             style={styles.input}
             placeholder={t('myCodes.contentPlaceholder')}
-            placeholderTextColor="rgba(255,246,233,0.4)"
+            placeholderTextColor={placeholderColor}
             value={content}
             onChangeText={setContent}
             multiline
@@ -138,137 +143,139 @@ export function MyCodesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.cabinet,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    paddingBottom: 8,
-  },
-  title: {
-    fontFamily: fonts.displayBold,
-    fontSize: 22,
-    color: colors.cream,
-  },
-  addButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.panelLine,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addGlyph: {
-    fontSize: 20,
-    color: colors.mint,
-    marginTop: -2,
-  },
-  empty: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 28,
-    gap: 10,
-  },
-  emptyTitle: {
-    fontFamily: fonts.displayBold,
-    fontSize: 17,
-    color: colors.cream,
-  },
-  emptyBody: {
-    fontSize: 13.5,
-    color: colors.cream,
-    opacity: 0.6,
-    textAlign: 'center',
-    maxWidth: 260,
-    marginBottom: 6,
-  },
-  list: {
-    paddingHorizontal: 20,
-    gap: 10,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.panelLine,
-    borderRadius: 16,
-    padding: 12,
-  },
-  rowPressed: {
-    opacity: 0.75,
-  },
-  qrThumb: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: colors.cream,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rowLabel: {
-    flex: 1,
-    fontFamily: fonts.displayBold,
-    fontSize: 14.5,
-    color: colors.cream,
-  },
-  form: {
-    padding: 20,
-    gap: 12,
-  },
-  input: {
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.panelLine,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    color: colors.cream,
-    fontSize: 14,
-  },
-  formActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
-    marginTop: 4,
-  },
-  viewer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 28,
-    gap: 14,
-  },
-  qrCard: {
-    backgroundColor: colors.cream,
-    padding: 20,
-    borderRadius: 20,
-  },
-  viewerLabel: {
-    fontFamily: fonts.displayBold,
-    fontSize: 18,
-    color: colors.cream,
-    textAlign: 'center',
-  },
-  viewerContent: {
-    fontSize: 13,
-    color: colors.cream,
-    opacity: 0.6,
-    textAlign: 'center',
-    maxWidth: 280,
-  },
-  viewerActions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
-  },
-});
+function createStyles(colors: ColorTheme) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.cabinet,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: 20,
+      paddingBottom: 8,
+    },
+    title: {
+      fontFamily: fonts.displayBold,
+      fontSize: 22,
+      color: colors.text,
+    },
+    addButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    addGlyph: {
+      fontSize: 20,
+      color: colors.mint,
+      marginTop: -2,
+    },
+    empty: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 28,
+      gap: 10,
+    },
+    emptyTitle: {
+      fontFamily: fonts.displayBold,
+      fontSize: 17,
+      color: colors.text,
+    },
+    emptyBody: {
+      fontSize: 13.5,
+      color: colors.text,
+      opacity: 0.6,
+      textAlign: 'center',
+      maxWidth: 260,
+      marginBottom: 6,
+    },
+    list: {
+      paddingHorizontal: 20,
+      gap: 10,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 16,
+      padding: 12,
+    },
+    rowPressed: {
+      opacity: 0.75,
+    },
+    qrThumb: {
+      width: 48,
+      height: 48,
+      borderRadius: 8,
+      backgroundColor: colors.cream,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    rowLabel: {
+      flex: 1,
+      fontFamily: fonts.displayBold,
+      fontSize: 14.5,
+      color: colors.text,
+    },
+    form: {
+      padding: 20,
+      gap: 12,
+    },
+    input: {
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 14,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      color: colors.text,
+      fontSize: 14,
+    },
+    formActions: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: 12,
+      marginTop: 4,
+    },
+    viewer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 28,
+      gap: 14,
+    },
+    qrCard: {
+      backgroundColor: colors.cream,
+      padding: 20,
+      borderRadius: 20,
+    },
+    viewerLabel: {
+      fontFamily: fonts.displayBold,
+      fontSize: 18,
+      color: colors.text,
+      textAlign: 'center',
+    },
+    viewerContent: {
+      fontSize: 13,
+      color: colors.text,
+      opacity: 0.6,
+      textAlign: 'center',
+      maxWidth: 280,
+    },
+    viewerActions: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 8,
+    },
+  });
+}

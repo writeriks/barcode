@@ -1,5 +1,5 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,17 +12,23 @@ import {
   setBeepEnabled,
   setVibrateEnabled,
 } from '../services/scanFeedbackPreference';
-import { colors } from '../theme/colors';
+import { useThemeColors } from '../theme/ThemeContext';
+import type { ColorTheme } from '../theme/colors';
+import type { ThemePreference } from '../theme/themePreference';
 import { fonts } from '../theme/fonts';
 
 interface Props {
   currentOverride: SupportedLanguage | null;
   onSelectLanguage: (code: SupportedLanguage | null) => void;
+  themePreference: ThemePreference;
+  onSelectTheme: (preference: ThemePreference) => void;
 }
 
-export function SettingsScreen({ currentOverride, onSelectLanguage }: Props) {
+export function SettingsScreen({ currentOverride, onSelectLanguage, themePreference, onSelectTheme }: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [showPrivacyRow, setShowPrivacyRow] = useState(false);
   const [vibrateEnabled, setVibrateEnabledState] = useState(true);
   const [beepEnabled, setBeepEnabledState] = useState(true);
@@ -48,18 +54,42 @@ export function SettingsScreen({ currentOverride, onSelectLanguage }: Props) {
       <Text style={styles.title}>{t('settings.title')}</Text>
 
       <ScrollView contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 20 }]}>
-        <Text style={styles.sectionLabel}>{t('settings.scanFeedbackSection')}</Text>
+        <Text style={styles.sectionLabel}>{t('settings.appearanceSection')}</Text>
+        <Row
+          label={t('settings.systemDefault')}
+          selected={themePreference === null}
+          onPress={() => onSelectTheme(null)}
+          styles={styles}
+        />
+        <Row
+          label={t('settings.light')}
+          selected={themePreference === 'light'}
+          onPress={() => onSelectTheme('light')}
+          styles={styles}
+        />
+        <Row
+          label={t('settings.dark')}
+          selected={themePreference === 'dark'}
+          onPress={() => onSelectTheme('dark')}
+          styles={styles}
+        />
+
+        <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.scanFeedbackSection')}</Text>
         <ToggleRow
           label={t('settings.vibrate')}
           description={t('settings.vibrateDescription')}
           value={vibrateEnabled}
           onValueChange={handleToggleVibrate}
+          colors={colors}
+          styles={styles}
         />
         <ToggleRow
           label={t('settings.beep')}
           description={t('settings.beepDescription')}
           value={beepEnabled}
           onValueChange={handleToggleBeep}
+          colors={colors}
+          styles={styles}
         />
 
         <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.languageSection')}</Text>
@@ -67,6 +97,7 @@ export function SettingsScreen({ currentOverride, onSelectLanguage }: Props) {
           label={t('settings.systemDefault')}
           selected={currentOverride === null}
           onPress={() => onSelectLanguage(null)}
+          styles={styles}
         />
         {SUPPORTED_LANGUAGES.map((code) => (
           <Row
@@ -74,13 +105,14 @@ export function SettingsScreen({ currentOverride, onSelectLanguage }: Props) {
             label={LANGUAGE_NATIVE_NAMES[code]}
             selected={currentOverride === code}
             onPress={() => onSelectLanguage(code)}
+            styles={styles}
           />
         ))}
 
         {showPrivacyRow ? (
           <>
             <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.privacySection')}</Text>
-            <Row label={t('settings.privacyChoices')} selected={false} onPress={showPrivacyOptionsForm} />
+            <Row label={t('settings.privacyChoices')} selected={false} onPress={showPrivacyOptionsForm} styles={styles} />
           </>
         ) : null}
       </ScrollView>
@@ -88,7 +120,19 @@ export function SettingsScreen({ currentOverride, onSelectLanguage }: Props) {
   );
 }
 
-function Row({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+type Styles = ReturnType<typeof createStyles>;
+
+function Row({
+  label,
+  selected,
+  onPress,
+  styles,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+  styles: Styles;
+}) {
   return (
     <Pressable
       onPress={onPress}
@@ -105,11 +149,15 @@ function ToggleRow({
   description,
   value,
   onValueChange,
+  colors,
+  styles,
 }: {
   label: string;
   description: string;
   value: boolean;
   onValueChange: (value: boolean) => void;
+  colors: ColorTheme;
+  styles: Styles;
 }) {
   return (
     <View style={styles.row}>
@@ -127,68 +175,70 @@ function ToggleRow({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.cabinet,
-  },
-  title: {
-    fontFamily: fonts.displayBold,
-    fontSize: 22,
-    color: colors.cream,
-    padding: 20,
-    paddingBottom: 8,
-  },
-  list: {
-    paddingHorizontal: 20,
-    gap: 10,
-  },
-  sectionLabel: {
-    fontFamily: fonts.displayBold,
-    fontSize: 11,
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-    color: colors.cream,
-    opacity: 0.5,
-    marginBottom: 2,
-  },
-  sectionLabelSpaced: {
-    marginTop: 10,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.panelLine,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  rowSelected: {
-    borderColor: colors.mint,
-  },
-  rowPressed: {
-    opacity: 0.8,
-  },
-  rowLabel: {
-    fontSize: 15,
-    color: colors.cream,
-  },
-  checkmark: {
-    fontSize: 16,
-    color: colors.mint,
-    fontFamily: fonts.displayBold,
-  },
-  toggleText: {
-    flex: 1,
-    marginRight: 12,
-    gap: 3,
-  },
-  toggleDescription: {
-    fontSize: 12,
-    color: colors.cream,
-    opacity: 0.55,
-  },
-});
+function createStyles(colors: ColorTheme) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.cabinet,
+    },
+    title: {
+      fontFamily: fonts.displayBold,
+      fontSize: 22,
+      color: colors.text,
+      padding: 20,
+      paddingBottom: 8,
+    },
+    list: {
+      paddingHorizontal: 20,
+      gap: 10,
+    },
+    sectionLabel: {
+      fontFamily: fonts.displayBold,
+      fontSize: 11,
+      letterSpacing: 0.5,
+      textTransform: 'uppercase',
+      color: colors.text,
+      opacity: 0.5,
+      marginBottom: 2,
+    },
+    sectionLabelSpaced: {
+      marginTop: 10,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    rowSelected: {
+      borderColor: colors.mint,
+    },
+    rowPressed: {
+      opacity: 0.8,
+    },
+    rowLabel: {
+      fontSize: 15,
+      color: colors.text,
+    },
+    checkmark: {
+      fontSize: 16,
+      color: colors.mint,
+      fontFamily: fonts.displayBold,
+    },
+    toggleText: {
+      flex: 1,
+      marginRight: 12,
+      gap: 3,
+    },
+    toggleDescription: {
+      fontSize: 12,
+      color: colors.text,
+      opacity: 0.55,
+    },
+  });
+}

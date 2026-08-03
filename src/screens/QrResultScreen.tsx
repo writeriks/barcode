@@ -1,10 +1,12 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
 import { QrContentView } from '../components/QrContentView';
-import { colors } from '../theme/colors';
+import { useThemeColors } from '../theme/ThemeContext';
+import type { ColorTheme } from '../theme/colors';
 
 interface Props {
   data: string;
@@ -14,6 +16,8 @@ interface Props {
 export function QrResultScreen({ data, onScanAgain }: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={[styles.screen, { paddingBottom: tabBarHeight }]}>
@@ -26,14 +30,16 @@ export function QrResultScreen({ data, onScanAgain }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.cabinet,
-  },
-  content: {
-    padding: 20,
-    paddingTop: 32,
-    gap: 16,
-  },
-});
+function createStyles(colors: ColorTheme) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.cabinet,
+    },
+    content: {
+      padding: 20,
+      paddingTop: 32,
+      gap: 16,
+    },
+  });
+}

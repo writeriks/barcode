@@ -1,10 +1,11 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, Easing, Linking, StyleSheet, Text, View } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
-import { colors } from '../theme/colors';
+import { useThemeColors } from '../theme/ThemeContext';
+import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { amazonSearchUrl, googleSearchUrl } from '../utils/productSearchLinks';
 
@@ -19,6 +20,8 @@ interface Props {
 export function MissingProductScreen({ barcode, onScanAgain }: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const bob = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -76,62 +79,64 @@ export function MissingProductScreen({ barcode, onScanAgain }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.cabinet,
-  },
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 28,
-    gap: 14,
-  },
-  mascot: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
-    borderWidth: 3,
-    borderStyle: 'dashed',
-    borderColor: colors.citrus,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-  },
-  mascotText: {
-    fontFamily: fonts.displayBold,
-    fontSize: 26,
-    color: colors.citrus,
-  },
-  headline: {
-    fontFamily: fonts.displayBold,
-    fontSize: 19,
-    color: colors.cream,
-    textAlign: 'center',
-  },
-  body: {
-    fontSize: 13.5,
-    lineHeight: 20,
-    textAlign: 'center',
-    color: colors.cream,
-    opacity: 0.7,
-    maxWidth: 280,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    gap: 10,
-    width: '100%',
-    marginTop: 6,
-  },
-  flexButton: {
-    flex: 1,
-  },
-  stat: {
-    marginTop: 6,
-    fontFamily: fonts.mono,
-    fontSize: 10.5,
-    color: colors.cream,
-    opacity: 0.4,
-  },
-});
+function createStyles(colors: ColorTheme) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.cabinet,
+    },
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 28,
+      gap: 14,
+    },
+    mascot: {
+      width: 66,
+      height: 66,
+      borderRadius: 33,
+      borderWidth: 3,
+      borderStyle: 'dashed',
+      borderColor: colors.citrusText,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 6,
+    },
+    mascotText: {
+      fontFamily: fonts.displayBold,
+      fontSize: 26,
+      color: colors.citrusText,
+    },
+    headline: {
+      fontFamily: fonts.displayBold,
+      fontSize: 19,
+      color: colors.text,
+      textAlign: 'center',
+    },
+    body: {
+      fontSize: 13.5,
+      lineHeight: 20,
+      textAlign: 'center',
+      color: colors.text,
+      opacity: 0.7,
+      maxWidth: 280,
+    },
+    searchRow: {
+      flexDirection: 'row',
+      gap: 10,
+      width: '100%',
+      marginTop: 6,
+    },
+    flexButton: {
+      flex: 1,
+    },
+    stat: {
+      marginTop: 6,
+      fontFamily: fonts.mono,
+      fontSize: 10.5,
+      color: colors.text,
+      opacity: 0.4,
+    },
+  });
+}

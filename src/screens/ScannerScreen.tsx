@@ -4,7 +4,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { BlurView } from 'expo-blur';
 import * as ImagePicker from 'expo-image-picker';
 import { scanFromURLAsync } from 'expo-camera';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -20,7 +20,8 @@ import {
 } from 'react-native';
 import { PillButton } from '../components/PillButton';
 import { playScanFeedback } from '../services/scanFeedback';
-import { colors } from '../theme/colors';
+import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
+import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import type { ScanKind } from '../types/scan';
 
@@ -55,6 +56,10 @@ const VIEWFINDER_HEIGHT = 130;
  */
 export function ScannerScreen({ onScanned }: Props) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
+  const mode = useThemeMode();
+  const styles = useMemo(() => createStyles(colors, mode), [colors, mode]);
+  const placeholderColor = mode === 'light' ? 'rgba(36,25,51,0.35)' : 'rgba(255,246,233,0.4)';
   const [permission, requestPermission] = useCameraPermissions();
   const hasHandledScanRef = useRef(false);
   const tabBarHeight = useBottomTabBarHeight();
@@ -178,20 +183,22 @@ export function ScannerScreen({ onScanned }: Props) {
       </View>
 
       <View style={[styles.toolbarWrap, { bottom: tabBarHeight + 16 }]}>
-        <BlurView intensity={68} tint="dark" style={styles.toolbar}>
+        <BlurView intensity={68} tint={mode === 'light' ? 'light' : 'dark'} style={styles.toolbar}>
           <ToolbarButton
             icon="image-outline"
             onPress={handleUploadPhoto}
             disabled={isUploading}
             loading={isUploading}
+            colors={colors}
           />
           <View style={styles.toolbarDivider} />
-          <ToolbarButton icon="barcode-outline" onPress={() => setIsManualEntryOpen(true)} />
+          <ToolbarButton icon="barcode-outline" onPress={() => setIsManualEntryOpen(true)} colors={colors} />
           <View style={styles.toolbarDivider} />
           <ToolbarButton
             icon={isTorchOn ? 'flash' : 'flash-outline'}
             active={isTorchOn}
             onPress={() => setIsTorchOn((prev) => !prev)}
+            colors={colors}
           />
         </BlurView>
       </View>
@@ -203,7 +210,7 @@ export function ScannerScreen({ onScanned }: Props) {
             <TextInput
               style={styles.modalInput}
               placeholder={t('scanner.manualEntryPlaceholder')}
-              placeholderTextColor="rgba(255,246,233,0.4)"
+              placeholderTextColor={placeholderColor}
               keyboardType="number-pad"
               value={manualValue}
               onChangeText={setManualValue}
@@ -233,165 +240,174 @@ function ToolbarButton({
   active,
   disabled,
   loading,
+  colors,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   onPress: () => void;
   active?: boolean;
   disabled?: boolean;
   loading?: boolean;
+  colors: ColorTheme;
 }) {
   return (
-    <Pressable onPress={onPress} disabled={disabled} style={styles.toolbarButton} hitSlop={8}>
+    <Pressable onPress={onPress} disabled={disabled} style={toolbarButtonStyle.toolbarButton} hitSlop={8}>
       {loading ? (
-        <ActivityIndicator size="small" color={colors.cream} />
+        <ActivityIndicator size="small" color={colors.text} />
       ) : (
-        <Ionicons name={icon} size={22} color={active ? colors.mint : colors.cream} />
+        <Ionicons name={icon} size={22} color={active ? colors.mint : colors.text} />
       )}
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.cabinet,
-  },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    padding: 24,
-    backgroundColor: colors.cabinet,
-  },
-  message: {
-    textAlign: 'center',
-    color: colors.cream,
-  },
-  overlay: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 22,
-  },
-  viewfinder: {
-    width: 196,
-    height: VIEWFINDER_HEIGHT,
-    borderWidth: 3,
-    borderRadius: 22,
-    overflow: 'hidden',
-  },
-  scanline: {
-    position: 'absolute',
-    left: '6%',
-    width: '88%',
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: colors.mint,
-  },
-  title: {
-    fontFamily: fonts.displayBold,
-    fontSize: 17,
-    color: colors.cream,
-    textAlign: 'center',
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.panelLine,
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 999,
-  },
-  signalWrap: {
-    width: 10,
-    height: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  signalRing: {
-    position: 'absolute',
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.mint,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.mint,
-  },
-  chipLabel: {
-    fontFamily: fonts.mono,
-    fontSize: 11,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    color: colors.cream,
-    opacity: 0.85,
-  },
-  toolbarWrap: {
-    position: 'absolute',
-    left: 24,
-    right: 24,
-    alignItems: 'center',
-  },
-  toolbar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 24,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-  },
+const toolbarButtonStyle = StyleSheet.create({
   toolbarButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
   },
-  toolbarDivider: {
-    width: 1,
-    height: 22,
-    backgroundColor: 'rgba(255,255,255,0.14)',
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 28,
-  },
-  modalCard: {
-    width: '100%',
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.panelLine,
-    borderRadius: 20,
-    padding: 20,
-    gap: 14,
-  },
-  modalTitle: {
-    fontFamily: fonts.displayBold,
-    fontSize: 16,
-    color: colors.cream,
-  },
-  modalInput: {
-    backgroundColor: colors.cabinet,
-    borderWidth: 1,
-    borderColor: colors.panelLine,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    color: colors.cream,
-    fontSize: 15,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
-  },
 });
+
+function createStyles(colors: ColorTheme, mode: 'light' | 'dark') {
+  const hairline = mode === 'light' ? 'rgba(36,25,51,0.12)' : 'rgba(255,255,255,0.14)';
+
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.cabinet,
+    },
+    center: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+      padding: 24,
+      backgroundColor: colors.cabinet,
+    },
+    message: {
+      textAlign: 'center',
+      color: colors.text,
+    },
+    overlay: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 22,
+    },
+    viewfinder: {
+      width: 196,
+      height: VIEWFINDER_HEIGHT,
+      borderWidth: 3,
+      borderRadius: 22,
+      overflow: 'hidden',
+    },
+    scanline: {
+      position: 'absolute',
+      left: '6%',
+      width: '88%',
+      height: 3,
+      borderRadius: 2,
+      backgroundColor: colors.mint,
+    },
+    title: {
+      fontFamily: fonts.displayBold,
+      fontSize: 17,
+      color: colors.text,
+      textAlign: 'center',
+    },
+    chip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      paddingHorizontal: 16,
+      paddingVertical: 9,
+      borderRadius: 999,
+    },
+    signalWrap: {
+      width: 10,
+      height: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    signalRing: {
+      position: 'absolute',
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: colors.mint,
+    },
+    dot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: colors.mint,
+    },
+    chipLabel: {
+      fontFamily: fonts.mono,
+      fontSize: 11,
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+      color: colors.text,
+      opacity: 0.85,
+    },
+    toolbarWrap: {
+      position: 'absolute',
+      left: 24,
+      right: 24,
+      alignItems: 'center',
+    },
+    toolbar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderRadius: 24,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: hairline,
+    },
+    toolbarDivider: {
+      width: 1,
+      height: 22,
+      backgroundColor: hairline,
+    },
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 28,
+    },
+    modalCard: {
+      width: '100%',
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 20,
+      padding: 20,
+      gap: 14,
+    },
+    modalTitle: {
+      fontFamily: fonts.displayBold,
+      fontSize: 16,
+      color: colors.text,
+    },
+    modalInput: {
+      backgroundColor: colors.cabinet,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 14,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      color: colors.text,
+      fontSize: 15,
+    },
+    modalActions: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: 12,
+    },
+  });
+}

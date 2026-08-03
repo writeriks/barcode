@@ -1,9 +1,10 @@
-import { useEffect, useState, type ComponentType } from 'react';
+import { useEffect, useMemo, useState, type ComponentType } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ADMOB_BANNER_UNIT_ID } from '../config/adsEnv';
 import { areAdsEnabled } from '../services/ads/adsEnabled';
 import { isExpoGo } from '../services/ads/environment';
-import { colors } from '../theme/colors';
+import { useThemeColors } from '../theme/ThemeContext';
+import type { ColorTheme } from '../theme/colors';
 import type { BannerAdProps } from 'react-native-google-mobile-ads';
 
 // Reserve roughly the height of the smallest standard adaptive banner
@@ -32,6 +33,8 @@ type LoadState = 'pending' | 'loaded' | 'failed';
  * collapses instead of leaving a broken-looking gap.
  */
 export function BottomBannerAd() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [banner, setBanner] = useState<ResolvedBanner | null>(null);
   const [loadState, setLoadState] = useState<LoadState>('pending');
 
@@ -70,16 +73,18 @@ export function BottomBannerAd() {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    width: '100%',
-    alignItems: 'center',
-    paddingTop: 6,
-    borderTopWidth: 1,
-    borderTopColor: colors.panelLine,
-    backgroundColor: colors.cabinet,
-  },
-  wrapPending: {
-    minHeight: PLACEHOLDER_HEIGHT,
-  },
-});
+function createStyles(colors: ColorTheme) {
+  return StyleSheet.create({
+    wrap: {
+      width: '100%',
+      alignItems: 'center',
+      paddingTop: 6,
+      borderTopWidth: 1,
+      borderTopColor: colors.panelLine,
+      backgroundColor: colors.cabinet,
+    },
+    wrapPending: {
+      minHeight: PLACEHOLDER_HEIGHT,
+    },
+  });
+}

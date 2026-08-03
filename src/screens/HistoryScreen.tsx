@@ -1,13 +1,14 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HistoryStatusBadge } from '../components/HistoryStatusBadge';
 import { getHistory } from '../services/scanHistory';
-import { colors } from '../theme/colors';
+import { useThemeColors } from '../theme/ThemeContext';
+import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import type { HistoryStackParamList } from '../navigation/types';
 import type { ScanHistoryEntry } from '../types/history';
@@ -26,6 +27,8 @@ const QR_META_KEY: Record<QrContentType, string> = {
 export function HistoryScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [entries, setEntries] = useState<ScanHistoryEntry[]>([]);
 
   useFocusEffect(
@@ -77,67 +80,69 @@ export function HistoryScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.cabinet,
-  },
-  title: {
-    fontFamily: fonts.displayBold,
-    fontSize: 22,
-    color: colors.cream,
-    padding: 20,
-    paddingBottom: 8,
-  },
-  empty: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 28,
-    gap: 8,
-  },
-  emptyTitle: {
-    fontFamily: fonts.displayBold,
-    fontSize: 17,
-    color: colors.cream,
-  },
-  emptyBody: {
-    fontSize: 13.5,
-    color: colors.cream,
-    opacity: 0.6,
-    textAlign: 'center',
-    maxWidth: 260,
-  },
-  list: {
-    paddingHorizontal: 20,
-    gap: 10,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.panelLine,
-    borderRadius: 16,
-    padding: 14,
-  },
-  rowPressed: {
-    opacity: 0.75,
-  },
-  rowText: {
-    flex: 1,
-  },
-  name: {
-    fontFamily: fonts.displayBold,
-    fontSize: 14.5,
-    color: colors.cream,
-  },
-  meta: {
-    fontFamily: fonts.mono,
-    fontSize: 10.5,
-    color: colors.cream,
-    opacity: 0.5,
-    marginTop: 3,
-  },
-});
+function createStyles(colors: ColorTheme) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.cabinet,
+    },
+    title: {
+      fontFamily: fonts.displayBold,
+      fontSize: 22,
+      color: colors.text,
+      padding: 20,
+      paddingBottom: 8,
+    },
+    empty: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 28,
+      gap: 8,
+    },
+    emptyTitle: {
+      fontFamily: fonts.displayBold,
+      fontSize: 17,
+      color: colors.text,
+    },
+    emptyBody: {
+      fontSize: 13.5,
+      color: colors.text,
+      opacity: 0.6,
+      textAlign: 'center',
+      maxWidth: 260,
+    },
+    list: {
+      paddingHorizontal: 20,
+      gap: 10,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 16,
+      padding: 14,
+    },
+    rowPressed: {
+      opacity: 0.75,
+    },
+    rowText: {
+      flex: 1,
+    },
+    name: {
+      fontFamily: fonts.displayBold,
+      fontSize: 14.5,
+      color: colors.text,
+    },
+    meta: {
+      fontFamily: fonts.mono,
+      fontSize: 10.5,
+      color: colors.text,
+      opacity: 0.5,
+      marginTop: 3,
+    },
+  });
+}

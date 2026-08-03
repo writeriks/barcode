@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Linking, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { useThemeColors } from '../theme/ThemeContext';
+import type { ColorTheme } from '../theme/colors';
 import { classifyQrContent, parseOtpAuth, resolveQrOpenUri, type QrContentType } from '../utils/classifyQrContent';
-import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { PillButton } from './PillButton';
 
@@ -17,13 +18,18 @@ const TYPE_ICON: Record<QrContentType, keyof typeof Ionicons.glyphMap> = {
   text: 'document-text-outline',
 };
 
-const TYPE_COLOR: Record<QrContentType, string> = {
-  link: colors.mint,
-  email: colors.mint,
-  phone: colors.mint,
-  otp: colors.punch,
-  text: colors.citrus,
-};
+function typeColor(colors: ColorTheme, type: QrContentType): string {
+  switch (type) {
+    case 'link':
+    case 'email':
+    case 'phone':
+      return colors.mintText;
+    case 'otp':
+      return colors.punch;
+    case 'text':
+      return colors.citrusText;
+  }
+}
 
 const TYPE_LABEL_KEY: Record<QrContentType, string> = {
   link: 'qr.typeLink',
@@ -52,8 +58,10 @@ interface Props {
  * and by the read-only History detail view. */
 export function QrContentView({ data }: Props) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const type = classifyQrContent(data);
-  const color = TYPE_COLOR[type];
+  const color = typeColor(colors, type);
   const openUri = resolveQrOpenUri(data, type);
   const otpInfo = type === 'otp' ? parseOtpAuth(data) : null;
   const [isSecretRevealed, setIsSecretRevealed] = useState(false);
@@ -101,7 +109,7 @@ export function QrContentView({ data }: Props) {
               <Ionicons
                 name={isSecretRevealed ? 'eye-off-outline' : 'eye-outline'}
                 size={18}
-                color={colors.cream}
+                color={colors.text}
                 style={styles.otpRevealIcon}
               />
             </Pressable>
@@ -130,98 +138,100 @@ export function QrContentView({ data }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    gap: 14,
-  },
-  qrCard: {
-    alignSelf: 'center',
-    backgroundColor: colors.cream,
-    borderWidth: 2.5,
-    borderColor: colors.mint,
-    borderRadius: 14,
-    padding: 8,
-  },
-  typeChip: {
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 13,
-    paddingVertical: 6,
-  },
-  typeChipText: {
-    fontFamily: fonts.mono,
-    fontSize: 10,
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
-  contentCard: {
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.panelLine,
-    borderRadius: 14,
-    padding: 14,
-  },
-  contentLabel: {
-    fontFamily: fonts.displayBold,
-    fontSize: 10.5,
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-    color: colors.cream,
-    opacity: 0.55,
-    marginBottom: 5,
-  },
-  contentValue: {
-    fontSize: 13.5,
-    lineHeight: 19,
-    color: colors.cream,
-  },
-  contentValueLink: {
-    color: colors.mint,
-    textDecorationLine: 'underline',
-  },
-  otpAccountValue: {
-    fontFamily: fonts.displayBold,
-    fontSize: 15,
-    color: colors.cream,
-  },
-  otpIssuerValue: {
-    fontSize: 12.5,
-    color: colors.cream,
-    opacity: 0.6,
-    marginTop: 2,
-  },
-  otpDivider: {
-    height: 1,
-    backgroundColor: colors.panelLine,
-    marginVertical: 12,
-  },
-  otpSecretRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  otpSecretValue: {
-    fontFamily: fonts.mono,
-    fontSize: 14,
-    letterSpacing: 1,
-    color: colors.cream,
-  },
-  otpRevealIcon: {
-    opacity: 0.7,
-  },
-  actions: {
-    gap: 10,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  flexButton: {
-    flex: 1,
-  },
-});
+function createStyles(colors: ColorTheme) {
+  return StyleSheet.create({
+    wrap: {
+      gap: 14,
+    },
+    qrCard: {
+      alignSelf: 'center',
+      backgroundColor: colors.cream,
+      borderWidth: 2.5,
+      borderColor: colors.mint,
+      borderRadius: 14,
+      padding: 8,
+    },
+    typeChip: {
+      alignSelf: 'center',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 7,
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderRadius: 999,
+      paddingHorizontal: 13,
+      paddingVertical: 6,
+    },
+    typeChipText: {
+      fontFamily: fonts.mono,
+      fontSize: 10,
+      letterSpacing: 0.5,
+      textTransform: 'uppercase',
+    },
+    contentCard: {
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 14,
+      padding: 14,
+    },
+    contentLabel: {
+      fontFamily: fonts.displayBold,
+      fontSize: 10.5,
+      letterSpacing: 0.3,
+      textTransform: 'uppercase',
+      color: colors.text,
+      opacity: 0.55,
+      marginBottom: 5,
+    },
+    contentValue: {
+      fontSize: 13.5,
+      lineHeight: 19,
+      color: colors.text,
+    },
+    contentValueLink: {
+      color: colors.mintText,
+      textDecorationLine: 'underline',
+    },
+    otpAccountValue: {
+      fontFamily: fonts.displayBold,
+      fontSize: 15,
+      color: colors.text,
+    },
+    otpIssuerValue: {
+      fontSize: 12.5,
+      color: colors.text,
+      opacity: 0.6,
+      marginTop: 2,
+    },
+    otpDivider: {
+      height: 1,
+      backgroundColor: colors.panelLine,
+      marginVertical: 12,
+    },
+    otpSecretRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    otpSecretValue: {
+      fontFamily: fonts.mono,
+      fontSize: 14,
+      letterSpacing: 1,
+      color: colors.text,
+    },
+    otpRevealIcon: {
+      opacity: 0.7,
+    },
+    actions: {
+      gap: 10,
+    },
+    actionRow: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    flexButton: {
+      flex: 1,
+    },
+  });
+}

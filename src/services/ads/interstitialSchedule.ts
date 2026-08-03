@@ -1,4 +1,4 @@
-const SHOW_EVERY_N_SCANS = 2;
+const SHOW_EVERY_N_SCANS = 1;
 let scanCount = 0;
 
 /** Call once per completed scan. Returns true on every Nth call — the

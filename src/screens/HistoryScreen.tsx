@@ -14,6 +14,13 @@ import type { ScanHistoryEntry } from '../types/history';
 
 type Props = NativeStackScreenProps<HistoryStackParamList, 'HistoryList'>;
 
+const QR_META_KEY: Record<string, string> = {
+  link: 'history.metaQrLink',
+  email: 'history.metaQrEmail',
+  phone: 'history.metaQrPhone',
+  text: 'history.metaQrText',
+};
+
 export function HistoryScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
@@ -36,27 +43,32 @@ export function HistoryScreen({ navigation }: Props) {
       ) : (
         <FlatList
           data={entries}
-          keyExtractor={(item) => `${item.barcode}-${item.timestamp}`}
+          keyExtractor={(item) => `${item.kind}-${item.timestamp}`}
           contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 20 }]}
-          renderItem={({ item }) => (
-            <Pressable
-              style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-              onPress={() => navigation.navigate('HistoryDetail', { entry: item })}
-            >
-              <View style={styles.rowText}>
-                <Text style={styles.name} numberOfLines={1}>
-                  {item.product?.productName ?? item.barcode}
-                </Text>
-                <Text style={styles.meta}>
-                  {new Date(item.timestamp).toLocaleString(undefined, {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                  })}
-                </Text>
-              </View>
-              <HistoryStatusBadge status={item.status} grade={item.product?.nutriscoreGrade} />
-            </Pressable>
-          )}
+          renderItem={({ item }) => {
+            const name = item.kind === 'qr' ? item.data : (item.product?.productName ?? item.barcode);
+            const metaKey = item.kind === 'qr' ? QR_META_KEY[item.contentType] : 'history.metaBarcode';
+            return (
+              <Pressable
+                style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+                onPress={() => navigation.navigate('HistoryDetail', { entry: item })}
+              >
+                <View style={styles.rowText}>
+                  <Text style={styles.name} numberOfLines={1}>
+                    {name}
+                  </Text>
+                  <Text style={styles.meta}>
+                    {new Date(item.timestamp).toLocaleString(undefined, {
+                      dateStyle: 'medium',
+                      timeStyle: 'short',
+                    })}{' '}
+                    · {t(metaKey)}
+                  </Text>
+                </View>
+                <HistoryStatusBadge entry={item} />
+              </Pressable>
+            );
+          }}
         />
       )}
     </SafeAreaView>

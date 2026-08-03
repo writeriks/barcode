@@ -73,7 +73,12 @@
     "title": "Geçmiş",
     "empty": "Henüz tarama yok",
     "emptyBody": "Taradığın ürünler burada görünecek.",
-    "clear": "Geçmişi temizle"
+    "clear": "Geçmişi temizle",
+    "metaBarcode": "Barkod",
+    "metaQrLink": "QR bağlantı",
+    "metaQrEmail": "QR e-posta",
+    "metaQrPhone": "QR telefon",
+    "metaQrText": "QR metin"
   },
   "myCodes": {
     "title": "Kodlarım",
@@ -85,5 +90,19 @@
     "save": "Kaydet",
     "cancel": "Vazgeç",
     "delete": "Sil"
+  },
+  "qr": {
+    "typeLink": "Bağlantı",
+    "typeEmail": "E-posta",
+    "typePhone": "Telefon",
+    "typeText": "Metin",
+    "openLink": "Bağlantıyı aç",
+    "openEmail": "E-postayı aç",
+    "callNumber": "Numarayı ara",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı",
+    "share": "Paylaş",
+    "decodedContent": "Çözülen içerik",
+    "scanAgain": "Tekrar tara"
   }
 }

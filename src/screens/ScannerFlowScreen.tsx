@@ -1,21 +1,25 @@
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useScanInterstitial } from '../hooks/useScanInterstitial';
-import { addHistoryEntry } from '../services/scanHistory';
 import { lookupProduct } from '../services/lookupProduct';
+import { addHistoryEntry } from '../services/scanHistory';
 import { colors } from '../theme/colors';
+import { classifyQrContent } from '../utils/classifyQrContent';
+import type { ScanKind } from '../types/scan';
 import type { LookupResult } from '../types/product';
 import { CaptureIngredientsScreen } from './CaptureIngredientsScreen';
 import { FoundProductScreen } from './FoundProductScreen';
 import { LookupErrorScreen } from './LookupErrorScreen';
 import { MissingProductScreen } from './MissingProductScreen';
+import { QrResultScreen } from './QrResultScreen';
 import { ScannerScreen } from './ScannerScreen';
 
 type Screen =
   | { name: 'scanner' }
   | { name: 'loading'; barcode: string }
   | { name: 'result'; result: LookupResult }
-  | { name: 'capture'; barcode: string };
+  | { name: 'capture'; barcode: string }
+  | { name: 'qr-result'; data: string };
 
 /** The scan → result → (optional capture) flow, self-contained so it can
  * sit inside the "Scanner" tab without knowing anything about the tab
@@ -33,23 +37,38 @@ export function ScannerFlowScreen() {
 
       if (result.status === 'found' || result.status === 'incomplete') {
         addHistoryEntry({
+          kind: 'product',
           barcode,
           timestamp: Date.now(),
           status: result.status,
           product: result.product,
         });
       } else if (result.status === 'not-found') {
-        addHistoryEntry({ barcode, timestamp: Date.now(), status: 'not-found' });
+        addHistoryEntry({ kind: 'product', barcode, timestamp: Date.now(), status: 'not-found' });
       }
     },
     [maybeShowForScan]
+  );
+
+  const handleScanned = useCallback(
+    (data: string, kind: ScanKind) => {
+      if (kind === 'barcode') {
+        runLookup(data);
+        return;
+      }
+
+      setScreen({ name: 'qr-result', data });
+      maybeShowForScan();
+      addHistoryEntry({ kind: 'qr', data, timestamp: Date.now(), contentType: classifyQrContent(data) });
+    },
+    [runLookup, maybeShowForScan]
   );
 
   const goToScanner = useCallback(() => setScreen({ name: 'scanner' }), []);
 
   switch (screen.name) {
     case 'scanner':
-      return <ScannerScreen onScanned={runLookup} />;
+      return <ScannerScreen onScanned={handleScanned} />;
 
     case 'loading':
       return (
@@ -62,6 +81,9 @@ export function ScannerFlowScreen() {
       return (
         <CaptureIngredientsScreen barcode={screen.barcode} onDone={goToScanner} onCancel={goToScanner} />
       );
+
+    case 'qr-result':
+      return <QrResultScreen data={screen.data} onScanAgain={goToScanner} />;
 
     case 'result': {
       const { result } = screen;

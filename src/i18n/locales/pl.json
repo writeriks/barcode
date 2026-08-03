@@ -73,7 +73,12 @@
     "title": "Historia",
     "empty": "Brak skanów",
     "emptyBody": "Zeskanowane produkty pojawią się tutaj.",
-    "clear": "Wyczyść historię"
+    "clear": "Wyczyść historię",
+    "metaBarcode": "Kod kreskowy",
+    "metaQrLink": "Link QR",
+    "metaQrEmail": "E-mail QR",
+    "metaQrPhone": "Telefon QR",
+    "metaQrText": "Tekst QR"
   },
   "myCodes": {
     "title": "Moje kody",
@@ -85,5 +90,19 @@
     "save": "Zapisz",
     "cancel": "Anuluj",
     "delete": "Usuń"
+  },
+  "qr": {
+    "typeLink": "Link",
+    "typeEmail": "E-mail",
+    "typePhone": "Telefon",
+    "typeText": "Tekst",
+    "openLink": "Otwórz link",
+    "openEmail": "Otwórz e-mail",
+    "callNumber": "Zadzwoń",
+    "copy": "Kopiuj",
+    "copied": "Skopiowano",
+    "share": "Udostępnij",
+    "decodedContent": "Odczytana zawartość",
+    "scanAgain": "Zeskanuj ponownie"
   }
 }

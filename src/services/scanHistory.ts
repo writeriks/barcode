@@ -8,7 +8,9 @@ export async function getHistory(): Promise<ScanHistoryEntry[]> {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
   if (!raw) return [];
   try {
-    return JSON.parse(raw) as ScanHistoryEntry[];
+    const parsed = JSON.parse(raw) as Record<string, unknown>[];
+    // Entries saved before the product/qr split have no `kind` — treat them as product entries.
+    return parsed.map((entry) => (entry.kind ? entry : { ...entry, kind: 'product' })) as ScanHistoryEntry[];
   } catch {
     return [];
   }

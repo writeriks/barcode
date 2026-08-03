@@ -1,7 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
-import type { ScanHistoryStatus } from '../types/history';
+import type { ScanHistoryEntry } from '../types/history';
+import type { QrContentType } from '../utils/classifyQrContent';
 
 const GRADE_COLORS: Record<string, string> = {
   a: colors.mint,
@@ -11,14 +13,36 @@ const GRADE_COLORS: Record<string, string> = {
   e: colors.coral,
 };
 
+const QR_TYPE_ICON: Record<QrContentType, keyof typeof Ionicons.glyphMap> = {
+  link: 'link-outline',
+  email: 'mail-outline',
+  phone: 'call-outline',
+  text: 'document-text-outline',
+};
+
+const QR_TYPE_COLOR: Record<QrContentType, string> = {
+  link: colors.mint,
+  email: colors.mint,
+  phone: colors.mint,
+  text: colors.citrus,
+};
+
 interface Props {
-  status: ScanHistoryStatus;
-  grade?: string;
+  entry: ScanHistoryEntry;
 }
 
-export function HistoryStatusBadge({ status, grade }: Props) {
-  const normalizedGrade = grade?.toLowerCase();
-  if (status === 'found' && normalizedGrade && GRADE_COLORS[normalizedGrade]) {
+export function HistoryStatusBadge({ entry }: Props) {
+  if (entry.kind === 'qr') {
+    const color = QR_TYPE_COLOR[entry.contentType];
+    return (
+      <View style={[styles.badge, { borderColor: color }]}>
+        <Ionicons name={QR_TYPE_ICON[entry.contentType]} size={14} color={color} />
+      </View>
+    );
+  }
+
+  const normalizedGrade = entry.product?.nutriscoreGrade?.toLowerCase();
+  if (entry.status === 'found' && normalizedGrade && GRADE_COLORS[normalizedGrade]) {
     const color = GRADE_COLORS[normalizedGrade];
     return (
       <View style={[styles.badge, { borderColor: color }]}>

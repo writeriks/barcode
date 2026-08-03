@@ -73,7 +73,12 @@
     "title": "Historial",
     "empty": "Aún no hay escaneos",
     "emptyBody": "Los productos que escanees aparecerán aquí.",
-    "clear": "Borrar historial"
+    "clear": "Borrar historial",
+    "metaBarcode": "Código de barras",
+    "metaQrLink": "Enlace QR",
+    "metaQrEmail": "Correo QR",
+    "metaQrPhone": "Teléfono QR",
+    "metaQrText": "Texto QR"
   },
   "myCodes": {
     "title": "Mis códigos",
@@ -85,5 +90,19 @@
     "save": "Guardar",
     "cancel": "Cancelar",
     "delete": "Eliminar"
+  },
+  "qr": {
+    "typeLink": "Enlace",
+    "typeEmail": "Correo",
+    "typePhone": "Teléfono",
+    "typeText": "Texto",
+    "openLink": "Abrir enlace",
+    "openEmail": "Abrir correo",
+    "callNumber": "Llamar",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "share": "Compartir",
+    "decodedContent": "Contenido decodificado",
+    "scanAgain": "Escanear de nuevo"
   }
 }

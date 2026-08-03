@@ -3,6 +3,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { HistoryStatusBadge } from '../components/HistoryStatusBadge';
+import { QrContentView } from '../components/QrContentView';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import type { HistoryStackParamList } from '../navigation/types';
@@ -25,8 +26,19 @@ export function HistoryDetailScreen({ route }: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
   const { entry } = route.params;
-  const { product } = entry;
 
+  if (entry.kind === 'qr') {
+    return (
+      <ScrollView
+        style={styles.screen}
+        contentContainerStyle={[styles.content, { paddingBottom: 40 + tabBarHeight }]}
+      >
+        <QrContentView data={entry.data} />
+      </ScrollView>
+    );
+  }
+
+  const { product } = entry;
   const nutrimentRows = NUTRIMENT_ROWS.filter(
     (row) => typeof product?.nutriments?.[row.key] === 'number'
   );
@@ -49,7 +61,7 @@ export function HistoryDetailScreen({ route }: Props) {
           </Text>
           {product?.brands ? <Text style={styles.brand}>{product.brands}</Text> : null}
         </View>
-        <HistoryStatusBadge status={entry.status} grade={product?.nutriscoreGrade} />
+        <HistoryStatusBadge entry={entry} />
       </View>
 
       {product?.ingredientsText ? (

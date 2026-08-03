@@ -21,12 +21,13 @@ import {
 import { PillButton } from '../components/PillButton';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
+import type { ScanKind } from '../types/scan';
 
 interface Props {
-  onScanned: (barcode: string) => void;
+  onScanned: (data: string, kind: ScanKind) => void;
 }
 
-const SCANNED_BARCODE_TYPES = ['ean13', 'upc_a'] as const;
+const SCANNED_TYPES = ['ean13', 'upc_a', 'qr'] as const;
 const VIEWFINDER_HEIGHT = 130;
 
 /**
@@ -75,10 +76,10 @@ export function ScannerScreen({ onScanned }: Props) {
   }, [pulse, sweep, signal]);
 
   const handleBarcodeScanned = useCallback(
-    ({ data }: { data: string }) => {
+    ({ data, type }: { data: string; type: string }) => {
       if (hasHandledScanRef.current) return;
       hasHandledScanRef.current = true;
-      onScanned(data);
+      onScanned(data, type === 'qr' ? 'qr' : 'barcode');
     },
     [onScanned]
   );
@@ -92,10 +93,10 @@ export function ScannerScreen({ onScanned }: Props) {
 
     setIsUploading(true);
     try {
-      const matches = await scanFromURLAsync(result.assets[0].uri, [...SCANNED_BARCODE_TYPES]);
+      const matches = await scanFromURLAsync(result.assets[0].uri, [...SCANNED_TYPES]);
       if (matches.length > 0 && !hasHandledScanRef.current) {
         hasHandledScanRef.current = true;
-        onScanned(matches[0].data);
+        onScanned(matches[0].data, matches[0].type === 'qr' ? 'qr' : 'barcode');
       } else {
         Alert.alert(t('scanner.noBarcodeFound'));
       }
@@ -109,7 +110,7 @@ export function ScannerScreen({ onScanned }: Props) {
     if (!trimmed || hasHandledScanRef.current) return;
     hasHandledScanRef.current = true;
     setIsManualEntryOpen(false);
-    onScanned(trimmed);
+    onScanned(trimmed, 'barcode');
   }, [manualValue, onScanned]);
 
   if (!permission) {
@@ -137,7 +138,7 @@ export function ScannerScreen({ onScanned }: Props) {
         style={StyleSheet.absoluteFill}
         facing="back"
         enableTorch={isTorchOn}
-        barcodeScannerSettings={{ barcodeTypes: [...SCANNED_BARCODE_TYPES] }}
+        barcodeScannerSettings={{ barcodeTypes: [...SCANNED_TYPES] }}
         onBarcodeScanned={handleBarcodeScanned}
       />
       <View style={styles.overlay} pointerEvents="none">

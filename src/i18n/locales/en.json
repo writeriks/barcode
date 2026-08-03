@@ -73,7 +73,12 @@
     "title": "History",
     "empty": "No scans yet",
     "emptyBody": "Products you scan will show up here.",
-    "clear": "Clear history"
+    "clear": "Clear history",
+    "metaBarcode": "Barcode",
+    "metaQrLink": "QR link",
+    "metaQrEmail": "QR email",
+    "metaQrPhone": "QR phone",
+    "metaQrText": "QR text"
   },
   "myCodes": {
     "title": "My Codes",
@@ -85,5 +90,19 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete"
+  },
+  "qr": {
+    "typeLink": "Link",
+    "typeEmail": "Email",
+    "typePhone": "Phone",
+    "typeText": "Text",
+    "openLink": "Open link",
+    "openEmail": "Open email",
+    "callNumber": "Call number",
+    "copy": "Copy",
+    "copied": "Copied",
+    "share": "Share",
+    "decodedContent": "Decoded content",
+    "scanAgain": "Scan again"
   }
 }

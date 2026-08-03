@@ -73,7 +73,12 @@
     "title": "Verlauf",
     "empty": "Noch keine Scans",
     "emptyBody": "Gescannte Produkte erscheinen hier.",
-    "clear": "Verlauf löschen"
+    "clear": "Verlauf löschen",
+    "metaBarcode": "Barcode",
+    "metaQrLink": "QR-Link",
+    "metaQrEmail": "QR-E-Mail",
+    "metaQrPhone": "QR-Telefon",
+    "metaQrText": "QR-Text"
   },
   "myCodes": {
     "title": "Meine Codes",
@@ -85,5 +90,19 @@
     "save": "Speichern",
     "cancel": "Abbrechen",
     "delete": "Löschen"
+  },
+  "qr": {
+    "typeLink": "Link",
+    "typeEmail": "E-Mail",
+    "typePhone": "Telefon",
+    "typeText": "Text",
+    "openLink": "Link öffnen",
+    "openEmail": "E-Mail öffnen",
+    "callNumber": "Anrufen",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "share": "Teilen",
+    "decodedContent": "Entschlüsselter Inhalt",
+    "scanAgain": "Erneut scannen"
   }
 }

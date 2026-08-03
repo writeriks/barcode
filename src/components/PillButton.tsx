@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 
@@ -6,9 +6,10 @@ interface Props {
   title: string;
   onPress: () => void;
   variant?: 'punch' | 'citrus' | 'ghost';
+  style?: StyleProp<ViewStyle>;
 }
 
-export function PillButton({ title, onPress, variant = 'punch' }: Props) {
+export function PillButton({ title, onPress, variant = 'punch', style }: Props) {
   return (
     <Pressable
       onPress={onPress}
@@ -18,6 +19,7 @@ export function PillButton({ title, onPress, variant = 'punch' }: Props) {
         variant === 'citrus' && styles.citrus,
         variant === 'ghost' && styles.ghost,
         pressed && styles.pressed,
+        style,
       ]}
     >
       <Text

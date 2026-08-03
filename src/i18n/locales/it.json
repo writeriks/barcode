@@ -73,7 +73,12 @@
     "title": "Cronologia",
     "empty": "Ancora nessuna scansione",
     "emptyBody": "I prodotti che scansioni appariranno qui.",
-    "clear": "Cancella cronologia"
+    "clear": "Cancella cronologia",
+    "metaBarcode": "Codice a barre",
+    "metaQrLink": "Link QR",
+    "metaQrEmail": "Email QR",
+    "metaQrPhone": "Telefono QR",
+    "metaQrText": "Testo QR"
   },
   "myCodes": {
     "title": "I miei codici",
@@ -85,5 +90,19 @@
     "save": "Salva",
     "cancel": "Annulla",
     "delete": "Elimina"
+  },
+  "qr": {
+    "typeLink": "Link",
+    "typeEmail": "Email",
+    "typePhone": "Telefono",
+    "typeText": "Testo",
+    "openLink": "Apri link",
+    "openEmail": "Apri email",
+    "callNumber": "Chiama",
+    "copy": "Copia",
+    "copied": "Copiato",
+    "share": "Condividi",
+    "decodedContent": "Contenuto decodificato",
+    "scanAgain": "Scansiona di nuovo"
   }
 }

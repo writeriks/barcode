@@ -1,8 +1,10 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BottomSheet } from '../components/BottomSheet';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { LANGUAGE_NATIVE_NAMES } from '../i18n/languageNames';
@@ -34,6 +36,7 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, themePrefere
   const [showPrivacyRow, setShowPrivacyRow] = useState(false);
   const [vibrateEnabled, setVibrateEnabledState] = useState(true);
   const [beepEnabled, setBeepEnabledState] = useState(true);
+  const [isLanguageSheetOpen, setIsLanguageSheetOpen] = useState(false);
 
   useEffect(() => {
     isPrivacyOptionsRequired().then(setShowPrivacyRow);
@@ -61,7 +64,11 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, themePrefere
   const handleSelectLanguage = (code: SupportedLanguage | null) => {
     captureAnalyticsEvent('setting_changed', { setting: 'language', value: code ?? 'system' });
     onSelectLanguage(code);
+    setIsLanguageSheetOpen(false);
   };
+
+  const currentLanguageLabel =
+    currentOverride === null ? t('settings.systemDefault') : LANGUAGE_NATIVE_NAMES[currentOverride];
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
@@ -98,21 +105,16 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, themePrefere
         />
 
         <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.languageSection')}</Text>
-        <Row
-          label={t('settings.systemDefault')}
-          selected={currentOverride === null}
-          onPress={() => handleSelectLanguage(null)}
-          styles={styles}
-        />
-        {SUPPORTED_LANGUAGES.map((code) => (
-          <Row
-            key={code}
-            label={LANGUAGE_NATIVE_NAMES[code]}
-            selected={currentOverride === code}
-            onPress={() => handleSelectLanguage(code)}
-            styles={styles}
-          />
-        ))}
+        <Pressable
+          onPress={() => setIsLanguageSheetOpen(true)}
+          style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+        >
+          <Text style={styles.rowLabel}>{t('settings.languageSection')}</Text>
+          <View style={styles.dropdownValue}>
+            <Text style={styles.dropdownValueText}>{currentLanguageLabel}</Text>
+            <Ionicons name="chevron-down" size={16} color={colors.text} style={styles.dropdownChevron} />
+          </View>
+        </Pressable>
 
         {showPrivacyRow ? (
           <>
@@ -121,6 +123,30 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, themePrefere
           </>
         ) : null}
       </ScrollView>
+
+      <BottomSheet
+        visible={isLanguageSheetOpen}
+        onClose={() => setIsLanguageSheetOpen(false)}
+        title={t('settings.languageSection')}
+      >
+        <View style={styles.sheetList}>
+          <Row
+            label={t('settings.systemDefault')}
+            selected={currentOverride === null}
+            onPress={() => handleSelectLanguage(null)}
+            styles={styles}
+          />
+          {SUPPORTED_LANGUAGES.map((code) => (
+            <Row
+              key={code}
+              label={LANGUAGE_NATIVE_NAMES[code]}
+              selected={currentOverride === code}
+              onPress={() => handleSelectLanguage(code)}
+              styles={styles}
+            />
+          ))}
+        </View>
+      </BottomSheet>
     </SafeAreaView>
   );
 }
@@ -225,6 +251,23 @@ function createStyles(colors: ColorTheme) {
     },
     rowPressed: {
       opacity: 0.8,
+    },
+    dropdownValue: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    dropdownValueText: {
+      fontSize: 14,
+      color: colors.text,
+      opacity: 0.55,
+    },
+    dropdownChevron: {
+      opacity: 0.55,
+    },
+    sheetList: {
+      gap: 10,
+      paddingBottom: 6,
     },
     rowLabel: {
       fontSize: 15,

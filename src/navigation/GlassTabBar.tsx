@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { BottomTabBarHeightCallbackContext, type BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BlurView } from 'expo-blur';
-import { useEffect, useMemo, useRef } from 'react';
+import { useContext, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Platform, Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -35,6 +35,16 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
   const mode = useThemeMode();
   const styles = useMemo(() => createStyles(colors, mode), [colors, mode]);
   const routeCount = state.routes.length;
+  const bottomOffset = insets.bottom + 10;
+
+  // The tab bar floats as an absolutely-positioned pill, so react-navigation's
+  // own height estimate (a plain UIKit constant) is too small — screens using
+  // useBottomTabBarHeight() would under-pad and get covered by the pill.
+  // Report the real measured clearance back so that hook returns the truth.
+  const onHeightChange = useContext(BottomTabBarHeightCallbackContext);
+  const handlePillLayout = (event: LayoutChangeEvent) => {
+    onHeightChange?.(event.nativeEvent.layout.height + bottomOffset);
+  };
 
   const indicatorIndex = useRef(new Animated.Value(state.index)).current;
 
@@ -53,8 +63,13 @@ export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
   });
 
   return (
-    <View style={[styles.wrap, { bottom: insets.bottom + 10 }]} pointerEvents="box-none">
-      <BlurView intensity={68} tint={mode === 'light' ? 'light' : 'dark'} style={styles.pill}>
+    <View style={[styles.wrap, { bottom: bottomOffset }]} pointerEvents="box-none">
+      <BlurView
+        intensity={68}
+        tint={mode === 'light' ? 'light' : 'dark'}
+        style={styles.pill}
+        onLayout={handlePillLayout}
+      >
         <View style={styles.pillOverlay} />
         <Animated.View
           style={[styles.indicator, { width: `${100 / routeCount}%`, left: indicatorLeft }]}

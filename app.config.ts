@@ -59,6 +59,7 @@ const config: ExpoConfig = {
         cameraPermission: 'Allow $(PRODUCT_NAME) to use the camera to scan barcodes and QR codes.',
       },
     ],
+    ['expo-asset', { assets: [] }],
     [
       'react-native-google-mobile-ads',
       {

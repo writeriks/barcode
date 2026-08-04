@@ -87,6 +87,10 @@ export const openFoodFactsProvider: ProductLookupProvider = {
       return { kind: 'error', message };
     }
 
+    if (response.status === 404) {
+      return { kind: 'not-found' };
+    }
+
     if (!response.ok) {
       return { kind: 'error', message: `Open Food Facts responded with status ${response.status}` };
     }

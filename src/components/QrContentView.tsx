@@ -90,7 +90,7 @@ export function QrContentView({ data }: Props) {
   return (
     <View style={styles.wrap}>
       <View style={styles.qrCard}>
-        <QRCode value={data} size={62} color={colors.inkOnCream} backgroundColor={colors.cream} />
+        <QRCode value={data} size={190} color={colors.inkOnCream} backgroundColor={colors.cream} />
       </View>
 
       <View style={[styles.typeChip, { borderColor: color }]}>

@@ -55,8 +55,10 @@ function normalizeProduct(raw: OpenFoodFactsProduct): Product {
 }
 
 /** Applies the project's "is this actually useful data" rule on top of
- * whatever OFF returned: too little completeness or a tag telling us the
- * ingredients specifically haven't been filled in both count as a miss. */
+ * whatever the API returned: too little completeness or a tag telling us
+ * the ingredients specifically haven't been filled in both count as a miss.
+ * Beauty/products/pet-food entries rarely carry nutriscore/nova data, but
+ * those fields are already optional on Product so that's harmless. */
 function classify(raw: OpenFoodFactsProduct): ProviderResult {
   const product = normalizeProduct(raw);
 
@@ -69,43 +71,55 @@ function classify(raw: OpenFoodFactsProduct): ProviderResult {
   return { kind: 'found', product };
 }
 
-export const openFoodFactsProvider: ProductLookupProvider = {
-  name: 'open-food-facts',
+/**
+ * Every Open Food Facts sibling project (Beauty, Products, Pet Food) runs
+ * the exact same v2 REST API, just on a different domain — this factory
+ * builds a provider for any of them.
+ */
+function createOffFamilyProvider(name: string, host: string): ProductLookupProvider {
+  return {
+    name,
 
-  async fetchProduct(barcode: string, signal: AbortSignal): Promise<ProviderResult> {
-    const languageCode = getDeviceLanguageCode();
-    const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json?fields=${REQUESTED_FIELDS}&lc=${encodeURIComponent(languageCode)}`;
+    async fetchProduct(barcode: string, signal: AbortSignal): Promise<ProviderResult> {
+      const languageCode = getDeviceLanguageCode();
+      const url = `https://${host}/api/v2/product/${encodeURIComponent(barcode)}.json?fields=${REQUESTED_FIELDS}&lc=${encodeURIComponent(languageCode)}`;
 
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        headers: { 'User-Agent': USER_AGENT },
-        signal,
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Network request failed';
-      return { kind: 'error', message };
-    }
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          headers: { 'User-Agent': USER_AGENT },
+          signal,
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Network request failed';
+        return { kind: 'error', message };
+      }
 
-    if (response.status === 404) {
-      return { kind: 'not-found' };
-    }
+      if (response.status === 404) {
+        return { kind: 'not-found' };
+      }
 
-    if (!response.ok) {
-      return { kind: 'error', message: `Open Food Facts responded with status ${response.status}` };
-    }
+      if (!response.ok) {
+        return { kind: 'error', message: `${name} responded with status ${response.status}` };
+      }
 
-    let data: OpenFoodFactsResponse;
-    try {
-      data = await response.json();
-    } catch {
-      return { kind: 'error', message: 'Could not parse Open Food Facts response' };
-    }
+      let data: OpenFoodFactsResponse;
+      try {
+        data = await response.json();
+      } catch {
+        return { kind: 'error', message: `Could not parse ${name} response` };
+      }
 
-    if (data.status === 0 || !data.product) {
-      return { kind: 'not-found' };
-    }
+      if (data.status === 0 || !data.product) {
+        return { kind: 'not-found' };
+      }
 
-    return classify(data.product);
-  },
-};
+      return classify(data.product);
+    },
+  };
+}
+
+export const openFoodFactsProvider = createOffFamilyProvider('open-food-facts', 'world.openfoodfacts.org');
+export const openBeautyFactsProvider = createOffFamilyProvider('open-beauty-facts', 'world.openbeautyfacts.org');
+export const openProductsFactsProvider = createOffFamilyProvider('open-products-facts', 'world.openproductsfacts.org');
+export const openPetFoodFactsProvider = createOffFamilyProvider('open-pet-food-facts', 'world.openpetfoodfacts.org');

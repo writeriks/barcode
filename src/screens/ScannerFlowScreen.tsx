@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useScanInterstitial } from '../hooks/useScanInterstitial';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { lookupProduct } from '../services/lookupProduct';
@@ -79,6 +80,16 @@ export function ScannerFlowScreen() {
 
   const goToScanner = useCallback(() => setScreen({ name: 'scanner' }), []);
 
+  // ScannerScreen is deliberately edge-to-edge (it's a camera viewfinder),
+  // but the result screens below it have no navigation header of their own
+  // to clear the status bar/notch — unlike the same screens reached from
+  // History, which already sit under HistoryStack's native header.
+  const withTopSafeArea = (children: ReactNode) => (
+    <SafeAreaView style={styles.flex} edges={['top', 'left', 'right']}>
+      {children}
+    </SafeAreaView>
+  );
+
   switch (screen.name) {
     case 'scanner':
       return <ScannerScreen onScanned={handleScanned} />;
@@ -91,23 +102,23 @@ export function ScannerFlowScreen() {
       );
 
     case 'qr-result':
-      return <QrResultScreen data={screen.data} onScanAgain={goToScanner} />;
+      return withTopSafeArea(<QrResultScreen data={screen.data} onScanAgain={goToScanner} />);
 
     case 'result': {
       const { result } = screen;
       switch (result.status) {
         case 'found':
-          return (
+          return withTopSafeArea(
             <FoundProductScreen product={result.product} source={result.source} onScanAgain={goToScanner} />
           );
         case 'incomplete':
-          return (
+          return withTopSafeArea(
             <FoundProductScreen product={result.product} source="network" onScanAgain={goToScanner} />
           );
         case 'not-found':
-          return <MissingProductScreen barcode={result.barcode} onScanAgain={goToScanner} />;
+          return withTopSafeArea(<MissingProductScreen barcode={result.barcode} onScanAgain={goToScanner} />);
         case 'error':
-          return (
+          return withTopSafeArea(
             <LookupErrorScreen
               message={result.message}
               onRetry={() => runLookup(result.barcode)}
@@ -126,6 +137,9 @@ function createStyles(colors: ColorTheme) {
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: colors.cabinet,
+    },
+    flex: {
+      flex: 1,
     },
   });
 }

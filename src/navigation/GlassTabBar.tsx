@@ -178,9 +178,9 @@ function createStyles(colors: ColorTheme, mode: 'light' | 'dark') {
     },
     indicator: {
       position: 'absolute',
-      top: 6,
-      bottom: 6,
-      borderRadius: 22,
+      top: 0,
+      bottom: 0,
+      borderRadius: 28,
       backgroundColor: 'rgba(47,230,184,0.16)',
       borderWidth: 1,
       borderColor: 'rgba(47,230,184,0.35)',

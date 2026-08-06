@@ -102,7 +102,15 @@
     "deleteEntry": "Usuń z historii",
     "deleteEntryTitle": "Usunąć ten wpis?",
     "deleteEntryBody": "Tej czynności nie można cofnąć.",
-    "delete": "Usuń"
+    "delete": "Usuń",
+    "addTitle": "Dodaj",
+    "newScan": "Nowe skanowanie",
+    "edit": "Edytuj",
+    "done": "Gotowe",
+    "selectedCount": "Wybrano: {{count}}",
+    "move": "Przenieś",
+    "share": "Udostępnij",
+    "deleteSelectedTitle": "Usunąć wybrane wpisy?"
   },
   "myCodes": {
     "title": "Moje kody",

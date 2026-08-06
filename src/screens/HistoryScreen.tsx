@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,11 +13,18 @@ import { HistoryStatusBadge } from '../components/HistoryStatusBadge';
 import { PromptModal } from '../components/PromptModal';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { createFolder, deleteFolder, getFolders } from '../services/historyFolders';
-import { clearFolderFromEntries, deleteHistoryEntry, getHistory, setEntryFolder } from '../services/scanHistory';
+import { shareHistoryEntriesAsCsv } from '../services/historyExport';
+import {
+  clearFolderFromEntries,
+  deleteHistoryEntries,
+  getHistory,
+  setEntriesFolder,
+  type HistoryEntryKey,
+} from '../services/scanHistory';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
-import type { HistoryStackParamList } from '../navigation/types';
+import type { HistoryStackParamList, RootTabParamList } from '../navigation/types';
 import type { ScanHistoryEntry } from '../types/history';
 import type { HistoryFolder } from '../types/historyFolder';
 import type { QrContentType } from '../utils/classifyQrContent';
@@ -46,6 +54,10 @@ const TYPE_FILTER_OPTIONS: { value: TypeFilterValue; labelKey: string; accent: P
   { value: 'text', labelKey: 'qr.typeText', accent: 'mint' },
 ];
 
+function entryKey(entry: ScanHistoryEntry): string {
+  return `${entry.kind}-${entry.timestamp}`;
+}
+
 function entryTypeValue(entry: ScanHistoryEntry): TypeFilterValue {
   return entry.kind === 'product' ? 'barcode' : entry.contentType;
 }
@@ -72,9 +84,12 @@ export function HistoryScreen({ navigation }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTypes, setActiveTypes] = useState<Set<TypeFilterValue>>(new Set());
   const [activeFolder, setActiveFolder] = useState<string>(FOLDER_ALL);
-  const [assigningEntry, setAssigningEntry] = useState<ScanHistoryEntry | null>(null);
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const [assigningKeys, setAssigningKeys] = useState<HistoryEntryKey[] | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
 
   const reload = useCallback(() => {
     getHistory().then(setEntries);
@@ -115,6 +130,15 @@ export function HistoryScreen({ navigation }: Props) {
     [folders, t]
   );
 
+  // Only meaningful when assigningKeys has exactly one entry (opened via a
+  // single row's long-press) — with a bulk selection there's no single
+  // "current folder" to highlight in the sheet.
+  const assigningSingleEntry = useMemo(() => {
+    if (assigningKeys?.length !== 1) return undefined;
+    const [key] = assigningKeys;
+    return entries.find((entry) => entry.kind === key.kind && entry.timestamp === key.timestamp);
+  }, [assigningKeys, entries]);
+
   const handleToggleType = (value: TypeFilterValue) => {
     setActiveTypes((prev) => {
       const next = new Set(prev);
@@ -143,6 +167,16 @@ export function HistoryScreen({ navigation }: Props) {
     ]);
   };
 
+  const handleNewScan = () => {
+    setIsAddMenuOpen(false);
+    navigation.getParent<BottomTabNavigationProp<RootTabParamList>>()?.navigate('Scanner');
+  };
+
+  const handleOpenCreateFolder = () => {
+    setIsAddMenuOpen(false);
+    setIsCreateFolderOpen(true);
+  };
+
   const handleCreateFolder = async () => {
     const name = newFolderName.trim();
     if (!name) return;
@@ -154,39 +188,96 @@ export function HistoryScreen({ navigation }: Props) {
   };
 
   const handleAssignFolder = async (folderId: string | null) => {
-    if (!assigningEntry) return;
-    await setEntryFolder(assigningEntry.kind, assigningEntry.timestamp, folderId);
-    setAssigningEntry(null);
+    if (!assigningKeys) return;
+    await setEntriesFolder(assigningKeys, folderId);
+    setAssigningKeys(null);
+    setSelectedKeys(new Set());
     reload();
   };
 
-  const handleDeleteEntry = () => {
-    if (!assigningEntry) return;
-    const entry = assigningEntry;
+  const handleDeleteAssigning = () => {
+    if (!assigningKeys) return;
+    const keys = assigningKeys;
     Alert.alert(t('history.deleteEntryTitle'), t('history.deleteEntryBody'), [
       { text: t('history.cancel'), style: 'cancel' },
       {
         text: t('history.delete'),
         style: 'destructive',
         onPress: async () => {
-          await deleteHistoryEntry(entry.kind, entry.timestamp);
-          setAssigningEntry(null);
+          await deleteHistoryEntries(keys);
+          setAssigningKeys(null);
+          setSelectedKeys(new Set());
           reload();
         },
       },
     ]);
   };
 
-  const addFolderPill = (
-    <Pressable onPress={() => setIsCreateFolderOpen(true)} style={styles.addFolderPill}>
-      <Ionicons name="add" size={14} color={colors.text} />
-      <Text style={styles.addFolderPillText}>{t('history.newFolder')}</Text>
-    </Pressable>
+  const handleToggleEditMode = () => {
+    setIsEditMode((prev) => !prev);
+    setSelectedKeys(new Set());
+  };
+
+  const handleToggleSelected = (item: ScanHistoryEntry) => {
+    const key = entryKey(item);
+    setSelectedKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const selectedEntries = useMemo(
+    () => entries.filter((entry) => selectedKeys.has(entryKey(entry))),
+    [entries, selectedKeys]
   );
+
+  const handleBulkMove = () => {
+    if (selectedEntries.length === 0) return;
+    setAssigningKeys(selectedEntries.map((entry) => ({ kind: entry.kind, timestamp: entry.timestamp })));
+  };
+
+  const handleBulkShare = () => {
+    if (selectedEntries.length === 0) return;
+    shareHistoryEntriesAsCsv(selectedEntries);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedEntries.length === 0) return;
+    const keys = selectedEntries.map((entry) => ({ kind: entry.kind, timestamp: entry.timestamp }));
+    Alert.alert(t('history.deleteSelectedTitle'), t('history.deleteEntryBody'), [
+      { text: t('history.cancel'), style: 'cancel' },
+      {
+        text: t('history.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          await deleteHistoryEntries(keys);
+          setSelectedKeys(new Set());
+          reload();
+        },
+      },
+    ]);
+  };
+
+  const hasSelection = selectedKeys.size > 0;
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
+      <View style={styles.headerRow}>
+        <Pressable onPress={() => setIsAddMenuOpen(true)} style={styles.iconButton} hitSlop={8}>
+          <Ionicons name="add" size={20} color={colors.text} />
+        </Pressable>
+        {entries.length > 0 ? (
+          <Pressable onPress={handleToggleEditMode} style={styles.editButton} hitSlop={8}>
+            <Text style={styles.editButtonText}>{isEditMode ? t('history.done') : t('history.edit')}</Text>
+          </Pressable>
+        ) : null}
+      </View>
       <Text style={styles.title}>{t('history.title')}</Text>
+      {isEditMode ? (
+        <Text style={styles.selectedCount}>{t('history.selectedCount', { count: selectedKeys.size })}</Text>
+      ) : null}
 
       {entries.length === 0 ? (
         <View style={styles.empty}>
@@ -223,7 +314,6 @@ export function HistoryScreen({ navigation }: Props) {
               isSelected={(value) => activeFolder === value}
               onPress={setActiveFolder}
               onLongPress={handleLongPressFolder}
-              trailing={addFolderPill}
             />
           </View>
 
@@ -235,13 +325,21 @@ export function HistoryScreen({ navigation }: Props) {
           ) : (
             <FlatList
               data={filteredEntries}
-              keyExtractor={(item) => `${item.kind}-${item.timestamp}`}
-              contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 20 }]}
+              keyExtractor={entryKey}
+              contentContainerStyle={[
+                styles.list,
+                { paddingBottom: tabBarHeight + (isEditMode ? 90 : 20) },
+              ]}
               renderItem={({ item }) => {
                 const name = item.kind === 'qr' ? item.data : (item.product?.productName ?? item.barcode);
                 const metaKey = item.kind === 'qr' ? QR_META_KEY[item.contentType] : 'history.metaBarcode';
                 const folder = item.folderId ? folders.find((f) => f.id === item.folderId) : undefined;
+                const selected = selectedKeys.has(entryKey(item));
                 const handlePress = () => {
+                  if (isEditMode) {
+                    handleToggleSelected(item);
+                    return;
+                  }
                   captureAnalyticsEvent('history_entry_opened', {
                     kind: item.kind,
                     ...(item.kind === 'qr' ? { contentType: item.contentType } : { status: item.status }),
@@ -250,10 +348,22 @@ export function HistoryScreen({ navigation }: Props) {
                 };
                 return (
                   <Pressable
-                    style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+                    style={({ pressed }) => [
+                      styles.row,
+                      selected && styles.rowSelected,
+                      pressed && styles.rowPressed,
+                    ]}
                     onPress={handlePress}
-                    onLongPress={() => setAssigningEntry(item)}
+                    onLongPress={() => !isEditMode && setAssigningKeys([{ kind: item.kind, timestamp: item.timestamp }])}
                   >
+                    {isEditMode ? (
+                      <Ionicons
+                        name={selected ? 'checkmark-circle' : 'ellipse-outline'}
+                        size={22}
+                        color={selected ? colors.mint : colors.text}
+                        style={!selected && styles.checkboxDim}
+                      />
+                    ) : null}
                     <View style={styles.rowText}>
                       <Text style={styles.name} numberOfLines={1}>
                         {name}
@@ -276,15 +386,66 @@ export function HistoryScreen({ navigation }: Props) {
         </>
       )}
 
+      {isEditMode ? (
+        <View style={[styles.bulkToolbarWrap, { bottom: tabBarHeight + 16 }]} pointerEvents="box-none">
+          <View style={styles.bulkToolbar}>
+            <BulkButton
+              icon="folder-outline"
+              label={t('history.move')}
+              disabled={!hasSelection}
+              onPress={handleBulkMove}
+              styles={styles}
+              colors={colors}
+            />
+            <BulkButton
+              icon="share-outline"
+              label={t('history.share')}
+              disabled={!hasSelection}
+              onPress={handleBulkShare}
+              styles={styles}
+              colors={colors}
+            />
+            <BulkButton
+              icon="trash-outline"
+              label={t('history.delete')}
+              disabled={!hasSelection}
+              onPress={handleBulkDelete}
+              styles={styles}
+              colors={colors}
+              destructive
+            />
+          </View>
+        </View>
+      ) : null}
+
+      <BottomSheet visible={isAddMenuOpen} onClose={() => setIsAddMenuOpen(false)} title={t('history.addTitle')}>
+        <View style={styles.sheetList}>
+          <Pressable
+            onPress={handleNewScan}
+            style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}
+          >
+            <Ionicons name="scan-outline" size={18} color={colors.mint} />
+            <Text style={styles.menuRowText}>{t('history.newScan')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={handleOpenCreateFolder}
+            style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}
+          >
+            <Ionicons name="folder-outline" size={18} color={colors.citrusText} />
+            <Text style={styles.menuRowText}>{t('history.newFolder')}</Text>
+          </Pressable>
+        </View>
+      </BottomSheet>
+
       <BottomSheet
-        visible={assigningEntry !== null}
-        onClose={() => setAssigningEntry(null)}
+        visible={assigningKeys !== null}
+        onClose={() => setAssigningKeys(null)}
         title={t('history.moveToFolder')}
       >
         <View style={styles.sheetList}>
           <FolderRow
             label={t('history.folderUnfiled')}
-            selected={!assigningEntry?.folderId}
+            selected={assigningSingleEntry ? !assigningSingleEntry.folderId : false}
             onPress={() => handleAssignFolder(null)}
             styles={styles}
           />
@@ -292,7 +453,7 @@ export function HistoryScreen({ navigation }: Props) {
             <FolderRow
               key={folder.id}
               label={folder.name}
-              selected={assigningEntry?.folderId === folder.id}
+              selected={assigningSingleEntry?.folderId === folder.id}
               onPress={() => handleAssignFolder(folder.id)}
               styles={styles}
             />
@@ -300,7 +461,7 @@ export function HistoryScreen({ navigation }: Props) {
         </View>
 
         <Pressable
-          onPress={handleDeleteEntry}
+          onPress={handleDeleteAssigning}
           style={({ pressed }) => [styles.deleteEntryRow, pressed && styles.rowPressed]}
         >
           <Ionicons name="trash-outline" size={16} color={colors.coralText} />
@@ -347,18 +508,91 @@ function FolderRow({
   );
 }
 
+function BulkButton({
+  icon,
+  label,
+  disabled,
+  onPress,
+  styles,
+  colors,
+  destructive,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  disabled: boolean;
+  onPress: () => void;
+  styles: Styles;
+  colors: ColorTheme;
+  destructive?: boolean;
+}) {
+  return (
+    <Pressable onPress={onPress} disabled={disabled} style={styles.bulkButton}>
+      <Ionicons
+        name={icon}
+        size={17}
+        color={destructive ? colors.coralText : colors.text}
+        style={disabled && styles.bulkButtonDisabled}
+      />
+      <Text
+        style={[
+          styles.bulkButtonText,
+          destructive && styles.bulkButtonTextDestructive,
+          disabled && styles.bulkButtonDisabled,
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 function createStyles(colors: ColorTheme) {
   return StyleSheet.create({
     screen: {
       flex: 1,
       backgroundColor: colors.cabinet,
     },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingTop: 20,
+    },
+    iconButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+    },
+    editButton: {
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+    },
+    editButtonText: {
+      fontFamily: fonts.displayBold,
+      fontSize: 14,
+      color: colors.mint,
+    },
     title: {
       fontFamily: fonts.displayBold,
       fontSize: 22,
       color: colors.text,
-      padding: 20,
+      paddingHorizontal: 20,
+      paddingTop: 4,
       paddingBottom: 8,
+    },
+    selectedCount: {
+      fontSize: 12.5,
+      color: colors.text,
+      opacity: 0.6,
+      paddingHorizontal: 20,
+      marginTop: -4,
+      marginBottom: 8,
     },
     empty: {
       flex: 1,
@@ -407,23 +641,6 @@ function createStyles(colors: ColorTheme) {
     searchClear: {
       opacity: 0.5,
     },
-    addFolderPill: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      borderWidth: 1,
-      borderColor: colors.panelLine,
-      borderRadius: 999,
-      paddingHorizontal: 12,
-      paddingVertical: 7,
-    },
-    addFolderPillText: {
-      fontFamily: fonts.mono,
-      fontSize: 11.5,
-      letterSpacing: 0.3,
-      color: colors.text,
-      opacity: 0.75,
-    },
     list: {
       paddingHorizontal: 20,
       gap: 10,
@@ -438,8 +655,14 @@ function createStyles(colors: ColorTheme) {
       borderRadius: 16,
       padding: 14,
     },
+    rowSelected: {
+      borderColor: colors.mint,
+    },
     rowPressed: {
       opacity: 0.75,
+    },
+    checkboxDim: {
+      opacity: 0.4,
     },
     rowText: {
       flex: 1,
@@ -456,9 +679,57 @@ function createStyles(colors: ColorTheme) {
       opacity: 0.5,
       marginTop: 3,
     },
+    bulkToolbarWrap: {
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      alignItems: 'center',
+    },
+    bulkToolbar: {
+      flexDirection: 'row',
+      width: '100%',
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 20,
+      paddingVertical: 10,
+    },
+    bulkButton: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 3,
+    },
+    bulkButtonText: {
+      fontFamily: fonts.displayBold,
+      fontSize: 11.5,
+      color: colors.text,
+    },
+    bulkButtonTextDestructive: {
+      color: colors.coralText,
+    },
+    bulkButtonDisabled: {
+      opacity: 0.35,
+    },
     sheetList: {
       gap: 10,
       paddingBottom: 6,
+    },
+    menuRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    menuRowText: {
+      fontFamily: fonts.displayBold,
+      fontSize: 14.5,
+      color: colors.text,
     },
     folderRow: {
       flexDirection: 'row',

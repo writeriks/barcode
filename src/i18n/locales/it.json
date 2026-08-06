@@ -102,7 +102,15 @@
     "deleteEntry": "Elimina dalla cronologia",
     "deleteEntryTitle": "Eliminare questo elemento?",
     "deleteEntryBody": "Questa azione non può essere annullata.",
-    "delete": "Elimina"
+    "delete": "Elimina",
+    "addTitle": "Aggiungi",
+    "newScan": "Nuova scansione",
+    "edit": "Modifica",
+    "done": "Fine",
+    "selectedCount": "{{count}} selezionati",
+    "move": "Sposta",
+    "share": "Condividi",
+    "deleteSelectedTitle": "Eliminare gli elementi selezionati?"
   },
   "myCodes": {
     "title": "I miei codici",

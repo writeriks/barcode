@@ -102,7 +102,15 @@
     "deleteEntry": "Eliminar del historial",
     "deleteEntryTitle": "¿Eliminar este elemento?",
     "deleteEntryBody": "Esto no se puede deshacer.",
-    "delete": "Eliminar"
+    "delete": "Eliminar",
+    "addTitle": "Añadir",
+    "newScan": "Nuevo escaneo",
+    "edit": "Editar",
+    "done": "Listo",
+    "selectedCount": "{{count}} seleccionados",
+    "move": "Mover",
+    "share": "Compartir",
+    "deleteSelectedTitle": "¿Eliminar los elementos seleccionados?"
   },
   "myCodes": {
     "title": "Mis códigos",

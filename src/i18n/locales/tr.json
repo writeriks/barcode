@@ -102,7 +102,15 @@
     "deleteEntry": "Geçmişten sil",
     "deleteEntryTitle": "Bu kayıt silinsin mi?",
     "deleteEntryBody": "Bu işlem geri alınamaz.",
-    "delete": "Sil"
+    "delete": "Sil",
+    "addTitle": "Ekle",
+    "newScan": "Yeni tarama",
+    "edit": "Düzenle",
+    "done": "Bitti",
+    "selectedCount": "{{count}} seçili",
+    "move": "Taşı",
+    "share": "Paylaş",
+    "deleteSelectedTitle": "Seçili kayıtlar silinsin mi?"
   },
   "myCodes": {
     "title": "Kodlarım",

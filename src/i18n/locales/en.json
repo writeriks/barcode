@@ -102,7 +102,15 @@
     "deleteEntry": "Delete from history",
     "deleteEntryTitle": "Delete this entry?",
     "deleteEntryBody": "This can't be undone.",
-    "delete": "Delete"
+    "delete": "Delete",
+    "addTitle": "Add",
+    "newScan": "New scan",
+    "edit": "Edit",
+    "done": "Done",
+    "selectedCount": "{{count}} selected",
+    "move": "Move",
+    "share": "Share",
+    "deleteSelectedTitle": "Delete selected entries?"
   },
   "myCodes": {
     "title": "My Codes",

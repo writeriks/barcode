@@ -102,7 +102,15 @@
     "deleteEntry": "Supprimer de l’historique",
     "deleteEntryTitle": "Supprimer cet élément ?",
     "deleteEntryBody": "Cette action est irréversible.",
-    "delete": "Supprimer"
+    "delete": "Supprimer",
+    "addTitle": "Ajouter",
+    "newScan": "Nouveau scan",
+    "edit": "Modifier",
+    "done": "Terminé",
+    "selectedCount": "{{count}} sélectionné(s)",
+    "move": "Déplacer",
+    "share": "Partager",
+    "deleteSelectedTitle": "Supprimer les éléments sélectionnés ?"
   },
   "myCodes": {
     "title": "Mes codes",

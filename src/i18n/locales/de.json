@@ -102,7 +102,15 @@
     "deleteEntry": "Aus dem Verlauf löschen",
     "deleteEntryTitle": "Diesen Eintrag löschen?",
     "deleteEntryBody": "Dies kann nicht rückgängig gemacht werden.",
-    "delete": "Löschen"
+    "delete": "Löschen",
+    "addTitle": "Hinzufügen",
+    "newScan": "Neuer Scan",
+    "edit": "Bearbeiten",
+    "done": "Fertig",
+    "selectedCount": "{{count}} ausgewählt",
+    "move": "Verschieben",
+    "share": "Teilen",
+    "deleteSelectedTitle": "Ausgewählte Einträge löschen?"
   },
   "myCodes": {
     "title": "Meine Codes",

@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useScanInterstitial } from '../hooks/useScanInterstitial';
@@ -8,6 +9,7 @@ import { addHistoryEntry } from '../services/scanHistory';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { classifyQrContent } from '../utils/classifyQrContent';
+import type { RootTabParamList } from '../navigation/types';
 import type { ScanKind, ScanMethod } from '../types/scan';
 import type { LookupResult } from '../types/product';
 import { FoundProductScreen } from './FoundProductScreen';
@@ -15,6 +17,8 @@ import { LookupErrorScreen } from './LookupErrorScreen';
 import { MissingProductScreen } from './MissingProductScreen';
 import { QrResultScreen } from './QrResultScreen';
 import { ScannerScreen } from './ScannerScreen';
+
+type Props = BottomTabScreenProps<RootTabParamList, 'Scanner'>;
 
 type Screen =
   | { name: 'scanner' }
@@ -29,15 +33,24 @@ function analyticsResultValue(status: LookupResult['status']): string {
   return status === 'not-found' ? 'not_found' : status;
 }
 
-/** The scan → result flow, self-contained so it can sit inside the
- * "Scanner" tab without knowing anything about the tab navigator around
- * it. */
-export function ScannerFlowScreen() {
+/** The scan → result flow. Takes `navigation` only to reset to the camera
+ * view when the already-active Scanner tab is re-tapped. */
+export function ScannerFlowScreen({ navigation }: Props) {
   const [screen, setScreen] = useState<Screen>({ name: 'scanner' });
   const { maybeShowForScan } = useScanInterstitial();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const lastMethodRef = useRef<ScanMethod>('camera');
+
+  // Re-tapping the already-active Scanner tab should feel like "start over",
+  // not do nothing — pop back to the camera view from wherever we are.
+  useEffect(() => {
+    return navigation.addListener('tabPress', () => {
+      if (navigation.isFocused()) {
+        setScreen({ name: 'scanner' });
+      }
+    });
+  }, [navigation]);
 
   const runLookup = useCallback(
     async (barcode: string, method: ScanMethod = lastMethodRef.current) => {

@@ -6,7 +6,7 @@ import {
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PostHogProvider } from 'posthog-react-native';
@@ -69,12 +69,18 @@ function AppContent() {
     });
   }, []);
 
-  // Re-lock every time the app comes back to the foreground, not just on
-  // cold start — that's the point of an app lock.
+  // Re-lock when the app truly returns from the background — not on every
+  // 'active' transition, since the Face ID/passcode prompt itself briefly
+  // flips the app to 'inactive' and back to 'active' when it resolves.
+  // Matching that too would re-lock the instant a correct unlock succeeds.
+  const appStateRef = useRef(AppState.currentState);
   useEffect(() => {
     if (!appLockEnabled) return;
     const subscription = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'active') setIsLocked(true);
+      if (appStateRef.current === 'background' && nextState === 'active') {
+        setIsLocked(true);
+      }
+      appStateRef.current = nextState;
     });
     return () => subscription.remove();
   }, [appLockEnabled]);

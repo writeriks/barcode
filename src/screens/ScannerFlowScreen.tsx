@@ -1,4 +1,5 @@
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { BottomTabNavigationProp, BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,6 +7,7 @@ import { useScanInterstitial } from '../hooks/useScanInterstitial';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { lookupProduct } from '../services/lookupProduct';
 import { addHistoryEntry } from '../services/scanHistory';
+import { isBatchScanEnabled } from '../services/scannerPreference';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { classifyQrContent } from '../utils/classifyQrContent';
@@ -41,6 +43,19 @@ export function ScannerFlowScreen({ navigation }: Props) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const lastMethodRef = useRef<ScanMethod>('camera');
+  const [isBatchMode, setIsBatchMode] = useState(false);
+  const [batchCount, setBatchCount] = useState(0);
+
+  // Re-checked on every focus so flipping the Settings toggle takes effect
+  // as soon as you come back to this tab, without needing an app restart.
+  useFocusEffect(
+    useCallback(() => {
+      isBatchScanEnabled().then((enabled) => {
+        setIsBatchMode(enabled);
+        if (enabled) setBatchCount(0);
+      });
+    }, [])
+  );
 
   // Re-tapping the already-active Scanner tab should feel like "start over",
   // not do nothing — pop back to the camera view from wherever we are.
@@ -48,6 +63,7 @@ export function ScannerFlowScreen({ navigation }: Props) {
     return navigation.addListener('tabPress', () => {
       if (navigation.isFocused()) {
         setScreen({ name: 'scanner' });
+        setBatchCount(0);
       }
     });
   }, [navigation]);
@@ -76,8 +92,50 @@ export function ScannerFlowScreen({ navigation }: Props) {
     [maybeShowForScan]
   );
 
+  // In batch mode the camera never leaves the scanner view, so a barcode's
+  // lookup runs in the background instead of blocking the next scan —
+  // there's no "loading"/"result" screen for it to drive.
+  const runBatchBarcodeLookup = useCallback(async (barcode: string, method: ScanMethod, timestamp: number) => {
+    const result = await lookupProduct(barcode);
+    captureAnalyticsEvent('scan_completed', {
+      kind: 'barcode',
+      method,
+      result: analyticsResultValue(result.status),
+      batch: true,
+    });
+    if (result.status === 'found' || result.status === 'incomplete') {
+      addHistoryEntry({ kind: 'product', barcode, timestamp, status: result.status, product: result.product });
+    } else if (result.status === 'not-found') {
+      addHistoryEntry({ kind: 'product', barcode, timestamp, status: 'not-found' });
+    }
+  }, []);
+
+  const handleBatchScanned = useCallback(
+    (data: string, kind: ScanKind, method: ScanMethod) => {
+      setBatchCount((count) => count + 1);
+      const timestamp = Date.now();
+      if (kind === 'qr') {
+        captureAnalyticsEvent('scan_completed', { kind: 'qr', method, result: 'found', batch: true });
+        addHistoryEntry({ kind: 'qr', data, timestamp, contentType: classifyQrContent(data) });
+        return;
+      }
+      runBatchBarcodeLookup(data, method, timestamp);
+    },
+    [runBatchBarcodeLookup]
+  );
+
+  const handleFinishBatch = useCallback(() => {
+    setBatchCount(0);
+    navigation.getParent<BottomTabNavigationProp<RootTabParamList>>()?.navigate('History');
+  }, [navigation]);
+
   const handleScanned = useCallback(
     (data: string, kind: ScanKind, method: ScanMethod) => {
+      if (isBatchMode) {
+        handleBatchScanned(data, kind, method);
+        return;
+      }
+
       if (kind === 'barcode') {
         runLookup(data, method);
         return;
@@ -88,7 +146,7 @@ export function ScannerFlowScreen({ navigation }: Props) {
       captureAnalyticsEvent('scan_completed', { kind: 'qr', method, result: 'found' });
       addHistoryEntry({ kind: 'qr', data, timestamp: Date.now(), contentType: classifyQrContent(data) });
     },
-    [runLookup, maybeShowForScan]
+    [runLookup, maybeShowForScan, isBatchMode, handleBatchScanned]
   );
 
   const goToScanner = useCallback(() => setScreen({ name: 'scanner' }), []);
@@ -105,7 +163,14 @@ export function ScannerFlowScreen({ navigation }: Props) {
 
   switch (screen.name) {
     case 'scanner':
-      return <ScannerScreen onScanned={handleScanned} />;
+      return (
+        <ScannerScreen
+          onScanned={handleScanned}
+          batchMode={isBatchMode}
+          batchCount={batchCount}
+          onFinishBatch={handleFinishBatch}
+        />
+      );
 
     case 'loading':
       return (

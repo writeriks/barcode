@@ -18,6 +18,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PillButton } from '../components/PillButton';
 import { playScanFeedback } from '../services/scanFeedback';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
@@ -27,7 +28,17 @@ import type { ScanKind, ScanMethod } from '../types/scan';
 
 interface Props {
   onScanned: (data: string, kind: ScanKind, method: ScanMethod) => void;
+  /** When set, the camera stays live after a scan instead of the parent
+   * navigating away — used for scanning several codes back to back. */
+  batchMode?: boolean;
+  batchCount?: number;
+  onFinishBatch?: () => void;
 }
+
+// How long to ignore new detections after a batch scan before re-arming —
+// long enough that the same code (still in frame) isn't immediately
+// re-scanned, short enough that consecutive different codes feel fluid.
+const BATCH_SCAN_COOLDOWN_MS = 1200;
 
 const SCANNED_TYPES = [
   'qr',
@@ -54,7 +65,7 @@ const VIEWFINDER_HEIGHT = 130;
  * expected to unmount this screen once it navigates away to look up the
  * result, which also stops the camera.
  */
-export function ScannerScreen({ onScanned }: Props) {
+export function ScannerScreen({ onScanned, batchMode, batchCount = 0, onFinishBatch }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const mode = useThemeMode();
@@ -63,6 +74,7 @@ export function ScannerScreen({ onScanned }: Props) {
   const [permission, requestPermission] = useCameraPermissions();
   const hasHandledScanRef = useRef(false);
   const tabBarHeight = useBottomTabBarHeight();
+  const insets = useSafeAreaInsets();
 
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
@@ -102,8 +114,16 @@ export function ScannerScreen({ onScanned }: Props) {
       hasHandledScanRef.current = true;
       playScanFeedback();
       onScanned(data, type === 'qr' ? 'qr' : 'barcode', 'camera');
+
+      // In batch mode nothing unmounts this screen to naturally reset the
+      // lock, so re-arm it ourselves after a short cooldown.
+      if (batchMode) {
+        setTimeout(() => {
+          hasHandledScanRef.current = false;
+        }, BATCH_SCAN_COOLDOWN_MS);
+      }
     },
-    [onScanned]
+    [onScanned, batchMode]
   );
 
   const handleUploadPhoto = useCallback(async () => {
@@ -181,6 +201,17 @@ export function ScannerScreen({ onScanned }: Props) {
           <Text style={styles.chipLabel}>{t('scanner.waitingToScan')}</Text>
         </View>
       </View>
+
+      {batchMode ? (
+        <View style={[styles.batchBarWrap, { top: insets.top + 16 }]} pointerEvents="box-none">
+          <BlurView intensity={68} tint={mode === 'light' ? 'light' : 'dark'} style={styles.batchBar}>
+            <Text style={styles.batchCount}>{t('scanner.batchCount', { count: batchCount })}</Text>
+            <Pressable onPress={onFinishBatch} style={styles.batchDoneButton} hitSlop={8}>
+              <Text style={styles.batchDoneText}>{t('scanner.batchDone')}</Text>
+            </Pressable>
+          </BlurView>
+        </View>
+      ) : null}
 
       <View style={[styles.toolbarWrap, { bottom: tabBarHeight + 30 }]}>
         <BlurView intensity={68} tint={mode === 'light' ? 'light' : 'dark'} style={styles.toolbar}>
@@ -353,6 +384,40 @@ function createStyles(colors: ColorTheme, mode: 'light' | 'dark') {
       textTransform: 'uppercase',
       color: colors.text,
       opacity: 0.85,
+    },
+    batchBarWrap: {
+      position: 'absolute',
+      left: 24,
+      right: 24,
+      alignItems: 'center',
+    },
+    batchBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      borderRadius: 999,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: hairline,
+      paddingLeft: 16,
+      paddingRight: 6,
+      paddingVertical: 6,
+    },
+    batchCount: {
+      fontFamily: fonts.displayBold,
+      fontSize: 13,
+      color: colors.text,
+    },
+    batchDoneButton: {
+      backgroundColor: colors.mint,
+      borderRadius: 999,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+    },
+    batchDoneText: {
+      fontFamily: fonts.displayBold,
+      fontSize: 12.5,
+      color: colors.inkOnCream,
     },
     toolbarWrap: {
       position: 'absolute',

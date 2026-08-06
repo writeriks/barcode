@@ -11,7 +11,9 @@
     "flashOn": "Flash on",
     "flashOff": "Flash off",
     "noBarcodeFound": "No barcode found in that photo",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "batchCount": "{{count}} scanned",
+    "batchDone": "Done"
   },
   "result": {
     "unnamedProduct": "Unnamed product",
@@ -66,7 +68,23 @@
     "beepDescription": "Play a sound when a scan is successful",
     "appearanceSection": "Appearance",
     "light": "Light",
-    "dark": "Dark"
+    "dark": "Dark",
+    "appSettingsSection": "App Settings",
+    "lockApp": "Lock app",
+    "lockAppDescription": "Lock the app with a secure passcode or biometrics",
+    "lockAppPrompt": "Unlock Beep!",
+    "lockAppUnsupportedTitle": "Can't enable Lock app",
+    "lockAppUnsupportedBody": "Set up a passcode, Face ID, or Touch ID on your device first.",
+    "lockAppTitle": "Beep! is locked",
+    "lockAppBody": "Unlock to continue.",
+    "lockAppUnlock": "Unlock",
+    "generalSection": "General",
+    "batchScan": "Batch scan",
+    "batchScanDescription": "Scan several codes back to back without stopping",
+    "historySaving": "History",
+    "historySavingDescription": "Save a record of your scans",
+    "duplicateScans": "Duplicate scans",
+    "duplicateScansDescription": "Save a new entry even if you've scanned this before"
   },
   "tabs": {
     "scanner": "Scanner",

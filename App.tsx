@@ -7,18 +7,20 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, AppState, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PostHogProvider } from 'posthog-react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GlassTabBar } from './src/navigation/GlassTabBar';
 import { HistoryStack } from './src/navigation/HistoryStack';
 import type { RootTabParamList } from './src/navigation/types';
+import { AppLockScreen } from './src/screens/AppLockScreen';
 import { MyCodesScreen } from './src/screens/MyCodesScreen';
 import { ScannerFlowScreen } from './src/screens/ScannerFlowScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import i18n, { isSupportedLanguage, type SupportedLanguage } from './src/i18n';
 import { getLanguageOverride, setLanguageOverride } from './src/i18n/languagePreference';
+import { isAppLockEnabled as getAppLockEnabled } from './src/services/appLock';
 import { getAnalyticsClient } from './src/services/analytics';
 import { initializeAds } from './src/services/ads/initializeAds';
 import { ThemeProvider, useThemeColors, useThemeMode, useThemePreference } from './src/theme/ThemeContext';
@@ -51,9 +53,34 @@ function AppContent() {
   const [fontsLoaded] = useFonts({ Fredoka_600SemiBold, Fredoka_700Bold });
   const [languageOverride, setLanguageOverrideState] = useState<SupportedLanguage | null>(null);
   const [languageReady, setLanguageReady] = useState(false);
+  const [appLockEnabled, setAppLockEnabledState] = useState(false);
+  const [appLockReady, setAppLockReady] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
 
   useEffect(() => {
     initializeAds();
+  }, []);
+
+  useEffect(() => {
+    getAppLockEnabled().then((enabled) => {
+      setAppLockEnabledState(enabled);
+      setIsLocked(enabled);
+      setAppLockReady(true);
+    });
+  }, []);
+
+  // Re-lock every time the app comes back to the foreground, not just on
+  // cold start — that's the point of an app lock.
+  useEffect(() => {
+    if (!appLockEnabled) return;
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') setIsLocked(true);
+    });
+    return () => subscription.remove();
+  }, [appLockEnabled]);
+
+  const handleAppLockChanged = useCallback((enabled: boolean) => {
+    setAppLockEnabledState(enabled);
   }, []);
 
   useEffect(() => {
@@ -90,11 +117,20 @@ function AppContent() {
     };
   }, [colors, mode]);
 
-  if (!fontsLoaded || !languageReady) {
+  if (!fontsLoaded || !languageReady || !appLockReady) {
     return (
       <View style={[styles.center, { backgroundColor: colors.cabinet }]}>
         <ActivityIndicator size="large" color={colors.mint} />
       </View>
+    );
+  }
+
+  if (isLocked) {
+    return (
+      <SafeAreaProvider>
+        <AppLockScreen onUnlocked={() => setIsLocked(false)} />
+        <StatusBar style={mode === 'light' ? 'dark' : 'light'} />
+      </SafeAreaProvider>
     );
   }
 
@@ -116,6 +152,8 @@ function AppContent() {
                   onSelectLanguage={handleSelectLanguage}
                   themePreference={themePreference}
                   onSelectTheme={setThemePreference}
+                  appLockEnabled={appLockEnabled}
+                  onAppLockChanged={handleAppLockChanged}
                 />
               )}
             </Tab.Screen>

@@ -11,7 +11,9 @@
     "flashOn": "Lampa włączona",
     "flashOff": "Lampa wyłączona",
     "noBarcodeFound": "Nie znaleziono kodu kreskowego na tym zdjęciu",
-    "cancel": "Anuluj"
+    "cancel": "Anuluj",
+    "batchCount": "Zeskanowano: {{count}}",
+    "batchDone": "Gotowe"
   },
   "result": {
     "unnamedProduct": "Produkt bez nazwy",
@@ -66,7 +68,23 @@
     "beepDescription": "Odtwórz dźwięk po udanym skanowaniu",
     "appearanceSection": "Wygląd",
     "light": "Jasny",
-    "dark": "Ciemny"
+    "dark": "Ciemny",
+    "appSettingsSection": "Ustawienia aplikacji",
+    "lockApp": "Zablokuj aplikację",
+    "lockAppDescription": "Zablokuj aplikację bezpiecznym kodem lub biometrią",
+    "lockAppPrompt": "Odblokuj Beep!",
+    "lockAppUnsupportedTitle": "Nie można włączyć blokady aplikacji",
+    "lockAppUnsupportedBody": "Najpierw skonfiguruj kod dostępu, Face ID lub Touch ID na urządzeniu.",
+    "lockAppTitle": "Beep! jest zablokowany",
+    "lockAppBody": "Odblokuj, aby kontynuować.",
+    "lockAppUnlock": "Odblokuj",
+    "generalSection": "Ogólne",
+    "batchScan": "Skanowanie wsadowe",
+    "batchScanDescription": "Skanuj kilka kodów pod rząd bez przerywania",
+    "historySaving": "Historia",
+    "historySavingDescription": "Zapisuj historię swoich skanów",
+    "duplicateScans": "Zduplikowane skany",
+    "duplicateScansDescription": "Zapisuj nowy wpis, nawet jeśli już to zeskanowano"
   },
   "tabs": {
     "scanner": "Skaner",

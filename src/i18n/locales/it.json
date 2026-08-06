@@ -11,7 +11,9 @@
     "flashOn": "Flash attivo",
     "flashOff": "Flash spento",
     "noBarcodeFound": "Nessun codice a barre trovato in quella foto",
-    "cancel": "Annulla"
+    "cancel": "Annulla",
+    "batchCount": "{{count}} scansionati",
+    "batchDone": "Fine"
   },
   "result": {
     "unnamedProduct": "Prodotto senza nome",
@@ -66,7 +68,23 @@
     "beepDescription": "Riproduci un suono quando una scansione ha successo",
     "appearanceSection": "Aspetto",
     "light": "Chiaro",
-    "dark": "Scuro"
+    "dark": "Scuro",
+    "appSettingsSection": "Impostazioni app",
+    "lockApp": "Blocca l'app",
+    "lockAppDescription": "Blocca l'app con un codice sicuro o la biometria",
+    "lockAppPrompt": "Sblocca Beep!",
+    "lockAppUnsupportedTitle": "Impossibile attivare il blocco app",
+    "lockAppUnsupportedBody": "Configura prima un codice, Face ID o Touch ID sul tuo dispositivo.",
+    "lockAppTitle": "Beep! è bloccata",
+    "lockAppBody": "Sblocca per continuare.",
+    "lockAppUnlock": "Sblocca",
+    "generalSection": "Generale",
+    "batchScan": "Scansione in serie",
+    "batchScanDescription": "Scansiona più codici di seguito senza interruzioni",
+    "historySaving": "Cronologia",
+    "historySavingDescription": "Salva la cronologia delle tue scansioni",
+    "duplicateScans": "Scansioni duplicate",
+    "duplicateScansDescription": "Salva una nuova voce anche se hai già scansionato questo codice"
   },
   "tabs": {
     "scanner": "Scanner",

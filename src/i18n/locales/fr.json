@@ -11,7 +11,9 @@
     "flashOn": "Flash activé",
     "flashOff": "Flash désactivé",
     "noBarcodeFound": "Aucun code-barres trouvé sur cette photo",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "batchCount": "{{count}} scanné(s)",
+    "batchDone": "Terminé"
   },
   "result": {
     "unnamedProduct": "Produit sans nom",
@@ -66,7 +68,23 @@
     "beepDescription": "Jouer un son lorsqu'un scan réussit",
     "appearanceSection": "Apparence",
     "light": "Clair",
-    "dark": "Sombre"
+    "dark": "Sombre",
+    "appSettingsSection": "Paramètres de l'app",
+    "lockApp": "Verrouiller l'app",
+    "lockAppDescription": "Verrouillez l'app avec un code sécurisé ou la biométrie",
+    "lockAppPrompt": "Déverrouiller Beep!",
+    "lockAppUnsupportedTitle": "Impossible d'activer le verrouillage",
+    "lockAppUnsupportedBody": "Configurez d'abord un code, Face ID ou Touch ID sur votre appareil.",
+    "lockAppTitle": "Beep! est verrouillée",
+    "lockAppBody": "Déverrouillez pour continuer.",
+    "lockAppUnlock": "Déverrouiller",
+    "generalSection": "Général",
+    "batchScan": "Scan par lots",
+    "batchScanDescription": "Scannez plusieurs codes à la suite sans interruption",
+    "historySaving": "Historique",
+    "historySavingDescription": "Enregistrez l'historique de vos scans",
+    "duplicateScans": "Scans en double",
+    "duplicateScansDescription": "Enregistrez une nouvelle entrée même si vous avez déjà scanné ce code"
   },
   "tabs": {
     "scanner": "Scanner",

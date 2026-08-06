@@ -11,7 +11,9 @@
     "flashOn": "Flash activado",
     "flashOff": "Flash desactivado",
     "noBarcodeFound": "No se encontró ningún código de barras en esa foto",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "batchCount": "{{count}} escaneados",
+    "batchDone": "Listo"
   },
   "result": {
     "unnamedProduct": "Producto sin nombre",
@@ -66,7 +68,23 @@
     "beepDescription": "Reproducir un sonido cuando un escaneo se realiza con éxito",
     "appearanceSection": "Apariencia",
     "light": "Claro",
-    "dark": "Oscuro"
+    "dark": "Oscuro",
+    "appSettingsSection": "Ajustes de la app",
+    "lockApp": "Bloquear la app",
+    "lockAppDescription": "Bloquea la app con un código seguro o biometría",
+    "lockAppPrompt": "Desbloquear Beep!",
+    "lockAppUnsupportedTitle": "No se puede activar el bloqueo",
+    "lockAppUnsupportedBody": "Primero configura un código, Face ID o Touch ID en tu dispositivo.",
+    "lockAppTitle": "Beep! está bloqueada",
+    "lockAppBody": "Desbloquea para continuar.",
+    "lockAppUnlock": "Desbloquear",
+    "generalSection": "General",
+    "batchScan": "Escaneo por lotes",
+    "batchScanDescription": "Escanea varios códigos seguidos sin interrupciones",
+    "historySaving": "Historial",
+    "historySavingDescription": "Guarda un registro de tus escaneos",
+    "duplicateScans": "Escaneos duplicados",
+    "duplicateScansDescription": "Guarda un nuevo registro aunque ya hayas escaneado esto antes"
   },
   "tabs": {
     "scanner": "Escáner",

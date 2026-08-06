@@ -11,7 +11,9 @@
     "flashOn": "Flaş açık",
     "flashOff": "Flaş kapalı",
     "noBarcodeFound": "Bu fotoğrafta barkod bulunamadı",
-    "cancel": "İptal"
+    "cancel": "İptal",
+    "batchCount": "{{count}} tarandı",
+    "batchDone": "Bitti"
   },
   "result": {
     "unnamedProduct": "İsimsiz ürün",
@@ -66,7 +68,23 @@
     "beepDescription": "Tarama başarılı olduğunda ses çal",
     "appearanceSection": "Görünüm",
     "light": "Açık",
-    "dark": "Koyu"
+    "dark": "Koyu",
+    "appSettingsSection": "Uygulama Ayarları",
+    "lockApp": "Uygulamayı kilitle",
+    "lockAppDescription": "Uygulamayı şifre veya biyometrik kimlikle kilitle",
+    "lockAppPrompt": "Beep! kilidini aç",
+    "lockAppUnsupportedTitle": "Uygulama kilidi açılamıyor",
+    "lockAppUnsupportedBody": "Önce cihazında şifre, Face ID veya Touch ID kurman gerekiyor.",
+    "lockAppTitle": "Beep! kilitli",
+    "lockAppBody": "Devam etmek için kilidi aç.",
+    "lockAppUnlock": "Kilidi aç",
+    "generalSection": "Genel",
+    "batchScan": "Toplu tarama",
+    "batchScanDescription": "Durmadan art arda birden fazla kod tara",
+    "historySaving": "Geçmiş",
+    "historySavingDescription": "Taramalarının kaydını tut",
+    "duplicateScans": "Tekrar taramalar",
+    "duplicateScansDescription": "Daha önce taradığın bir kodu tekrar tarasan bile yeni kayıt oluştur"
   },
   "tabs": {
     "scanner": "Tarayıcı",

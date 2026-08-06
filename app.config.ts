@@ -92,6 +92,12 @@ const config: ExpoConfig = {
         microphonePermission: false,
       },
     ],
+    [
+      'expo-local-authentication',
+      {
+        faceIDPermission: 'Allow $(PRODUCT_NAME) to use Face ID to unlock the app.',
+      },
+    ],
   ],
 };
 

@@ -2,20 +2,28 @@ import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomSheet } from '../components/BottomSheet';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { LANGUAGE_NATIVE_NAMES } from '../i18n/languageNames';
 import { isPrivacyOptionsRequired, showPrivacyOptionsForm } from '../services/ads/consent';
+import { authenticateAppUnlock, isDeviceLockSupported, setAppLockEnabled } from '../services/appLock';
 import { captureAnalyticsEvent } from '../services/analytics';
+import {
+  isDuplicateScansEnabled,
+  isHistorySavingEnabled,
+  setDuplicateScansEnabled,
+  setHistorySavingEnabled,
+} from '../services/historyPreference';
 import {
   isBeepEnabled,
   isVibrateEnabled,
   setBeepEnabled,
   setVibrateEnabled,
 } from '../services/scanFeedbackPreference';
+import { isBatchScanEnabled, setBatchScanEnabled } from '../services/scannerPreference';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import type { ThemePreference } from '../theme/themePreference';
@@ -26,9 +34,18 @@ interface Props {
   onSelectLanguage: (code: SupportedLanguage | null) => void;
   themePreference: ThemePreference;
   onSelectTheme: (preference: ThemePreference) => void;
+  appLockEnabled: boolean;
+  onAppLockChanged: (enabled: boolean) => void;
 }
 
-export function SettingsScreen({ currentOverride, onSelectLanguage, themePreference, onSelectTheme }: Props) {
+export function SettingsScreen({
+  currentOverride,
+  onSelectLanguage,
+  themePreference,
+  onSelectTheme,
+  appLockEnabled,
+  onAppLockChanged,
+}: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
   const colors = useThemeColors();
@@ -36,12 +53,18 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, themePrefere
   const [showPrivacyRow, setShowPrivacyRow] = useState(false);
   const [vibrateEnabled, setVibrateEnabledState] = useState(true);
   const [beepEnabled, setBeepEnabledState] = useState(true);
+  const [historyEnabled, setHistoryEnabledState] = useState(true);
+  const [duplicateScansEnabled, setDuplicateScansEnabledState] = useState(true);
+  const [batchScanEnabled, setBatchScanEnabledState] = useState(false);
   const [isLanguageSheetOpen, setIsLanguageSheetOpen] = useState(false);
 
   useEffect(() => {
     isPrivacyOptionsRequired().then(setShowPrivacyRow);
     isVibrateEnabled().then(setVibrateEnabledState);
     isBeepEnabled().then(setBeepEnabledState);
+    isHistorySavingEnabled().then(setHistoryEnabledState);
+    isDuplicateScansEnabled().then(setDuplicateScansEnabledState);
+    isBatchScanEnabled().then(setBatchScanEnabledState);
   }, []);
 
   const handleToggleVibrate = (value: boolean) => {
@@ -54,6 +77,39 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, themePrefere
     setBeepEnabledState(value);
     setBeepEnabled(value);
     captureAnalyticsEvent('setting_changed', { setting: 'beep', value });
+  };
+
+  const handleToggleHistory = (value: boolean) => {
+    setHistoryEnabledState(value);
+    setHistorySavingEnabled(value);
+    captureAnalyticsEvent('setting_changed', { setting: 'history_saving', value });
+  };
+
+  const handleToggleDuplicateScans = (value: boolean) => {
+    setDuplicateScansEnabledState(value);
+    setDuplicateScansEnabled(value);
+    captureAnalyticsEvent('setting_changed', { setting: 'duplicate_scans', value });
+  };
+
+  const handleToggleBatchScan = (value: boolean) => {
+    setBatchScanEnabledState(value);
+    setBatchScanEnabled(value);
+    captureAnalyticsEvent('setting_changed', { setting: 'batch_scan', value });
+  };
+
+  const handleToggleAppLock = async (value: boolean) => {
+    if (value) {
+      const supported = await isDeviceLockSupported();
+      if (!supported) {
+        Alert.alert(t('settings.lockAppUnsupportedTitle'), t('settings.lockAppUnsupportedBody'));
+        return;
+      }
+      const authenticated = await authenticateAppUnlock(t('settings.lockAppPrompt'));
+      if (!authenticated) return;
+    }
+    await setAppLockEnabled(value);
+    onAppLockChanged(value);
+    captureAnalyticsEvent('setting_changed', { setting: 'app_lock', value });
   };
 
   const handleSelectTheme = (preference: ThemePreference) => {
@@ -86,7 +142,25 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, themePrefere
           ]}
         />
 
-        <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.scanFeedbackSection')}</Text>
+        <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.appSettingsSection')}</Text>
+        <ToggleRow
+          label={t('settings.lockApp')}
+          description={t('settings.lockAppDescription')}
+          value={appLockEnabled}
+          onValueChange={handleToggleAppLock}
+          colors={colors}
+          styles={styles}
+        />
+
+        <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.generalSection')}</Text>
+        <ToggleRow
+          label={t('settings.batchScan')}
+          description={t('settings.batchScanDescription')}
+          value={batchScanEnabled}
+          onValueChange={handleToggleBatchScan}
+          colors={colors}
+          styles={styles}
+        />
         <ToggleRow
           label={t('settings.vibrate')}
           description={t('settings.vibrateDescription')}
@@ -100,6 +174,22 @@ export function SettingsScreen({ currentOverride, onSelectLanguage, themePrefere
           description={t('settings.beepDescription')}
           value={beepEnabled}
           onValueChange={handleToggleBeep}
+          colors={colors}
+          styles={styles}
+        />
+        <ToggleRow
+          label={t('settings.historySaving')}
+          description={t('settings.historySavingDescription')}
+          value={historyEnabled}
+          onValueChange={handleToggleHistory}
+          colors={colors}
+          styles={styles}
+        />
+        <ToggleRow
+          label={t('settings.duplicateScans')}
+          description={t('settings.duplicateScansDescription')}
+          value={duplicateScansEnabled}
+          onValueChange={handleToggleDuplicateScans}
           colors={colors}
           styles={styles}
         />

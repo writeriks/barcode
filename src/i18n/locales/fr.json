@@ -84,7 +84,20 @@
     "metaQrEmail": "E-mail QR",
     "metaQrPhone": "Téléphone QR",
     "metaQrText": "Texte QR",
-    "metaQrOtp": "QR code 2FA"
+    "metaQrOtp": "QR code 2FA",
+    "searchPlaceholder": "Rechercher dans l’historique",
+    "folderAll": "Tous",
+    "folderUnfiled": "Sans dossier",
+    "newFolder": "Nouveau dossier",
+    "folderNamePlaceholder": "Nom du dossier",
+    "createFolder": "Créer",
+    "moveToFolder": "Déplacer vers un dossier",
+    "deleteFolderTitle": "Supprimer le dossier ?",
+    "deleteFolderBody": "Les éléments restent dans votre historique — ils seront simplement sans dossier.",
+    "deleteFolderCancel": "Annuler",
+    "deleteFolderDelete": "Supprimer",
+    "noResults": "Aucun résultat",
+    "noResultsBody": "Essayez une autre recherche ou un autre filtre."
   },
   "myCodes": {
     "title": "Mes codes",

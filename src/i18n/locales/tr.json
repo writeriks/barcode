@@ -84,7 +84,20 @@
     "metaQrEmail": "QR e-posta",
     "metaQrPhone": "QR telefon",
     "metaQrText": "QR metin",
-    "metaQrOtp": "QR 2FA kodu"
+    "metaQrOtp": "QR 2FA kodu",
+    "searchPlaceholder": "Geçmişte ara",
+    "folderAll": "Tümü",
+    "folderUnfiled": "Klasörsüz",
+    "newFolder": "Yeni klasör",
+    "folderNamePlaceholder": "Klasör adı",
+    "createFolder": "Oluştur",
+    "moveToFolder": "Klasöre taşı",
+    "deleteFolderTitle": "Klasör silinsin mi?",
+    "deleteFolderBody": "Kayıtlar geçmişinde kalır — sadece klasörsüz olurlar.",
+    "deleteFolderCancel": "Vazgeç",
+    "deleteFolderDelete": "Sil",
+    "noResults": "Sonuç yok",
+    "noResultsBody": "Farklı bir arama veya filtre dene."
   },
   "myCodes": {
     "title": "Kodlarım",

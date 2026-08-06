@@ -84,7 +84,20 @@
     "metaQrEmail": "Email QR",
     "metaQrPhone": "Telefono QR",
     "metaQrText": "Testo QR",
-    "metaQrOtp": "QR codice 2FA"
+    "metaQrOtp": "QR codice 2FA",
+    "searchPlaceholder": "Cerca nella cronologia",
+    "folderAll": "Tutti",
+    "folderUnfiled": "Senza cartella",
+    "newFolder": "Nuova cartella",
+    "folderNamePlaceholder": "Nome cartella",
+    "createFolder": "Crea",
+    "moveToFolder": "Sposta nella cartella",
+    "deleteFolderTitle": "Eliminare la cartella?",
+    "deleteFolderBody": "Gli elementi restano nella cronologia — saranno solo senza cartella.",
+    "deleteFolderCancel": "Annulla",
+    "deleteFolderDelete": "Elimina",
+    "noResults": "Nessun risultato",
+    "noResultsBody": "Prova una ricerca o un filtro diverso."
   },
   "myCodes": {
     "title": "I miei codici",

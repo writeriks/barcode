@@ -26,3 +26,25 @@ export async function addHistoryEntry(entry: ScanHistoryEntry): Promise<void> {
 export async function clearHistory(): Promise<void> {
   await AsyncStorage.removeItem(STORAGE_KEY);
 }
+
+/** Entries are identified by (kind, timestamp) — the same pair HistoryScreen
+ * already uses as its list key — since there's no separate id field. */
+export async function setEntryFolder(
+  kind: ScanHistoryEntry['kind'],
+  timestamp: number,
+  folderId: string | null
+): Promise<void> {
+  const existing = await getHistory();
+  const next = existing.map((entry) =>
+    entry.kind === kind && entry.timestamp === timestamp ? { ...entry, folderId: folderId ?? undefined } : entry
+  );
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+}
+
+/** Unfiles every entry in a folder that's about to be deleted — the
+ * entries themselves stay, only the folder reference is cleared. */
+export async function clearFolderFromEntries(folderId: string): Promise<void> {
+  const existing = await getHistory();
+  const next = existing.map((entry) => (entry.folderId === folderId ? { ...entry, folderId: undefined } : entry));
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+}

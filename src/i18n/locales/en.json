@@ -84,7 +84,20 @@
     "metaQrEmail": "QR email",
     "metaQrPhone": "QR phone",
     "metaQrText": "QR text",
-    "metaQrOtp": "QR 2FA code"
+    "metaQrOtp": "QR 2FA code",
+    "searchPlaceholder": "Search history",
+    "folderAll": "All",
+    "folderUnfiled": "Unfiled",
+    "newFolder": "New folder",
+    "folderNamePlaceholder": "Folder name",
+    "createFolder": "Create",
+    "moveToFolder": "Move to folder",
+    "deleteFolderTitle": "Delete folder?",
+    "deleteFolderBody": "Entries stay in your history — they'll just be unfiled.",
+    "deleteFolderCancel": "Cancel",
+    "deleteFolderDelete": "Delete",
+    "noResults": "No matches",
+    "noResultsBody": "Try a different search or filter."
   },
   "myCodes": {
     "title": "My Codes",

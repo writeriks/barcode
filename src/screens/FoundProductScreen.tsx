@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
+import { CopyableBarcode } from '../components/CopyableBarcode';
 import { PillButton } from '../components/PillButton';
 import { ScoreReveal } from '../components/ScoreReveal';
 import { useThemeColors } from '../theme/ThemeContext';
@@ -42,7 +43,7 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
   return (
     <View style={[styles.screen, { paddingBottom: tabBarHeight }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.barcode}>{product.code}</Text>
+        <CopyableBarcode barcode={product.code} style={styles.barcodeChip} />
 
         <View style={styles.productCard}>
           {product.imageUrl ? (
@@ -119,12 +120,8 @@ function createStyles(colors: ColorTheme) {
       gap: 14,
       paddingBottom: 40,
     },
-    barcode: {
-      fontFamily: fonts.mono,
-      fontSize: 11,
-      letterSpacing: 1,
-      color: colors.text,
-      opacity: 0.55,
+    barcodeChip: {
+      alignSelf: 'flex-start',
     },
     image: {
       width: 64,

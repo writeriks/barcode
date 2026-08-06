@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, Easing, Linking, StyleSheet, Text, View } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
+import { CopyableBarcode } from '../components/CopyableBarcode';
 import { PillButton } from '../components/PillButton';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { useThemeColors } from '../theme/ThemeContext';
@@ -78,7 +79,7 @@ export function MissingProductScreen({ barcode, onScanAgain }: Props) {
 
         <PillButton title={t('missing.scanAnother')} onPress={onScanAgain} variant="ghost" />
 
-        <Text style={styles.stat}>{t('missing.barcodeLabel', { barcode })}</Text>
+        <CopyableBarcode barcode={barcode} />
       </View>
       <BottomBannerAd />
     </View>
@@ -136,13 +137,6 @@ function createStyles(colors: ColorTheme) {
     },
     flexButton: {
       flex: 1,
-    },
-    stat: {
-      marginTop: 6,
-      fontFamily: fonts.mono,
-      fontSize: 10.5,
-      color: colors.text,
-      opacity: 0.4,
     },
   });
 }

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -14,7 +14,10 @@ interface Props {
 }
 
 /** A generic slide-up sheet anchored to the bottom of the screen, with a
- * tap-outside-to-dismiss backdrop and a drag-handle affordance. */
+ * tap-outside-to-dismiss backdrop and a drag-handle affordance. Wrapped in
+ * KeyboardAvoidingView so a focused text input inside it (e.g. an
+ * autoFocus'd "name this folder" field) doesn't end up hidden behind the
+ * keyboard, which sits on top of the sheet by default inside a Modal. */
 export function BottomSheet({ visible, onClose, title, children }: Props) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
@@ -22,18 +25,26 @@ export function BottomSheet({ visible, onClose, title, children }: Props) {
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} />
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
-        <View style={styles.handle} />
-        <Text style={styles.title}>{title}</Text>
-        {children}
-      </View>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <Pressable style={styles.backdrop} onPress={onClose} />
+        <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
+          <View style={styles.handle} />
+          <Text style={styles.title}>{title}</Text>
+          {children}
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
 
 function createStyles(colors: ColorTheme) {
   return StyleSheet.create({
+    flex: {
+      flex: 1,
+    },
     backdrop: {
       flex: 1,
       backgroundColor: 'rgba(0,0,0,0.5)',

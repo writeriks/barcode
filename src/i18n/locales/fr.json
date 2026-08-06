@@ -97,7 +97,8 @@
     "deleteFolderCancel": "Annuler",
     "deleteFolderDelete": "Supprimer",
     "noResults": "Aucun résultat",
-    "noResultsBody": "Essayez une autre recherche ou un autre filtre."
+    "noResultsBody": "Essayez une autre recherche ou un autre filtre.",
+    "cancel": "Annuler"
   },
   "myCodes": {
     "title": "Mes codes",

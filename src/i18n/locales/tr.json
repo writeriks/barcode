@@ -97,7 +97,8 @@
     "deleteFolderCancel": "Vazgeç",
     "deleteFolderDelete": "Sil",
     "noResults": "Sonuç yok",
-    "noResultsBody": "Farklı bir arama veya filtre dene."
+    "noResultsBody": "Farklı bir arama veya filtre dene.",
+    "cancel": "Vazgeç"
   },
   "myCodes": {
     "title": "Kodlarım",

@@ -24,6 +24,11 @@ type Props = NativeStackScreenProps<HistoryStackParamList, 'HistoryList'>;
 
 type TypeFilterValue = 'barcode' | QrContentType;
 
+// A single Modal-backed sheet shared by both flows — mounting two separate
+// <Modal> siblings toggled by independent booleans left the second one
+// showing just its backdrop with blank content on iOS.
+type ActiveSheet = { kind: 'assign'; entry: ScanHistoryEntry } | { kind: 'create-folder' };
+
 const FOLDER_ALL = 'all';
 const FOLDER_UNFILED = 'unfiled';
 const FOLDER_ACCENTS: PillAccent[] = ['punch', 'citrus', 'mint', 'coral'];
@@ -71,8 +76,7 @@ export function HistoryScreen({ navigation }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTypes, setActiveTypes] = useState<Set<TypeFilterValue>>(new Set());
   const [activeFolder, setActiveFolder] = useState<string>(FOLDER_ALL);
-  const [assigningEntry, setAssigningEntry] = useState<ScanHistoryEntry | null>(null);
-  const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
+  const [activeSheet, setActiveSheet] = useState<ActiveSheet | null>(null);
   const [newFolderName, setNewFolderName] = useState('');
 
   const reload = useCallback(() => {
@@ -147,20 +151,19 @@ export function HistoryScreen({ navigation }: Props) {
     if (!name) return;
     const folder = await createFolder(name);
     setNewFolderName('');
-    setIsCreateFolderOpen(false);
+    setActiveSheet(null);
     setActiveFolder(folder.id);
     reload();
   };
 
-  const handleAssignFolder = async (folderId: string | null) => {
-    if (!assigningEntry) return;
-    await setEntryFolder(assigningEntry.kind, assigningEntry.timestamp, folderId);
-    setAssigningEntry(null);
+  const handleAssignFolder = async (entry: ScanHistoryEntry, folderId: string | null) => {
+    await setEntryFolder(entry.kind, entry.timestamp, folderId);
+    setActiveSheet(null);
     reload();
   };
 
   const addFolderPill = (
-    <Pressable onPress={() => setIsCreateFolderOpen(true)} style={styles.addFolderPill}>
+    <Pressable onPress={() => setActiveSheet({ kind: 'create-folder' })} style={styles.addFolderPill}>
       <Ionicons name="add" size={14} color={colors.text} />
       <Text style={styles.addFolderPillText}>{t('history.newFolder')}</Text>
     </Pressable>
@@ -234,7 +237,7 @@ export function HistoryScreen({ navigation }: Props) {
                   <Pressable
                     style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
                     onPress={handlePress}
-                    onLongPress={() => setAssigningEntry(item)}
+                    onLongPress={() => setActiveSheet({ kind: 'assign', entry: item })}
                   >
                     <View style={styles.rowText}>
                       <Text style={styles.name} numberOfLines={1}>
@@ -259,52 +262,48 @@ export function HistoryScreen({ navigation }: Props) {
       )}
 
       <BottomSheet
-        visible={assigningEntry !== null}
-        onClose={() => setAssigningEntry(null)}
-        title={t('history.moveToFolder')}
+        visible={activeSheet !== null}
+        onClose={() => setActiveSheet(null)}
+        title={activeSheet?.kind === 'create-folder' ? t('history.newFolder') : t('history.moveToFolder')}
       >
-        <View style={styles.sheetList}>
-          <FolderRow
-            label={t('history.folderUnfiled')}
-            selected={!assigningEntry?.folderId}
-            onPress={() => handleAssignFolder(null)}
-            styles={styles}
-          />
-          {folders.map((folder) => (
+        {activeSheet?.kind === 'assign' ? (
+          <View style={styles.sheetList}>
             <FolderRow
-              key={folder.id}
-              label={folder.name}
-              selected={assigningEntry?.folderId === folder.id}
-              onPress={() => handleAssignFolder(folder.id)}
+              label={t('history.folderUnfiled')}
+              selected={!activeSheet.entry.folderId}
+              onPress={() => handleAssignFolder(activeSheet.entry, null)}
               styles={styles}
             />
-          ))}
-        </View>
-      </BottomSheet>
-
-      <BottomSheet
-        visible={isCreateFolderOpen}
-        onClose={() => setIsCreateFolderOpen(false)}
-        title={t('history.newFolder')}
-      >
-        <View style={styles.createFolderForm}>
-          <TextInput
-            style={styles.createFolderInput}
-            placeholder={t('history.folderNamePlaceholder')}
-            placeholderTextColor={placeholderColor}
-            value={newFolderName}
-            onChangeText={setNewFolderName}
-            autoFocus
-            onSubmitEditing={handleCreateFolder}
-          />
-          <Pressable
-            onPress={handleCreateFolder}
-            disabled={!newFolderName.trim()}
-            style={[styles.createFolderButton, !newFolderName.trim() && styles.createFolderButtonDisabled]}
-          >
-            <Text style={styles.createFolderButtonText}>{t('history.createFolder')}</Text>
-          </Pressable>
-        </View>
+            {folders.map((folder) => (
+              <FolderRow
+                key={folder.id}
+                label={folder.name}
+                selected={activeSheet.entry.folderId === folder.id}
+                onPress={() => handleAssignFolder(activeSheet.entry, folder.id)}
+                styles={styles}
+              />
+            ))}
+          </View>
+        ) : activeSheet?.kind === 'create-folder' ? (
+          <View style={styles.createFolderForm}>
+            <TextInput
+              style={styles.createFolderInput}
+              placeholder={t('history.folderNamePlaceholder')}
+              placeholderTextColor={placeholderColor}
+              value={newFolderName}
+              onChangeText={setNewFolderName}
+              autoFocus
+              onSubmitEditing={handleCreateFolder}
+            />
+            <Pressable
+              onPress={handleCreateFolder}
+              disabled={!newFolderName.trim()}
+              style={[styles.createFolderButton, !newFolderName.trim() && styles.createFolderButtonDisabled]}
+            >
+              <Text style={styles.createFolderButtonText}>{t('history.createFolder')}</Text>
+            </Pressable>
+          </View>
+        ) : null}
       </BottomSheet>
     </SafeAreaView>
   );

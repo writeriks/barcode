@@ -98,7 +98,11 @@
     "deleteFolderDelete": "Sil",
     "noResults": "Sonuç yok",
     "noResultsBody": "Farklı bir arama veya filtre dene.",
-    "cancel": "Vazgeç"
+    "cancel": "Vazgeç",
+    "deleteEntry": "Geçmişten sil",
+    "deleteEntryTitle": "Bu kayıt silinsin mi?",
+    "deleteEntryBody": "Bu işlem geri alınamaz.",
+    "delete": "Sil"
   },
   "myCodes": {
     "title": "Kodlarım",

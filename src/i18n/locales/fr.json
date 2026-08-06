@@ -98,7 +98,11 @@
     "deleteFolderDelete": "Supprimer",
     "noResults": "Aucun résultat",
     "noResultsBody": "Essayez une autre recherche ou un autre filtre.",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "deleteEntry": "Supprimer de l’historique",
+    "deleteEntryTitle": "Supprimer cet élément ?",
+    "deleteEntryBody": "Cette action est irréversible.",
+    "delete": "Supprimer"
   },
   "myCodes": {
     "title": "Mes codes",

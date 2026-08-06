@@ -98,7 +98,11 @@
     "deleteFolderDelete": "Elimina",
     "noResults": "Nessun risultato",
     "noResultsBody": "Prova una ricerca o un filtro diverso.",
-    "cancel": "Annulla"
+    "cancel": "Annulla",
+    "deleteEntry": "Elimina dalla cronologia",
+    "deleteEntryTitle": "Eliminare questo elemento?",
+    "deleteEntryBody": "Questa azione non può essere annullata.",
+    "delete": "Elimina"
   },
   "myCodes": {
     "title": "I miei codici",

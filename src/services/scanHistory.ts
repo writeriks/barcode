@@ -48,3 +48,9 @@ export async function clearFolderFromEntries(folderId: string): Promise<void> {
   const next = existing.map((entry) => (entry.folderId === folderId ? { ...entry, folderId: undefined } : entry));
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
 }
+
+export async function deleteHistoryEntry(kind: ScanHistoryEntry['kind'], timestamp: number): Promise<void> {
+  const existing = await getHistory();
+  const next = existing.filter((entry) => !(entry.kind === kind && entry.timestamp === timestamp));
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+}

@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useMemo, useRef } from 'react';
+import { Animated, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -17,7 +17,10 @@ interface Props {
 }
 
 /** A small centered dialog for a single text input — "name this thing" —
- * rather than a full sliding sheet, which is overkill for one field. */
+ * rather than a full sliding sheet, which is overkill for one field.
+ * The backdrop fades independently of the card, which fades and scales in
+ * from slightly-below-full-size — the same "decoupled" animation approach
+ * as BottomSheet, so the two dialog styles in the app feel consistent. */
 export function PromptModal({
   visible,
   onClose,
@@ -33,13 +36,32 @@ export function PromptModal({
   const mode = useThemeMode();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const placeholderColor = mode === 'light' ? 'rgba(36,25,51,0.35)' : 'rgba(255,246,233,0.4)';
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const cardOpacity = useRef(new Animated.Value(0)).current;
+  const cardScale = useRef(new Animated.Value(0.92)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.parallel([
+        Animated.timing(backdropOpacity, { toValue: 1, duration: 180, useNativeDriver: true }),
+        Animated.timing(cardOpacity, { toValue: 1, duration: 180, useNativeDriver: true }),
+        Animated.spring(cardScale, { toValue: 1, useNativeDriver: true, damping: 18, stiffness: 260 }),
+      ]).start();
+    } else {
+      backdropOpacity.setValue(0);
+      cardOpacity.setValue(0);
+      cardScale.setValue(0.92);
+    }
+  }, [visible, backdropOpacity, cardOpacity, cardScale]);
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <Pressable style={styles.backdrop} onPress={onClose} />
+        <Pressable style={styles.backdropTouchable} onPress={onClose}>
+          <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]} />
+        </Pressable>
         <View style={styles.centerWrap} pointerEvents="box-none">
-          <View style={styles.card}>
+          <Animated.View style={[styles.card, { opacity: cardOpacity, transform: [{ scale: cardScale }] }]}>
             <Text style={styles.title}>{title}</Text>
             <TextInput
               style={styles.input}
@@ -62,7 +84,7 @@ export function PromptModal({
                 <Text style={styles.submitButtonText}>{submitLabel}</Text>
               </Pressable>
             </View>
-          </View>
+          </Animated.View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -73,6 +95,9 @@ function createStyles(colors: ColorTheme) {
   return StyleSheet.create({
     flex: {
       flex: 1,
+    },
+    backdropTouchable: {
+      ...StyleSheet.absoluteFillObject,
     },
     backdrop: {
       ...StyleSheet.absoluteFillObject,

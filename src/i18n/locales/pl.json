@@ -98,7 +98,11 @@
     "deleteFolderDelete": "Usuń",
     "noResults": "Brak wyników",
     "noResultsBody": "Spróbuj innego wyszukiwania lub filtra.",
-    "cancel": "Anuluj"
+    "cancel": "Anuluj",
+    "deleteEntry": "Usuń z historii",
+    "deleteEntryTitle": "Usunąć ten wpis?",
+    "deleteEntryBody": "Tej czynności nie można cofnąć.",
+    "delete": "Usuń"
   },
   "myCodes": {
     "title": "Moje kody",

@@ -12,7 +12,7 @@ import { HistoryStatusBadge } from '../components/HistoryStatusBadge';
 import { PromptModal } from '../components/PromptModal';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { createFolder, deleteFolder, getFolders } from '../services/historyFolders';
-import { clearFolderFromEntries, getHistory, setEntryFolder } from '../services/scanHistory';
+import { clearFolderFromEntries, deleteHistoryEntry, getHistory, setEntryFolder } from '../services/scanHistory';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -160,6 +160,23 @@ export function HistoryScreen({ navigation }: Props) {
     reload();
   };
 
+  const handleDeleteEntry = () => {
+    if (!assigningEntry) return;
+    const entry = assigningEntry;
+    Alert.alert(t('history.deleteEntryTitle'), t('history.deleteEntryBody'), [
+      { text: t('history.cancel'), style: 'cancel' },
+      {
+        text: t('history.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          await deleteHistoryEntry(entry.kind, entry.timestamp);
+          setAssigningEntry(null);
+          reload();
+        },
+      },
+    ]);
+  };
+
   const addFolderPill = (
     <Pressable onPress={() => setIsCreateFolderOpen(true)} style={styles.addFolderPill}>
       <Ionicons name="add" size={14} color={colors.text} />
@@ -281,6 +298,14 @@ export function HistoryScreen({ navigation }: Props) {
             />
           ))}
         </View>
+
+        <Pressable
+          onPress={handleDeleteEntry}
+          style={({ pressed }) => [styles.deleteEntryRow, pressed && styles.rowPressed]}
+        >
+          <Ionicons name="trash-outline" size={16} color={colors.coralText} />
+          <Text style={styles.deleteEntryText}>{t('history.deleteEntry')}</Text>
+        </Pressable>
       </BottomSheet>
 
       <PromptModal
@@ -453,6 +478,22 @@ function createStyles(colors: ColorTheme) {
       fontSize: 16,
       color: colors.mint,
       fontFamily: fonts.displayBold,
+    },
+    deleteEntryRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      marginTop: 14,
+      paddingVertical: 13,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: 'rgba(255,90,90,0.35)',
+    },
+    deleteEntryText: {
+      fontFamily: fonts.displayBold,
+      fontSize: 14,
+      color: colors.coralText,
     },
   });
 }

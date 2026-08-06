@@ -98,7 +98,11 @@
     "deleteFolderDelete": "Löschen",
     "noResults": "Keine Treffer",
     "noResultsBody": "Versuche eine andere Suche oder einen anderen Filter.",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "deleteEntry": "Aus dem Verlauf löschen",
+    "deleteEntryTitle": "Diesen Eintrag löschen?",
+    "deleteEntryBody": "Dies kann nicht rückgängig gemacht werden.",
+    "delete": "Löschen"
   },
   "myCodes": {
     "title": "Meine Codes",

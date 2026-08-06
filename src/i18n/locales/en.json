@@ -98,7 +98,11 @@
     "deleteFolderDelete": "Delete",
     "noResults": "No matches",
     "noResultsBody": "Try a different search or filter.",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "deleteEntry": "Delete from history",
+    "deleteEntryTitle": "Delete this entry?",
+    "deleteEntryBody": "This can't be undone.",
+    "delete": "Delete"
   },
   "myCodes": {
     "title": "My Codes",

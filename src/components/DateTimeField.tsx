@@ -90,13 +90,16 @@ export function DateTimeField({ label, placeholder, value, onChange, required }:
 
       {Platform.OS === 'ios' ? (
         <BottomSheet visible={isOpen} onClose={() => setIsOpen(false)} title={label}>
-          <DateTimePicker
-            mode="date"
-            display="inline"
-            value={draftDate}
-            themeVariant={mode}
-            onChange={(_event, date) => date && setDraftDate(date)}
-          />
+          <View style={styles.pickerWrap}>
+            <DateTimePicker
+              mode="date"
+              display="inline"
+              value={draftDate}
+              themeVariant={mode}
+              onChange={(_event, date) => date && setDraftDate(date)}
+              style={styles.calendar}
+            />
+          </View>
           <DateTimePicker
             mode="time"
             display="spinner"
@@ -149,7 +152,16 @@ function createStyles(colors: ColorTheme) {
       opacity: 0.55,
       marginLeft: 8,
     },
+    pickerWrap: {
+      width: '100%',
+      alignItems: 'center',
+    },
+    calendar: {
+      alignSelf: 'center',
+      width: '100%',
+    },
     timeSpinner: {
+      alignSelf: 'center',
       marginTop: 4,
     },
   });

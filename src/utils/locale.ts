@@ -5,6 +5,12 @@ export function getDeviceLanguageCode(): string {
   return Localization.getLocales()[0]?.languageCode ?? 'en';
 }
 
+/** ISO 3166-1 alpha-2 region for the device's primary locale, e.g. "US",
+ * "TR" — used to preselect a sensible default country calling code. */
+export function getDeviceRegionCode(): string | null {
+  return Localization.getLocales()[0]?.regionCode ?? null;
+}
+
 /**
  * OFF only gives us `ingredients_text` (product's own language) and
  * `ingredients_text_en`. Prefer the English field when the device is set to

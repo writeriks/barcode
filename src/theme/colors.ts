@@ -1,4 +1,4 @@
-/** The "Beep!" arcade palette — same accent hues (punch/citrus/mint/coral)
+/** The "Blippo" arcade palette — same accent hues (punch/citrus/mint/coral)
  * in both themes, since those are the brand; only the neutrals (cabinet
  * background, panel, text) flip between the dark and light variants. */
 export interface ColorTheme {

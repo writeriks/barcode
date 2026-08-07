@@ -8,42 +8,40 @@ import { captureAnalyticsEvent } from '../services/analytics';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { classifyQrContent, parseOtpAuth, resolveQrOpenUri, type QrContentType } from '../utils/classifyQrContent';
+import { QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
 import { fonts } from '../theme/fonts';
 import { PillButton } from './PillButton';
-
-const TYPE_ICON: Record<QrContentType, keyof typeof Ionicons.glyphMap> = {
-  link: 'link-outline',
-  email: 'mail-outline',
-  phone: 'call-outline',
-  otp: 'key-outline',
-  text: 'document-text-outline',
-};
 
 function typeColor(colors: ColorTheme, type: QrContentType): string {
   switch (type) {
     case 'link':
     case 'email':
     case 'phone':
+    case 'zoom':
       return colors.mintText;
+    case 'sms':
+    case 'whatsapp':
+      return colors.coralText;
     case 'otp':
       return colors.punch;
     case 'text':
+    case 'wifi':
+    case 'vcard':
+    case 'event':
       return colors.citrusText;
   }
 }
-
-const TYPE_LABEL_KEY: Record<QrContentType, string> = {
-  link: 'qr.typeLink',
-  email: 'qr.typeEmail',
-  phone: 'qr.typePhone',
-  otp: 'qr.typeOtp',
-  text: 'qr.typeText',
-};
 
 const OPEN_LABEL_KEY: Record<QrContentType, string> = {
   link: 'qr.openLink',
   email: 'qr.openEmail',
   phone: 'qr.callNumber',
+  sms: 'qr.sendSms',
+  whatsapp: 'qr.openWhatsapp',
+  zoom: 'qr.openZoom',
+  wifi: 'qr.openLink',
+  vcard: 'qr.openLink',
+  event: 'qr.openLink',
   otp: 'qr.openLink',
   text: 'qr.openLink',
 };
@@ -94,8 +92,8 @@ export function QrContentView({ data }: Props) {
       </View>
 
       <View style={[styles.typeChip, { borderColor: color }]}>
-        <Ionicons name={TYPE_ICON[type]} size={13} color={color} />
-        <Text style={[styles.typeChipText, { color }]}>{t(TYPE_LABEL_KEY[type])}</Text>
+        <Ionicons name={QR_TYPE_ICON[type]} size={13} color={color} />
+        <Text style={[styles.typeChipText, { color }]}>{t(QR_TYPE_LABEL_KEY[type])}</Text>
       </View>
 
       {otpInfo ? (

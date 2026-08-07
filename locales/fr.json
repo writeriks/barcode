@@ -1,10 +1,10 @@
 {
   "ios": {
-    "CFBundleDisplayName": "Beep!",
+    "CFBundleDisplayName": "Blippo",
     "NSCameraUsageDescription": "Autorisez $(PRODUCT_NAME) à utiliser l'appareil photo pour scanner les codes-barres et les codes QR.",
     "NSUserTrackingUsageDescription": "Cet identifiant sera utilisé pour vous proposer des publicités plus pertinentes."
   },
   "android": {
-    "app_name": "Beep!"
+    "app_name": "Blippo"
   }
 }

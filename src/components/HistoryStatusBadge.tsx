@@ -6,6 +6,7 @@ import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import type { ScanHistoryEntry } from '../types/history';
 import type { QrContentType } from '../utils/classifyQrContent';
+import { QR_TYPE_ICON } from '../utils/qrTypeMeta';
 
 function gradeColor(colors: ColorTheme, grade: string): string | undefined {
   switch (grade) {
@@ -22,23 +23,22 @@ function gradeColor(colors: ColorTheme, grade: string): string | undefined {
   }
 }
 
-const QR_TYPE_ICON: Record<QrContentType, keyof typeof Ionicons.glyphMap> = {
-  link: 'link-outline',
-  email: 'mail-outline',
-  phone: 'call-outline',
-  otp: 'key-outline',
-  text: 'document-text-outline',
-};
-
 function qrTypeColor(colors: ColorTheme, type: QrContentType): string {
   switch (type) {
     case 'link':
     case 'email':
     case 'phone':
+    case 'zoom':
       return colors.mintText;
+    case 'sms':
+    case 'whatsapp':
+      return colors.coralText;
     case 'otp':
       return colors.punch;
     case 'text':
+    case 'wifi':
+    case 'vcard':
+    case 'event':
       return colors.citrusText;
   }
 }

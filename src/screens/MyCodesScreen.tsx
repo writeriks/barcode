@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
@@ -6,12 +7,146 @@ import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } fr
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PillButton } from '../components/PillButton';
+import { QrTypePicker } from '../components/QrTypePicker';
+import { EmailForm, defaultEmailFields, type EmailFields } from '../components/qrForms/EmailForm';
+import { EventForm, defaultEventFields, type EventFields } from '../components/qrForms/EventForm';
+import { LinkForm, defaultLinkFields, type LinkFields } from '../components/qrForms/LinkForm';
+import { PhoneForm, defaultPhoneFields, type PhoneFields } from '../components/qrForms/PhoneForm';
+import { PhoneMessageForm, defaultPhoneMessageFields, type PhoneMessageFields } from '../components/qrForms/PhoneMessageForm';
+import { TextForm, defaultTextFields, type TextFields } from '../components/qrForms/TextForm';
+import { VCardForm, defaultVCardFields, type VCardFields } from '../components/qrForms/VCardForm';
+import { WifiForm, defaultWifiFields, type WifiFields } from '../components/qrForms/WifiForm';
+import { ZoomForm, defaultZoomFields, type ZoomFields } from '../components/qrForms/ZoomForm';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { deleteMyCode, getMyCodes, saveMyCode } from '../services/myCodes';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import type { MyCode } from '../types/myCode';
+import { classifyQrContent, type QrContentType } from '../utils/classifyQrContent';
+import { findCountryByRegionCode, type CountryCallingCode } from '../utils/countryCallingCodes';
+import { getDeviceRegionCode } from '../utils/locale';
+import {
+  buildEmailContent,
+  buildEventContent,
+  buildLinkContent,
+  buildPhoneContent,
+  buildSmsContent,
+  buildTextContent,
+  buildVCardContent,
+  buildWhatsAppContent,
+  buildWifiContent,
+  buildZoomContent,
+} from '../utils/qrContentBuilders';
+import { QR_TYPE_ICON } from '../utils/qrTypeMeta';
+
+interface FormState {
+  link: LinkFields;
+  text: TextFields;
+  email: EmailFields;
+  phone: PhoneFields;
+  sms: PhoneMessageFields;
+  whatsapp: PhoneMessageFields;
+  zoom: ZoomFields;
+  wifi: WifiFields;
+  vcard: VCardFields;
+  event: EventFields;
+}
+
+function makeDefaultFormState(defaultCountry: CountryCallingCode | null): FormState {
+  return {
+    link: defaultLinkFields,
+    text: defaultTextFields,
+    email: defaultEmailFields,
+    phone: defaultPhoneFields(defaultCountry),
+    sms: defaultPhoneMessageFields(defaultCountry),
+    whatsapp: defaultPhoneMessageFields(defaultCountry),
+    zoom: defaultZoomFields,
+    wifi: defaultWifiFields,
+    vcard: defaultVCardFields(defaultCountry),
+    event: defaultEventFields,
+  };
+}
+
+function buildContent(type: QrContentType, fields: FormState): string | null {
+  switch (type) {
+    case 'link':
+      return buildLinkContent(fields.link.url);
+    case 'text':
+      return buildTextContent(fields.text.message);
+    case 'email':
+      return buildEmailContent(fields.email);
+    case 'phone':
+      return buildPhoneContent({ dialCode: fields.phone.country?.dialCode ?? '', number: fields.phone.number });
+    case 'sms':
+      return buildSmsContent({
+        dialCode: fields.sms.country?.dialCode ?? '',
+        number: fields.sms.number,
+        message: fields.sms.message,
+      });
+    case 'whatsapp':
+      return buildWhatsAppContent({
+        dialCode: fields.whatsapp.country?.dialCode ?? '',
+        number: fields.whatsapp.number,
+        message: fields.whatsapp.message,
+      });
+    case 'zoom':
+      return buildZoomContent(fields.zoom);
+    case 'wifi':
+      return buildWifiContent(fields.wifi);
+    case 'vcard':
+      return buildVCardContent({
+        version: fields.vcard.version,
+        title: fields.vcard.title,
+        firstName: fields.vcard.firstName,
+        lastName: fields.vcard.lastName,
+        homeDialCode: fields.vcard.homeCountry?.dialCode ?? '',
+        homeNumber: fields.vcard.homeNumber,
+        mobileDialCode: fields.vcard.mobileCountry?.dialCode ?? '',
+        mobileNumber: fields.vcard.mobileNumber,
+        email: fields.vcard.email,
+        website: fields.vcard.website,
+        company: fields.vcard.company,
+        jobTitle: fields.vcard.jobTitle,
+        officeDialCode: fields.vcard.officeCountry?.dialCode ?? '',
+        officeNumber: fields.vcard.officeNumber,
+        faxDialCode: fields.vcard.faxCountry?.dialCode ?? '',
+        faxNumber: fields.vcard.faxNumber,
+        address: fields.vcard.address,
+        postCode: fields.vcard.postCode,
+        city: fields.vcard.city,
+        state: fields.vcard.state,
+        country: fields.vcard.country,
+      });
+    case 'event':
+      return buildEventContent(fields.event);
+    case 'otp':
+      return null;
+  }
+}
+
+function defaultLabelFor(type: QrContentType, content: string, fields: FormState): string {
+  switch (type) {
+    case 'email':
+      return fields.email.to || content;
+    case 'phone':
+      return `${fields.phone.country?.dialCode ?? ''}${fields.phone.number}` || content;
+    case 'sms':
+      return `${fields.sms.country?.dialCode ?? ''}${fields.sms.number}` || content;
+    case 'whatsapp':
+      return `${fields.whatsapp.country?.dialCode ?? ''}${fields.whatsapp.number}` || content;
+    case 'zoom':
+      return fields.zoom.meetingId || content;
+    case 'wifi':
+      return fields.wifi.ssid || content;
+    case 'vcard':
+      return [fields.vcard.firstName, fields.vcard.lastName].filter(Boolean).join(' ') || fields.vcard.company || content;
+    case 'event':
+      return fields.event.title || content;
+    default:
+      return content;
+  }
+}
 
 export function MyCodesScreen() {
   const { t } = useTranslation();
@@ -22,9 +157,12 @@ export function MyCodesScreen() {
   const placeholderColor = mode === 'light' ? 'rgba(36,25,51,0.35)' : 'rgba(255,246,233,0.4)';
   const [codes, setCodes] = useState<MyCode[]>([]);
   const [isCreating, setIsCreating] = useState(false);
-  const [label, setLabel] = useState('');
-  const [content, setContent] = useState('');
   const [viewing, setViewing] = useState<MyCode | null>(null);
+
+  const defaultCountry = useMemo(() => findCountryByRegionCode(getDeviceRegionCode()) ?? null, []);
+  const [type, setType] = useState<QrContentType>('link');
+  const [label, setLabel] = useState('');
+  const [fields, setFields] = useState<FormState>(() => makeDefaultFormState(defaultCountry));
 
   const reload = useCallback(() => {
     getMyCodes().then(setCodes);
@@ -32,20 +170,33 @@ export function MyCodesScreen() {
 
   useFocusEffect(reload);
 
+  const content = useMemo(() => buildContent(type, fields), [type, fields]);
+
+  const resetForm = () => {
+    setType('link');
+    setLabel('');
+    setFields(makeDefaultFormState(defaultCountry));
+  };
+
   const handleSave = async () => {
-    if (!content.trim()) return;
+    if (!content) return;
     const code: MyCode = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      label: label.trim() || content.trim(),
-      content: content.trim(),
+      label: label.trim() || defaultLabelFor(type, content, fields),
+      content,
       createdAt: Date.now(),
+      type,
     };
     await saveMyCode(code);
-    captureAnalyticsEvent('my_code_created');
-    setLabel('');
-    setContent('');
+    captureAnalyticsEvent('my_code_created', { type });
     setIsCreating(false);
+    resetForm();
     reload();
+  };
+
+  const handleCancel = () => {
+    setIsCreating(false);
+    resetForm();
   };
 
   const handleDelete = async (id: string) => {
@@ -87,32 +238,35 @@ export function MyCodesScreen() {
 
       {isCreating ? (
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <TextInput
-            style={styles.input}
-            placeholder={t('myCodes.labelPlaceholder')}
-            placeholderTextColor={placeholderColor}
-            value={label}
-            onChangeText={setLabel}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder={t('myCodes.contentPlaceholder')}
-            placeholderTextColor={placeholderColor}
-            value={content}
-            onChangeText={setContent}
-            multiline
-          />
-          <View style={styles.formActions}>
-            <PillButton
-              title={t('myCodes.cancel')}
-              onPress={() => {
-                setIsCreating(false);
-                setLabel('');
-                setContent('');
-              }}
-              variant="ghost"
+          <QrTypePicker value={type} onChange={setType} />
+
+          <View style={styles.field}>
+            <Text style={styles.fieldLabel}>{t('myCodes.labelLabel')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('myCodes.labelPlaceholder')}
+              placeholderTextColor={placeholderColor}
+              value={label}
+              onChangeText={setLabel}
             />
-            <PillButton title={t('myCodes.save')} onPress={handleSave} variant="citrus" />
+          </View>
+
+          {type === 'link' && <LinkForm value={fields.link} onChange={(link) => setFields({ ...fields, link })} />}
+          {type === 'text' && <TextForm value={fields.text} onChange={(text) => setFields({ ...fields, text })} />}
+          {type === 'email' && <EmailForm value={fields.email} onChange={(email) => setFields({ ...fields, email })} />}
+          {type === 'phone' && <PhoneForm value={fields.phone} onChange={(phone) => setFields({ ...fields, phone })} />}
+          {type === 'sms' && <PhoneMessageForm value={fields.sms} onChange={(sms) => setFields({ ...fields, sms })} />}
+          {type === 'whatsapp' && (
+            <PhoneMessageForm value={fields.whatsapp} onChange={(whatsapp) => setFields({ ...fields, whatsapp })} />
+          )}
+          {type === 'zoom' && <ZoomForm value={fields.zoom} onChange={(zoom) => setFields({ ...fields, zoom })} />}
+          {type === 'wifi' && <WifiForm value={fields.wifi} onChange={(wifi) => setFields({ ...fields, wifi })} />}
+          {type === 'vcard' && <VCardForm value={fields.vcard} onChange={(vcard) => setFields({ ...fields, vcard })} />}
+          {type === 'event' && <EventForm value={fields.event} onChange={(event) => setFields({ ...fields, event })} />}
+
+          <View style={styles.formActions}>
+            <PillButton title={t('myCodes.cancel')} onPress={handleCancel} variant="ghost" />
+            <PillButton title={t('myCodes.save')} onPress={handleSave} variant="citrus" style={!content && styles.saveDisabled} />
           </View>
         </ScrollView>
       ) : codes.length === 0 ? (
@@ -126,19 +280,20 @@ export function MyCodesScreen() {
           data={codes}
           keyExtractor={(item) => item.id}
           contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 20 }]}
-          renderItem={({ item }) => (
-            <Pressable
-              style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-              onPress={() => setViewing(item)}
-            >
-              <View style={styles.qrThumb}>
-                <QRCode value={item.content} size={40} color={colors.inkOnCream} backgroundColor={colors.cream} />
-              </View>
-              <Text style={styles.rowLabel} numberOfLines={1}>
-                {item.label}
-              </Text>
-            </Pressable>
-          )}
+          renderItem={({ item }) => {
+            const itemType = item.type ?? classifyQrContent(item.content);
+            return (
+              <Pressable style={({ pressed }) => [styles.row, pressed && styles.rowPressed]} onPress={() => setViewing(item)}>
+                <View style={styles.qrThumb}>
+                  <QRCode value={item.content} size={40} color={colors.inkOnCream} backgroundColor={colors.cream} />
+                </View>
+                <Ionicons name={QR_TYPE_ICON[itemType]} size={16} color={colors.text} style={styles.rowIcon} />
+                <Text style={styles.rowLabel} numberOfLines={1}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          }}
         />
       )}
     </SafeAreaView>
@@ -205,7 +360,7 @@ function createStyles(colors: ColorTheme) {
     row: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 14,
+      gap: 12,
       backgroundColor: colors.panel,
       borderWidth: 1,
       borderColor: colors.panelLine,
@@ -223,6 +378,9 @@ function createStyles(colors: ColorTheme) {
       alignItems: 'center',
       justifyContent: 'center',
     },
+    rowIcon: {
+      opacity: 0.6,
+    },
     rowLabel: {
       flex: 1,
       fontFamily: fonts.displayBold,
@@ -231,7 +389,15 @@ function createStyles(colors: ColorTheme) {
     },
     form: {
       padding: 20,
-      gap: 12,
+      gap: 14,
+    },
+    field: {
+      gap: 6,
+    },
+    fieldLabel: {
+      fontSize: 12.5,
+      color: colors.text,
+      opacity: 0.65,
     },
     input: {
       backgroundColor: colors.panel,
@@ -248,6 +414,9 @@ function createStyles(colors: ColorTheme) {
       justifyContent: 'flex-end',
       gap: 12,
       marginTop: 4,
+    },
+    saveDisabled: {
+      opacity: 0.4,
     },
     viewer: {
       flex: 1,

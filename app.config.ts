@@ -11,7 +11,7 @@ const androidAppId = process.env.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID || TEST_ADMOB_
 const iosAppId = process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID || TEST_ADMOB_IOS_APP_ID;
 
 const config: ExpoConfig = {
-  name: 'Beep!',
+  name: 'Blippo',
   slug: 'barcode',
   version: '1.0.0',
   orientation: 'portrait',

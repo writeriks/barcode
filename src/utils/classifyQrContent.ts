@@ -1,30 +1,56 @@
-export type QrContentType = 'link' | 'email' | 'phone' | 'otp' | 'text';
+export type QrContentType = 'link' | 'email' | 'phone' | 'sms' | 'whatsapp' | 'zoom' | 'wifi' | 'vcard' | 'event' | 'otp' | 'text';
+
+const WHATSAPP_LINK_PATTERN = /^https?:\/\/(wa\.me|api\.whatsapp\.com)\//i;
+const ZOOM_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?zoom\.us\/j\//i;
 
 /** Local, network-free classification of a decoded QR string — enough to
  * pick the right primary action (Open link / Open email / Call number),
- * not a full QR-payload parser (e.g. WIFI:/vCard formats fall through to
- * "text" for now). */
+ * not a full QR-payload parser. WIFI:/VCARD/VEVENT are recognized by their
+ * scheme so they can be filtered in History, but aren't parsed field by
+ * field here — that's a display-time concern, not a classification one. */
 export function classifyQrContent(data: string): QrContentType {
   const trimmed = data.trim();
+  // Check before the generic http(s) link case below — both are still
+  // plain URLs, just ones worth recognizing more specifically.
+  if (WHATSAPP_LINK_PATTERN.test(trimmed)) return 'whatsapp';
+  if (ZOOM_LINK_PATTERN.test(trimmed)) return 'zoom';
   if (/^https?:\/\//i.test(trimmed)) return 'link';
   if (/^mailto:/i.test(trimmed)) return 'email';
+  // SMSTO: is the older Nokia-era scheme some generators still emit;
+  // sms: is the RFC 5724 one — both mean the same thing here.
+  if (/^smsto:|^sms:/i.test(trimmed)) return 'sms';
   if (/^tel:/i.test(trimmed)) return 'phone';
   if (/^otpauth:\/\//i.test(trimmed)) return 'otp';
+  if (/^WIFI:/i.test(trimmed)) return 'wifi';
+  if (/^BEGIN:VCARD/i.test(trimmed)) return 'vcard';
+  if (/^BEGIN:(VEVENT|VCALENDAR)/i.test(trimmed)) return 'event';
   return 'text';
 }
 
 /** The URI to hand to Linking.openURL for a given classified value —
  * adds the scheme back if the QR encoded it bare (e.g. just an email
- * address rather than "mailto:..."). */
+ * address rather than "mailto:..."). WiFi/vCard/event payloads have no
+ * single "open" action (there's no URL scheme any app registers to join a
+ * network or import a contact from a raw string), so those show the
+ * decoded content instead of an Open button. */
 export function resolveQrOpenUri(data: string, type: QrContentType): string | null {
   const trimmed = data.trim();
   switch (type) {
     case 'link':
+    case 'whatsapp':
+    case 'zoom':
       return trimmed;
     case 'email':
       return trimmed.toLowerCase().startsWith('mailto:') ? trimmed : `mailto:${trimmed}`;
     case 'phone':
       return trimmed.toLowerCase().startsWith('tel:') ? trimmed : `tel:${trimmed}`;
+    case 'sms':
+      // Normalize the older SMSTO: scheme to sms: — that's the one both
+      // platforms' Linking.openURL reliably recognize.
+      return trimmed.toLowerCase().startsWith('smsto:') ? `sms:${trimmed.slice(6)}` : trimmed;
+    case 'wifi':
+    case 'vcard':
+    case 'event':
     case 'otp':
     case 'text':
       return null;

@@ -1,8 +1,8 @@
-# Privacy Policy — Beep!
+# Privacy Policy — Blippo
 
 _Last updated: [fill in date when you publish this]_
 
-This policy describes how the Beep! barcode and QR scanner app ("Beep!", "the app", "we") handles information. Beep! has no account system, no login, and no backend server of its own — almost everything you do in the app stays on your device.
+This policy describes how the Blippo barcode and QR scanner app ("Blippo", "the app", "we") handles information. Blippo has no account system, no login, and no backend server of its own — almost everything you do in the app stays on your device.
 
 ## What stays on your device only
 
@@ -26,7 +26,7 @@ Uninstalling the app or clearing its storage deletes all of this, since there is
 
 ## Advertising
 
-Beep! shows banner and interstitial ads through Google AdMob. Where required by law (for example, the EEA, UK, and certain US states), the app shows a consent form before loading any ads, using Google's User Messaging Platform. Your choice there determines whether ads are personalized:
+Blippo shows banner and interstitial ads through Google AdMob. Where required by law (for example, the EEA, UK, and certain US states), the app shows a consent form before loading any ads, using Google's User Messaging Platform. Your choice there determines whether ads are personalized:
 
 - If you consent to personalized ads, Google and its advertising partners may use device identifiers (such as your advertising ID, or IDFA on iOS) to show ads relevant to you, per their own privacy policies.
 - If you decline, or in regions where consent isn't required, ads may still show but without that personalization.
@@ -37,7 +37,7 @@ We don't control what Google or its ad partners do with data collected through t
 
 ## Children's privacy
 
-Beep! isn't directed at children and we don't knowingly collect information from children under the age required by applicable law (e.g., 13 in the US, 16 in the EEA unless a member state sets it lower).
+Blippo isn't directed at children and we don't knowingly collect information from children under the age required by applicable law (e.g., 13 in the US, 16 in the EEA unless a member state sets it lower).
 
 ## Your choices
 

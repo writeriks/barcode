@@ -3,7 +3,7 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -123,11 +123,34 @@ export function HistoryScreen({ navigation }: Props) {
     });
   }, [entries, searchQuery, activeTypes, activeFolder]);
 
+  // Only offer a type as a filter once something of that type has actually
+  // been scanned/saved — a pill for a type with zero entries would just be
+  // dead weight in the row.
+  const availableTypes = useMemo(() => {
+    const set = new Set<TypeFilterValue>();
+    entries.forEach((entry) => set.add(entryTypeValue(entry)));
+    return set;
+  }, [entries]);
+
   const typeOptions: PillOption<TypeFilterValue>[] = useMemo(
     () =>
-      TYPE_FILTER_OPTIONS.map((option) => ({ value: option.value, label: t(option.labelKey), accent: option.accent })),
-    [t]
+      TYPE_FILTER_OPTIONS.filter((option) => availableTypes.has(option.value)).map((option) => ({
+        value: option.value,
+        label: t(option.labelKey),
+        accent: option.accent,
+      })),
+    [t, availableTypes]
   );
+
+  // Drop a selected filter the moment its last matching entry disappears
+  // (deleted, moved out, etc.) — otherwise it stays "active" with no pill
+  // left to tap to clear it.
+  useEffect(() => {
+    setActiveTypes((prev) => {
+      const next = new Set([...prev].filter((value) => availableTypes.has(value)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [availableTypes]);
 
   const folderOptions: PillOption<string>[] = useMemo(
     () => [

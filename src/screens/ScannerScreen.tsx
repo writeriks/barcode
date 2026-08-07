@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useIsFocused } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { BlurView } from 'expo-blur';
 import * as ImagePicker from 'expo-image-picker';
@@ -75,6 +76,10 @@ export function ScannerScreen({ onScanned, batchMode, batchCount = 0, onFinishBa
   const hasHandledScanRef = useRef(false);
   const tabBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
+  // The Scanner tab stays mounted when another tab is active (that's how
+  // react-navigation's bottom tabs work), so without this the camera would
+  // keep scanning — and adding history entries — in the background.
+  const isFocused = useIsFocused();
 
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
@@ -110,7 +115,7 @@ export function ScannerScreen({ onScanned, batchMode, batchCount = 0, onFinishBa
 
   const handleBarcodeScanned = useCallback(
     ({ data, type }: { data: string; type: string }) => {
-      if (hasHandledScanRef.current) return;
+      if (!isFocused || hasHandledScanRef.current) return;
       hasHandledScanRef.current = true;
       playScanFeedback();
       onScanned(data, type === 'qr' ? 'qr' : 'barcode', 'camera');
@@ -123,7 +128,7 @@ export function ScannerScreen({ onScanned, batchMode, batchCount = 0, onFinishBa
         }, BATCH_SCAN_COOLDOWN_MS);
       }
     },
-    [onScanned, batchMode]
+    [onScanned, batchMode, isFocused]
   );
 
   const handleUploadPhoto = useCallback(async () => {
@@ -177,13 +182,15 @@ export function ScannerScreen({ onScanned, batchMode, batchCount = 0, onFinishBa
 
   return (
     <View style={styles.container}>
-      <CameraView
-        style={StyleSheet.absoluteFill}
-        facing="back"
-        enableTorch={isTorchOn}
-        barcodeScannerSettings={{ barcodeTypes: [...SCANNED_TYPES] }}
-        onBarcodeScanned={handleBarcodeScanned}
-      />
+      {isFocused ? (
+        <CameraView
+          style={StyleSheet.absoluteFill}
+          facing="back"
+          enableTorch={isTorchOn}
+          barcodeScannerSettings={{ barcodeTypes: [...SCANNED_TYPES] }}
+          onBarcodeScanned={handleBarcodeScanned}
+        />
+      ) : null}
       <View style={styles.overlay} pointerEvents="none">
         <Animated.View style={[styles.viewfinder, { borderColor }]}>
           <Animated.View

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { FadeSwitcher } from '../components/FadeSwitcher';
 import { PillButton } from '../components/PillButton';
 import { QrTypePicker } from '../components/QrTypePicker';
 import { EmailForm, defaultEmailFields, type EmailFields } from '../components/qrForms/EmailForm';
@@ -205,104 +206,122 @@ export function MyCodesScreen() {
     reload();
   };
 
-  if (viewing) {
-    return (
-      <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
-        <View style={styles.viewer}>
-          <View style={styles.qrCard}>
-            <QRCode value={viewing.content} size={220} color={colors.inkOnCream} backgroundColor={colors.cream} />
-          </View>
-          <Text style={styles.viewerLabel}>{viewing.label}</Text>
-          <Text style={styles.viewerContent} numberOfLines={2}>
-            {viewing.content}
-          </Text>
-          <View style={styles.viewerActions}>
-            <PillButton title={t('myCodes.delete')} onPress={() => handleDelete(viewing.id)} variant="ghost" />
-            <PillButton title={t('settings.close')} onPress={() => setViewing(null)} variant="punch" />
-          </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const screenMode = viewing ? 'viewing' : isCreating ? 'creating' : 'list';
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t('myCodes.title')}</Text>
-        {!isCreating ? (
-          <Pressable onPress={() => setIsCreating(true)} style={styles.addButton} hitSlop={10}>
-            <Text style={styles.addGlyph}>+</Text>
-          </Pressable>
-        ) : null}
-      </View>
+      <FadeSwitcher activeKey={screenMode}>
+        {viewing ? (
+          <View style={styles.viewer}>
+            <View style={styles.qrCard}>
+              <QRCode value={viewing.content} size={220} color={colors.inkOnCream} backgroundColor={colors.cream} />
+            </View>
+            <Text style={styles.viewerLabel}>{viewing.label}</Text>
+            <Text style={styles.viewerContent} numberOfLines={2}>
+              {viewing.content}
+            </Text>
+            <View style={styles.viewerActions}>
+              <PillButton title={t('myCodes.delete')} onPress={() => handleDelete(viewing.id)} variant="ghost" />
+              <PillButton title={t('settings.close')} onPress={() => setViewing(null)} variant="punch" />
+            </View>
+          </View>
+        ) : (
+          <>
+            <View style={styles.header}>
+              <Text style={styles.title}>{t('myCodes.title')}</Text>
+              {!isCreating ? (
+                <Pressable onPress={() => setIsCreating(true)} style={styles.addButton} hitSlop={10}>
+                  <Text style={styles.addGlyph}>+</Text>
+                </Pressable>
+              ) : null}
+            </View>
 
-      {isCreating ? (
-        <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <ScrollView
-            contentContainerStyle={[styles.form, { paddingBottom: tabBarHeight + 20 }]}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            automaticallyAdjustKeyboardInsets
-          >
-            <QrTypePicker value={type} onChange={setType} />
+            {isCreating ? (
+              <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+                <ScrollView
+                  contentContainerStyle={[styles.form, { paddingBottom: tabBarHeight + 20 }]}
+                  keyboardShouldPersistTaps="handled"
+                  keyboardDismissMode="on-drag"
+                  automaticallyAdjustKeyboardInsets
+                >
+                  <QrTypePicker value={type} onChange={setType} />
 
-            <View style={styles.field}>
-              <Text style={styles.fieldLabel}>{t('myCodes.labelLabel')}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={t('myCodes.labelPlaceholder')}
-                placeholderTextColor={placeholderColor}
-                value={label}
-                onChangeText={setLabel}
+                  <View style={styles.field}>
+                    <Text style={styles.fieldLabel}>{t('myCodes.labelLabel')}</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder={t('myCodes.labelPlaceholder')}
+                      placeholderTextColor={placeholderColor}
+                      value={label}
+                      onChangeText={setLabel}
+                    />
+                  </View>
+
+                  {type === 'link' && <LinkForm value={fields.link} onChange={(link) => setFields({ ...fields, link })} />}
+                  {type === 'text' && <TextForm value={fields.text} onChange={(text) => setFields({ ...fields, text })} />}
+                  {type === 'email' && (
+                    <EmailForm value={fields.email} onChange={(email) => setFields({ ...fields, email })} />
+                  )}
+                  {type === 'phone' && (
+                    <PhoneForm value={fields.phone} onChange={(phone) => setFields({ ...fields, phone })} />
+                  )}
+                  {type === 'sms' && <PhoneMessageForm value={fields.sms} onChange={(sms) => setFields({ ...fields, sms })} />}
+                  {type === 'whatsapp' && (
+                    <PhoneMessageForm value={fields.whatsapp} onChange={(whatsapp) => setFields({ ...fields, whatsapp })} />
+                  )}
+                  {type === 'zoom' && <ZoomForm value={fields.zoom} onChange={(zoom) => setFields({ ...fields, zoom })} />}
+                  {type === 'wifi' && <WifiForm value={fields.wifi} onChange={(wifi) => setFields({ ...fields, wifi })} />}
+                  {type === 'vcard' && (
+                    <VCardForm value={fields.vcard} onChange={(vcard) => setFields({ ...fields, vcard })} />
+                  )}
+                  {type === 'event' && (
+                    <EventForm value={fields.event} onChange={(event) => setFields({ ...fields, event })} />
+                  )}
+
+                  <View style={styles.formActions}>
+                    <PillButton title={t('myCodes.cancel')} onPress={handleCancel} variant="ghost" />
+                    <PillButton
+                      title={t('myCodes.save')}
+                      onPress={handleSave}
+                      variant="citrus"
+                      style={!content && styles.saveDisabled}
+                    />
+                  </View>
+                </ScrollView>
+              </KeyboardAvoidingView>
+            ) : codes.length === 0 ? (
+              <View style={styles.empty}>
+                <Text style={styles.emptyTitle}>{t('myCodes.empty')}</Text>
+                <Text style={styles.emptyBody}>{t('myCodes.emptyBody')}</Text>
+                <PillButton title={t('myCodes.create')} onPress={() => setIsCreating(true)} variant="citrus" />
+              </View>
+            ) : (
+              <FlatList
+                data={codes}
+                keyExtractor={(item) => item.id}
+                contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 20 }]}
+                renderItem={({ item }) => {
+                  const itemType = item.type ?? classifyQrContent(item.content);
+                  return (
+                    <Pressable
+                      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+                      onPress={() => setViewing(item)}
+                    >
+                      <View style={styles.qrThumb}>
+                        <QRCode value={item.content} size={40} color={colors.inkOnCream} backgroundColor={colors.cream} />
+                      </View>
+                      <Ionicons name={QR_TYPE_ICON[itemType]} size={16} color={colors.text} style={styles.rowIcon} />
+                      <Text style={styles.rowLabel} numberOfLines={1}>
+                        {item.label}
+                      </Text>
+                    </Pressable>
+                  );
+                }}
               />
-            </View>
-
-            {type === 'link' && <LinkForm value={fields.link} onChange={(link) => setFields({ ...fields, link })} />}
-            {type === 'text' && <TextForm value={fields.text} onChange={(text) => setFields({ ...fields, text })} />}
-            {type === 'email' && <EmailForm value={fields.email} onChange={(email) => setFields({ ...fields, email })} />}
-            {type === 'phone' && <PhoneForm value={fields.phone} onChange={(phone) => setFields({ ...fields, phone })} />}
-            {type === 'sms' && <PhoneMessageForm value={fields.sms} onChange={(sms) => setFields({ ...fields, sms })} />}
-            {type === 'whatsapp' && (
-              <PhoneMessageForm value={fields.whatsapp} onChange={(whatsapp) => setFields({ ...fields, whatsapp })} />
             )}
-            {type === 'zoom' && <ZoomForm value={fields.zoom} onChange={(zoom) => setFields({ ...fields, zoom })} />}
-            {type === 'wifi' && <WifiForm value={fields.wifi} onChange={(wifi) => setFields({ ...fields, wifi })} />}
-            {type === 'vcard' && <VCardForm value={fields.vcard} onChange={(vcard) => setFields({ ...fields, vcard })} />}
-            {type === 'event' && <EventForm value={fields.event} onChange={(event) => setFields({ ...fields, event })} />}
-
-            <View style={styles.formActions}>
-              <PillButton title={t('myCodes.cancel')} onPress={handleCancel} variant="ghost" />
-              <PillButton title={t('myCodes.save')} onPress={handleSave} variant="citrus" style={!content && styles.saveDisabled} />
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      ) : codes.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>{t('myCodes.empty')}</Text>
-          <Text style={styles.emptyBody}>{t('myCodes.emptyBody')}</Text>
-          <PillButton title={t('myCodes.create')} onPress={() => setIsCreating(true)} variant="citrus" />
-        </View>
-      ) : (
-        <FlatList
-          data={codes}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 20 }]}
-          renderItem={({ item }) => {
-            const itemType = item.type ?? classifyQrContent(item.content);
-            return (
-              <Pressable style={({ pressed }) => [styles.row, pressed && styles.rowPressed]} onPress={() => setViewing(item)}>
-                <View style={styles.qrThumb}>
-                  <QRCode value={item.content} size={40} color={colors.inkOnCream} backgroundColor={colors.cream} />
-                </View>
-                <Ionicons name={QR_TYPE_ICON[itemType]} size={16} color={colors.text} style={styles.rowIcon} />
-                <Text style={styles.rowLabel} numberOfLines={1}>
-                  {item.label}
-                </Text>
-              </Pressable>
-            );
-          }}
-        />
-      )}
+          </>
+        )}
+      </FadeSwitcher>
     </SafeAreaView>
   );
 }

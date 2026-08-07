@@ -17,6 +17,8 @@ export function HistoryStack() {
         headerTintColor: colors.text,
         headerTitleStyle: { fontFamily: fonts.displayBold },
         headerShadowVisible: false,
+        animation: 'fade',
+        animationDuration: 220,
       }}
     >
       <Stack.Screen name="HistoryList" component={HistoryScreen} options={{ headerShown: false }} />

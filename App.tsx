@@ -146,7 +146,7 @@ function AppContent() {
         <NavigationContainer theme={navTheme}>
           <Tab.Navigator
             tabBar={(props) => <GlassTabBar {...props} />}
-            screenOptions={{ headerShown: false, tabBarStyle: { position: 'absolute' } }}
+            screenOptions={{ headerShown: false, tabBarStyle: { position: 'absolute' }, animation: 'fade' }}
           >
             <Tab.Screen name="Scanner" component={ScannerFlowScreen} />
             <Tab.Screen name="History" component={HistoryStack} />

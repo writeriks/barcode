@@ -3,6 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { FadeSwitcher } from '../components/FadeSwitcher';
 import { useScanInterstitial } from '../hooks/useScanInterstitial';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { lookupProduct } from '../services/lookupProduct';
@@ -161,51 +162,55 @@ export function ScannerFlowScreen({ navigation }: Props) {
     </SafeAreaView>
   );
 
-  switch (screen.name) {
-    case 'scanner':
-      return (
-        <ScannerScreen
-          onScanned={handleScanned}
-          batchMode={isBatchMode}
-          batchCount={batchCount}
-          onFinishBatch={handleFinishBatch}
-        />
-      );
+  const renderScreen = (): ReactNode => {
+    switch (screen.name) {
+      case 'scanner':
+        return (
+          <ScannerScreen
+            onScanned={handleScanned}
+            batchMode={isBatchMode}
+            batchCount={batchCount}
+            onFinishBatch={handleFinishBatch}
+          />
+        );
 
-    case 'loading':
-      return (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.mint} />
-        </View>
-      );
+      case 'loading':
+        return (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={colors.mint} />
+          </View>
+        );
 
-    case 'qr-result':
-      return withTopSafeArea(<QrResultScreen data={screen.data} onScanAgain={goToScanner} />);
+      case 'qr-result':
+        return withTopSafeArea(<QrResultScreen data={screen.data} onScanAgain={goToScanner} />);
 
-    case 'result': {
-      const { result } = screen;
-      switch (result.status) {
-        case 'found':
-          return withTopSafeArea(
-            <FoundProductScreen product={result.product} source={result.source} onScanAgain={goToScanner} />
-          );
-        case 'incomplete':
-          return withTopSafeArea(
-            <FoundProductScreen product={result.product} source="network" onScanAgain={goToScanner} />
-          );
-        case 'not-found':
-          return withTopSafeArea(<MissingProductScreen barcode={result.barcode} onScanAgain={goToScanner} />);
-        case 'error':
-          return withTopSafeArea(
-            <LookupErrorScreen
-              message={result.message}
-              onRetry={() => runLookup(result.barcode)}
-              onScanAgain={goToScanner}
-            />
-          );
+      case 'result': {
+        const { result } = screen;
+        switch (result.status) {
+          case 'found':
+            return withTopSafeArea(
+              <FoundProductScreen product={result.product} source={result.source} onScanAgain={goToScanner} />
+            );
+          case 'incomplete':
+            return withTopSafeArea(
+              <FoundProductScreen product={result.product} source="network" onScanAgain={goToScanner} />
+            );
+          case 'not-found':
+            return withTopSafeArea(<MissingProductScreen barcode={result.barcode} onScanAgain={goToScanner} />);
+          case 'error':
+            return withTopSafeArea(
+              <LookupErrorScreen
+                message={result.message}
+                onRetry={() => runLookup(result.barcode)}
+                onScanAgain={goToScanner}
+              />
+            );
+        }
       }
     }
-  }
+  };
+
+  return <FadeSwitcher activeKey={screen.name}>{renderScreen()}</FadeSwitcher>;
 }
 
 function createStyles(colors: ColorTheme) {

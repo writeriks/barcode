@@ -188,7 +188,6 @@
     "locationLabel": "Konum",
     "startTimeLabel": "Başlangıç zamanı",
     "endTimeLabel": "Bitiş zamanı",
-    "dateTimePlaceholder": "YYYY-AA-GG SS:dd",
     "reminderLabel": "Etkinlik öncesi hatırlatma",
     "reminderOption_0": "Etkinlik anında",
     "reminderOption_5": "5 dakika önce",
@@ -199,7 +198,9 @@
     "reminderOption_1440": "1 gün önce",
     "linkLabel": "Bağlantı",
     "notesLabel": "Notlar",
-    "vcardRequiredHint": "Kod oluşturmak için bir ad/soyad veya şirket girin."
+    "vcardRequiredHint": "Kod oluşturmak için bir ad/soyad veya şirket girin.",
+    "selectDateTime": "Tarih ve saat seç",
+    "done": "Tamam"
   },
   "qr": {
     "typeLink": "Bağlantı",

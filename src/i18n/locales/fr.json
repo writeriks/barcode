@@ -188,7 +188,6 @@
     "locationLabel": "Lieu",
     "startTimeLabel": "Heure de début",
     "endTimeLabel": "Heure de fin",
-    "dateTimePlaceholder": "AAAA-MM-JJ HH:mm",
     "reminderLabel": "Rappel avant l'événement",
     "reminderOption_0": "Au moment de l'événement",
     "reminderOption_5": "5 minutes avant",
@@ -199,7 +198,9 @@
     "reminderOption_1440": "1 jour avant",
     "linkLabel": "Lien",
     "notesLabel": "Notes",
-    "vcardRequiredHint": "Ajoutez un nom/prénom ou une entreprise pour générer le code."
+    "vcardRequiredHint": "Ajoutez un nom/prénom ou une entreprise pour générer le code.",
+    "selectDateTime": "Choisir la date et l'heure",
+    "done": "Terminé"
   },
   "qr": {
     "typeLink": "Lien",

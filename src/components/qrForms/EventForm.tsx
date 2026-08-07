@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next';
+import { DateTimeField } from '../DateTimeField';
 import { SelectField, type SelectOption } from '../SelectField';
 import { FormField } from './FormField';
 
 export interface EventFields {
   title: string;
   location: string;
-  startTime: string;
-  endTime: string;
+  startTime: Date | null;
+  endTime: Date | null;
   reminderMinutes: string;
   link: string;
   notes: string;
@@ -15,8 +16,8 @@ export interface EventFields {
 export const defaultEventFields: EventFields = {
   title: '',
   location: '',
-  startTime: '',
-  endTime: '',
+  startTime: null,
+  endTime: null,
   reminderMinutes: '',
   link: '',
   notes: '',
@@ -42,22 +43,18 @@ export function EventForm({ value, onChange }: Props) {
     <>
       <FormField label={t('myCodes.eventTitleLabel')} required value={value.title} onChangeText={(v) => set('title', v)} />
       <FormField label={t('myCodes.locationLabel')} value={value.location} onChangeText={(v) => set('location', v)} />
-      <FormField
+      <DateTimeField
         label={t('myCodes.startTimeLabel')}
         required
-        placeholder={t('myCodes.dateTimePlaceholder')}
+        placeholder={t('myCodes.selectDateTime')}
         value={value.startTime}
-        onChangeText={(v) => set('startTime', v)}
-        autoCapitalize="none"
-        autoCorrect={false}
+        onChange={(startTime) => set('startTime', startTime)}
       />
-      <FormField
+      <DateTimeField
         label={t('myCodes.endTimeLabel')}
-        placeholder={t('myCodes.dateTimePlaceholder')}
+        placeholder={t('myCodes.selectDateTime')}
         value={value.endTime}
-        onChangeText={(v) => set('endTime', v)}
-        autoCapitalize="none"
-        autoCorrect={false}
+        onChange={(endTime) => set('endTime', endTime)}
       />
       <SelectField
         label={t('myCodes.reminderLabel')}

@@ -162,21 +162,24 @@ export function buildVCardContent(fields: VCardFormFields): string | null {
 export interface EventFormFields {
   title: string;
   location: string;
-  /** "YYYY-MM-DD HH:mm", local time — kept as plain text input rather than
-   * a native date picker for now. */
-  startTime: string;
-  endTime: string;
+  startTime: Date | null;
+  endTime: Date | null;
   /** Minutes before the event for a VALARM reminder, or '' for none. */
   reminderMinutes: string;
   link: string;
   notes: string;
 }
 
-function toIcsDateTime(value: string): string | null {
-  const match = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})$/);
-  if (!match) return null;
-  const [, year, month, day, hour, minute] = match;
-  return `${year}${month}${day}T${hour}${minute}00`;
+function pad2(n: number): string {
+  return String(n).padStart(2, '0');
+}
+
+/** Formats as a floating (no timezone/UTC suffix) local date-time, per the
+ * iCalendar TEXT-DATETIME form — good enough here since these are
+ * one-device-authored events, not calendar invites synced across timezones. */
+function toIcsDateTime(date: Date | null): string | null {
+  if (!date) return null;
+  return `${date.getFullYear()}${pad2(date.getMonth() + 1)}${pad2(date.getDate())}T${pad2(date.getHours())}${pad2(date.getMinutes())}00`;
 }
 
 export function buildEventContent(fields: EventFormFields): string | null {

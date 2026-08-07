@@ -37,6 +37,7 @@ export function WifiForm({ value, onChange }: Props) {
     <>
       <FormField
         label={t('myCodes.networkNameLabel')}
+        required
         placeholder={t('myCodes.networkNamePlaceholder')}
         value={value.ssid}
         onChangeText={(ssid) => onChange({ ...value, ssid })}

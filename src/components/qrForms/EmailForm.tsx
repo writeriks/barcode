@@ -20,6 +20,7 @@ export function EmailForm({ value, onChange }: Props) {
     <>
       <FormField
         label={t('myCodes.sendToLabel')}
+        required
         placeholder={t('myCodes.emailPlaceholder')}
         value={value.to}
         onChangeText={(to) => onChange({ ...value, to })}

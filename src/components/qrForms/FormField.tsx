@@ -6,11 +6,14 @@ import { createFieldStyles } from './formFieldStyles';
 interface Props extends TextInputProps {
   label: string;
   style?: StyleProp<ViewStyle>;
+  /** Marks the label with a "*" — this is the one field (or one of the
+   * fields) that has to be filled in for the type to produce a QR code. */
+  required?: boolean;
 }
 
 /** A labeled TextInput matching the app's form styling — the one piece
  * every generator form is built out of. */
-export function FormField({ label, style, ...inputProps }: Props) {
+export function FormField({ label, style, required, ...inputProps }: Props) {
   const colors = useThemeColors();
   const mode = useThemeMode();
   const styles = useMemo(() => createFieldStyles(colors), [colors]);
@@ -18,7 +21,10 @@ export function FormField({ label, style, ...inputProps }: Props) {
 
   return (
     <View style={[styles.field, style]}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label}>
+        {label}
+        {required ? <Text style={styles.required}> *</Text> : null}
+      </Text>
       <TextInput
         style={[styles.input, inputProps.multiline && styles.inputMultiline]}
         placeholderTextColor={placeholderColor}

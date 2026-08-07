@@ -198,7 +198,8 @@
     "reminderOption_60": "1 saat önce",
     "reminderOption_1440": "1 gün önce",
     "linkLabel": "Bağlantı",
-    "notesLabel": "Notlar"
+    "notesLabel": "Notlar",
+    "vcardRequiredHint": "Kod oluşturmak için bir ad/soyad veya şirket girin."
   },
   "qr": {
     "typeLink": "Bağlantı",

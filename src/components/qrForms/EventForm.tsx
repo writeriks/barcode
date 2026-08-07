@@ -40,10 +40,11 @@ export function EventForm({ value, onChange }: Props) {
 
   return (
     <>
-      <FormField label={t('myCodes.eventTitleLabel')} value={value.title} onChangeText={(v) => set('title', v)} />
+      <FormField label={t('myCodes.eventTitleLabel')} required value={value.title} onChangeText={(v) => set('title', v)} />
       <FormField label={t('myCodes.locationLabel')} value={value.location} onChangeText={(v) => set('location', v)} />
       <FormField
         label={t('myCodes.startTimeLabel')}
+        required
         placeholder={t('myCodes.dateTimePlaceholder')}
         value={value.startTime}
         onChangeText={(v) => set('startTime', v)}

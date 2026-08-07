@@ -41,6 +41,7 @@ export function PhoneMessageForm({ value, onChange }: Props) {
         <FormField
           style={styles.flexField}
           label={t('myCodes.phoneNumberLabel')}
+          required
           placeholder={t('myCodes.phoneNumberPlaceholder')}
           value={value.number}
           onChangeText={(number) => onChange({ ...value, number })}

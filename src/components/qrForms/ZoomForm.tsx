@@ -27,6 +27,7 @@ export function ZoomForm({ value, onChange }: Props) {
       <FormField
         style={styles.flexField}
         label={t('myCodes.meetingIdLabel')}
+        required
         value={value.meetingId}
         onChangeText={(meetingId) => onChange({ ...value, meetingId })}
         keyboardType="number-pad"

@@ -17,6 +17,16 @@ export function createFieldStyles(colors: ColorTheme) {
       color: colors.text,
       opacity: 0.65,
     },
+    required: {
+      color: colors.coralText,
+      opacity: 1,
+    },
+    hint: {
+      fontSize: 12,
+      color: colors.text,
+      opacity: 0.5,
+      marginTop: -6,
+    },
     input: {
       backgroundColor: colors.panel,
       borderWidth: 1,

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useThemeColors } from '../../theme/ThemeContext';
 import type { CountryCallingCode } from '../../utils/countryCallingCodes';
 import { CountryCodeField } from '../CountryCodeField';
@@ -87,6 +87,7 @@ export function VCardForm({ value, onChange }: Props) {
       <FormField label={t('myCodes.titleLabel')} value={value.title} onChangeText={(v) => set('title', v)} />
       <FormField label={t('myCodes.firstNameLabel')} value={value.firstName} onChangeText={(v) => set('firstName', v)} />
       <FormField label={t('myCodes.lastNameLabel')} value={value.lastName} onChangeText={(v) => set('lastName', v)} />
+      <Text style={styles.hint}>{t('myCodes.vcardRequiredHint')}</Text>
 
       <View style={styles.row}>
         <CountryCodeField label={t('myCodes.phoneHomeLabel')} value={value.homeCountry} onChange={(c) => set('homeCountry', c)} />

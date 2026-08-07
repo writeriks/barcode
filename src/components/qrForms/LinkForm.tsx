@@ -17,6 +17,7 @@ export function LinkForm({ value, onChange }: Props) {
   return (
     <FormField
       label={t('myCodes.urlLabel')}
+      required
       placeholder={t('myCodes.urlPlaceholder')}
       value={value.url}
       onChangeText={(url) => onChange({ url })}

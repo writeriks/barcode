@@ -198,7 +198,8 @@
     "reminderOption_60": "1 Stunde vorher",
     "reminderOption_1440": "1 Tag vorher",
     "linkLabel": "Link",
-    "notesLabel": "Notizen"
+    "notesLabel": "Notizen",
+    "vcardRequiredHint": "Gib einen Namen oder eine Firma an, um einen Code zu erstellen."
   },
   "qr": {
     "typeLink": "Link",

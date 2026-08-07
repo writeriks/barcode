@@ -237,7 +237,11 @@ export function MyCodesScreen() {
       </View>
 
       {isCreating ? (
-        <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={[styles.form, { paddingBottom: tabBarHeight + 20 }]}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
           <QrTypePicker value={type} onChange={setType} />
 
           <View style={styles.field}>

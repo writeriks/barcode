@@ -17,6 +17,7 @@ export function TextForm({ value, onChange }: Props) {
   return (
     <FormField
       label={t('myCodes.messageLabel')}
+      required
       placeholder={t('myCodes.messagePlaceholder')}
       value={value.message}
       onChangeText={(message) => onChange({ message })}

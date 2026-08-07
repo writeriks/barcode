@@ -100,8 +100,6 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
           </View>
         ) : null}
 
-        <Text style={styles.attribution}>{t('result.attribution')}</Text>
-
         <PillButton title={t('result.scanAnother')} onPress={onScanAgain} variant="punch" />
       </ScrollView>
       <BottomBannerAd />
@@ -235,14 +233,6 @@ function createStyles(colors: ColorTheme) {
       fontSize: 13,
       color: colors.text,
       opacity: 0.65,
-    },
-    attribution: {
-      fontSize: 11,
-      color: colors.text,
-      opacity: 0.4,
-      fontStyle: 'italic',
-      textAlign: 'center',
-      marginTop: 4,
     },
   });
 }

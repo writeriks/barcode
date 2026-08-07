@@ -24,7 +24,6 @@
     "noIngredients": "İçindekiler listelenmemiş.",
     "allergens": "Alerjenler",
     "nutrition": "Besin değerleri",
-    "attribution": "Veriler Open Food Facts'tan (ODbL)",
     "scanAnother": "Başka bir ürün tara",
     "nutriments": {
       "energy": "Enerji",
@@ -42,7 +41,7 @@
   },
   "missing": {
     "unknownHeadline": "Bu ürünü henüz kimse taramadı",
-    "body": "Open Food Facts'te yok — bunun yerine aramayı dene.",
+    "body": "Bu henüz eklenmemiş — bunun yerine aramayı dene.",
     "scanAnother": "Başka bir ürün tara",
     "barcodeLabel": "Barkod {{barcode}}",
     "searchGoogle": "Google",

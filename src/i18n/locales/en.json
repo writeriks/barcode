@@ -24,7 +24,6 @@
     "noIngredients": "No ingredients listed.",
     "allergens": "Allergens",
     "nutrition": "Nutrition",
-    "attribution": "Data from Open Food Facts (ODbL)",
     "scanAnother": "Scan another product",
     "nutriments": {
       "energy": "Energy",
@@ -42,7 +41,7 @@
   },
   "missing": {
     "unknownHeadline": "Nobody's scanned this one yet",
-    "body": "Not in Open Food Facts — try searching for it instead.",
+    "body": "Nobody's added this one yet — try searching for it instead.",
     "scanAnother": "Scan another product",
     "barcodeLabel": "Barcode {{barcode}}",
     "searchGoogle": "Google",

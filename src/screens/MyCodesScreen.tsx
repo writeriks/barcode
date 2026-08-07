@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BottomBannerAd } from '../components/BottomBannerAd';
 import { FadeSwitcher } from '../components/FadeSwitcher';
 import { FilterPillRow, type PillOption } from '../components/FilterPillRow';
 import { PillButton } from '../components/PillButton';
@@ -343,66 +344,77 @@ export function MyCodesScreen() {
                   </View>
                 </ScrollView>
               </KeyboardAvoidingView>
-            ) : codes.length === 0 ? (
-              <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>{t('myCodes.empty')}</Text>
-                <Text style={styles.emptyBody}>{t('myCodes.emptyBody')}</Text>
-                <PillButton title={t('myCodes.create')} onPress={() => setIsCreating(true)} variant="citrus" />
-              </View>
             ) : (
-              <>
-                <View style={styles.filters}>
-                  <View style={styles.searchBar}>
-                    <Ionicons name="search" size={16} color={colors.text} style={styles.searchIcon} />
-                    <TextInput
-                      style={styles.searchInput}
-                      placeholder={t('myCodes.searchPlaceholder')}
-                      placeholderTextColor={placeholderColor}
-                      value={searchQuery}
-                      onChangeText={setSearchQuery}
-                    />
-                    {searchQuery.length > 0 ? (
-                      <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
-                        <Ionicons name="close-circle" size={16} color={colors.text} style={styles.searchClear} />
-                      </Pressable>
-                    ) : null}
-                  </View>
-
-                  {typeOptions.length > 0 ? (
-                    <FilterPillRow options={typeOptions} isSelected={(value) => activeTypes.has(value)} onPress={handleToggleType} />
-                  ) : null}
-                </View>
-
-                {filteredCodes.length === 0 ? (
+              <View style={[styles.flex, { paddingBottom: tabBarHeight }]}>
+                {codes.length === 0 ? (
                   <View style={styles.empty}>
-                    <Text style={styles.emptyTitle}>{t('history.noResults')}</Text>
-                    <Text style={styles.emptyBody}>{t('history.noResultsBody')}</Text>
+                    <Text style={styles.emptyTitle}>{t('myCodes.empty')}</Text>
+                    <Text style={styles.emptyBody}>{t('myCodes.emptyBody')}</Text>
+                    <PillButton title={t('myCodes.create')} onPress={() => setIsCreating(true)} variant="citrus" />
                   </View>
                 ) : (
-                  <FlatList
-                    data={filteredCodes}
-                    keyExtractor={(item) => item.id}
-                    contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 20 }]}
-                    renderItem={({ item }) => {
-                      const itemType = codeTypeOf(item);
-                      return (
-                        <Pressable
-                          style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-                          onPress={() => setViewing(item)}
-                        >
-                          <View style={styles.qrThumb}>
-                            <QRCode value={item.content} size={40} color={colors.inkOnCream} backgroundColor={colors.cream} />
-                          </View>
-                          <Ionicons name={QR_TYPE_ICON[itemType]} size={16} color={colors.text} style={styles.rowIcon} />
-                          <Text style={styles.rowLabel} numberOfLines={1}>
-                            {item.label}
-                          </Text>
-                        </Pressable>
-                      );
-                    }}
-                  />
+                  <>
+                    <View style={styles.filters}>
+                      <View style={styles.searchBar}>
+                        <Ionicons name="search" size={16} color={colors.text} style={styles.searchIcon} />
+                        <TextInput
+                          style={styles.searchInput}
+                          placeholder={t('myCodes.searchPlaceholder')}
+                          placeholderTextColor={placeholderColor}
+                          value={searchQuery}
+                          onChangeText={setSearchQuery}
+                        />
+                        {searchQuery.length > 0 ? (
+                          <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+                            <Ionicons name="close-circle" size={16} color={colors.text} style={styles.searchClear} />
+                          </Pressable>
+                        ) : null}
+                      </View>
+
+                      {typeOptions.length > 0 ? (
+                        <FilterPillRow
+                          options={typeOptions}
+                          isSelected={(value) => activeTypes.has(value)}
+                          onPress={handleToggleType}
+                        />
+                      ) : null}
+                    </View>
+
+                    {filteredCodes.length === 0 ? (
+                      <View style={styles.empty}>
+                        <Text style={styles.emptyTitle}>{t('history.noResults')}</Text>
+                        <Text style={styles.emptyBody}>{t('history.noResultsBody')}</Text>
+                      </View>
+                    ) : (
+                      <FlatList
+                        data={filteredCodes}
+                        keyExtractor={(item) => item.id}
+                        style={styles.flex}
+                        contentContainerStyle={[styles.list, { paddingBottom: 20 }]}
+                        renderItem={({ item }) => {
+                          const itemType = codeTypeOf(item);
+                          return (
+                            <Pressable
+                              style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+                              onPress={() => setViewing(item)}
+                            >
+                              <View style={styles.qrThumb}>
+                                <QRCode value={item.content} size={40} color={colors.inkOnCream} backgroundColor={colors.cream} />
+                              </View>
+                              <Ionicons name={QR_TYPE_ICON[itemType]} size={16} color={colors.text} style={styles.rowIcon} />
+                              <Text style={styles.rowLabel} numberOfLines={1}>
+                                {item.label}
+                              </Text>
+                            </Pressable>
+                          );
+                        }}
+                      />
+                    )}
+                  </>
                 )}
-              </>
+
+                <BottomBannerAd />
+              </View>
             )}
           </>
         )}

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BottomBannerAd } from '../components/BottomBannerAd';
 import { BottomSheet } from '../components/BottomSheet';
 import { FilterPillRow, type PillAccent, type PillOption } from '../components/FilterPillRow';
 import { HistoryStatusBadge } from '../components/HistoryStatusBadge';
@@ -298,7 +299,7 @@ export function HistoryScreen({ navigation }: Props) {
   const hasSelection = selectedKeys.size > 0;
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.screen, { paddingBottom: tabBarHeight }]} edges={['top', 'left', 'right']}>
       <View style={styles.headerRow}>
         <Pressable onPress={() => setIsAddMenuOpen(true)} style={styles.iconButton} hitSlop={8}>
           <Ionicons name="add" size={20} color={colors.text} />
@@ -361,10 +362,8 @@ export function HistoryScreen({ navigation }: Props) {
             <FlatList
               data={filteredEntries}
               keyExtractor={entryKey}
-              contentContainerStyle={[
-                styles.list,
-                { paddingBottom: tabBarHeight + (isEditMode ? 90 : 20) },
-              ]}
+              style={styles.flex}
+              contentContainerStyle={[styles.list, { paddingBottom: isEditMode ? 90 : 20 }]}
               renderItem={({ item }) => {
                 const name = item.kind === 'qr' ? item.data : (item.product?.productName ?? item.barcode);
                 const metaKey = item.kind === 'qr' ? QR_META_KEY[item.contentType] : 'history.metaBarcode';
@@ -420,6 +419,8 @@ export function HistoryScreen({ navigation }: Props) {
           )}
         </>
       )}
+
+      {!isEditMode ? <BottomBannerAd /> : null}
 
       {isEditMode ? (
         <View style={[styles.bulkToolbarWrap, { bottom: tabBarHeight + 16 }]} pointerEvents="box-none">
@@ -586,6 +587,9 @@ function createStyles(colors: ColorTheme) {
     screen: {
       flex: 1,
       backgroundColor: colors.cabinet,
+    },
+    flex: {
+      flex: 1,
     },
     headerRow: {
       flexDirection: 'row',

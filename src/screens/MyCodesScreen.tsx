@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FadeSwitcher } from '../components/FadeSwitcher';
+import { FilterPillRow, type PillOption } from '../components/FilterPillRow';
 import { PillButton } from '../components/PillButton';
 import { QrTypePicker } from '../components/QrTypePicker';
 import { EmailForm, defaultEmailFields, type EmailFields } from '../components/qrForms/EmailForm';
@@ -39,7 +40,7 @@ import {
   buildWifiContent,
   buildZoomContent,
 } from '../utils/qrContentBuilders';
-import { QR_TYPE_ICON } from '../utils/qrTypeMeta';
+import { QR_GENERATE_TYPES, QR_TYPE_ACCENT, QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
 
 interface FormState {
   link: LinkFields;
@@ -126,6 +127,14 @@ function buildContent(type: QrContentType, fields: FormState): string | null {
   }
 }
 
+function codeTypeOf(code: MyCode): QrContentType {
+  return code.type ?? classifyQrContent(code.content);
+}
+
+function matchesCodeSearch(code: MyCode, query: string): boolean {
+  return code.label.toLowerCase().includes(query) || code.content.toLowerCase().includes(query);
+}
+
 function defaultLabelFor(type: QrContentType, content: string, fields: FormState): string {
   switch (type) {
     case 'email':
@@ -159,6 +168,8 @@ export function MyCodesScreen() {
   const [codes, setCodes] = useState<MyCode[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [viewing, setViewing] = useState<MyCode | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTypes, setActiveTypes] = useState<Set<QrContentType>>(new Set());
 
   const defaultCountry = useMemo(() => findCountryByRegionCode(getDeviceRegionCode()) ?? null, []);
   const [type, setType] = useState<QrContentType>('link');
@@ -172,6 +183,49 @@ export function MyCodesScreen() {
   useFocusEffect(reload);
 
   const content = useMemo(() => buildContent(type, fields), [type, fields]);
+
+  // Only offer a type as a filter once you've actually saved one of that
+  // kind — matches how History's type filters work.
+  const availableTypes = useMemo(() => {
+    const set = new Set<QrContentType>();
+    codes.forEach((code) => set.add(codeTypeOf(code)));
+    return set;
+  }, [codes]);
+
+  const typeOptions: PillOption<QrContentType>[] = useMemo(
+    () =>
+      QR_GENERATE_TYPES.filter((codeType) => availableTypes.has(codeType)).map((codeType) => ({
+        value: codeType,
+        label: t(QR_TYPE_LABEL_KEY[codeType]),
+        accent: QR_TYPE_ACCENT[codeType],
+      })),
+    [t, availableTypes]
+  );
+
+  useEffect(() => {
+    setActiveTypes((prev) => {
+      const next = new Set([...prev].filter((value) => availableTypes.has(value)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [availableTypes]);
+
+  const handleToggleType = (value: QrContentType) => {
+    setActiveTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(value)) next.delete(value);
+      else next.add(value);
+      return next;
+    });
+  };
+
+  const filteredCodes = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return codes.filter((code) => {
+      if (activeTypes.size > 0 && !activeTypes.has(codeTypeOf(code))) return false;
+      if (query && !matchesCodeSearch(code, query)) return false;
+      return true;
+    });
+  }, [codes, searchQuery, activeTypes]);
 
   const resetForm = () => {
     setType('link');
@@ -296,28 +350,59 @@ export function MyCodesScreen() {
                 <PillButton title={t('myCodes.create')} onPress={() => setIsCreating(true)} variant="citrus" />
               </View>
             ) : (
-              <FlatList
-                data={codes}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 20 }]}
-                renderItem={({ item }) => {
-                  const itemType = item.type ?? classifyQrContent(item.content);
-                  return (
-                    <Pressable
-                      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-                      onPress={() => setViewing(item)}
-                    >
-                      <View style={styles.qrThumb}>
-                        <QRCode value={item.content} size={40} color={colors.inkOnCream} backgroundColor={colors.cream} />
-                      </View>
-                      <Ionicons name={QR_TYPE_ICON[itemType]} size={16} color={colors.text} style={styles.rowIcon} />
-                      <Text style={styles.rowLabel} numberOfLines={1}>
-                        {item.label}
-                      </Text>
-                    </Pressable>
-                  );
-                }}
-              />
+              <>
+                <View style={styles.filters}>
+                  <View style={styles.searchBar}>
+                    <Ionicons name="search" size={16} color={colors.text} style={styles.searchIcon} />
+                    <TextInput
+                      style={styles.searchInput}
+                      placeholder={t('myCodes.searchPlaceholder')}
+                      placeholderTextColor={placeholderColor}
+                      value={searchQuery}
+                      onChangeText={setSearchQuery}
+                    />
+                    {searchQuery.length > 0 ? (
+                      <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+                        <Ionicons name="close-circle" size={16} color={colors.text} style={styles.searchClear} />
+                      </Pressable>
+                    ) : null}
+                  </View>
+
+                  {typeOptions.length > 0 ? (
+                    <FilterPillRow options={typeOptions} isSelected={(value) => activeTypes.has(value)} onPress={handleToggleType} />
+                  ) : null}
+                </View>
+
+                {filteredCodes.length === 0 ? (
+                  <View style={styles.empty}>
+                    <Text style={styles.emptyTitle}>{t('history.noResults')}</Text>
+                    <Text style={styles.emptyBody}>{t('history.noResultsBody')}</Text>
+                  </View>
+                ) : (
+                  <FlatList
+                    data={filteredCodes}
+                    keyExtractor={(item) => item.id}
+                    contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 20 }]}
+                    renderItem={({ item }) => {
+                      const itemType = codeTypeOf(item);
+                      return (
+                        <Pressable
+                          style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+                          onPress={() => setViewing(item)}
+                        >
+                          <View style={styles.qrThumb}>
+                            <QRCode value={item.content} size={40} color={colors.inkOnCream} backgroundColor={colors.cream} />
+                          </View>
+                          <Ionicons name={QR_TYPE_ICON[itemType]} size={16} color={colors.text} style={styles.rowIcon} />
+                          <Text style={styles.rowLabel} numberOfLines={1}>
+                            {item.label}
+                          </Text>
+                        </Pressable>
+                      );
+                    }}
+                  />
+                )}
+              </>
             )}
           </>
         )}
@@ -381,6 +466,34 @@ function createStyles(colors: ColorTheme) {
       textAlign: 'center',
       maxWidth: 260,
       marginBottom: 6,
+    },
+    filters: {
+      paddingHorizontal: 20,
+      gap: 10,
+      marginBottom: 12,
+    },
+    searchBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 14,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+    searchIcon: {
+      opacity: 0.55,
+    },
+    searchInput: {
+      flex: 1,
+      color: colors.text,
+      fontSize: 14,
+      padding: 0,
+    },
+    searchClear: {
+      opacity: 0.5,
     },
     list: {
       paddingHorizontal: 20,

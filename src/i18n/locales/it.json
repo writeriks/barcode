@@ -199,7 +199,8 @@
     "notesLabel": "Note",
     "vcardRequiredHint": "Aggiungi nome/cognome o un'azienda per generare il codice.",
     "selectDateTime": "Seleziona data e ora",
-    "done": "Fatto"
+    "done": "Fatto",
+    "searchPlaceholder": "Cerca codici"
   },
   "qr": {
     "typeLink": "Link",

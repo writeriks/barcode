@@ -199,7 +199,8 @@
     "notesLabel": "Notizen",
     "vcardRequiredHint": "Gib einen Namen oder eine Firma an, um einen Code zu erstellen.",
     "selectDateTime": "Datum und Uhrzeit wählen",
-    "done": "Fertig"
+    "done": "Fertig",
+    "searchPlaceholder": "Codes durchsuchen"
   },
   "qr": {
     "typeLink": "Link",

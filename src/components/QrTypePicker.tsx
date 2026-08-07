@@ -5,24 +5,8 @@ import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import type { QrContentType } from '../utils/classifyQrContent';
-import { QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
+import { QR_GENERATE_TYPES, QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
 import { fonts } from '../theme/fonts';
-
-/** Only the types the generator actually has a form for — 'otp' is
- * scan-only (you don't hand-author a 2FA secret), and more of these will
- * join the list as their forms get designed. */
-const GENERATE_TYPES: QrContentType[] = [
-  'link',
-  'text',
-  'email',
-  'phone',
-  'sms',
-  'whatsapp',
-  'zoom',
-  'wifi',
-  'vcard',
-  'event',
-];
 
 interface Props {
   value: QrContentType;
@@ -36,7 +20,7 @@ export function QrTypePicker({ value, onChange }: Props) {
 
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-      {GENERATE_TYPES.map((type) => {
+      {QR_GENERATE_TYPES.map((type) => {
         const selected = value === type;
         return (
           <Pressable

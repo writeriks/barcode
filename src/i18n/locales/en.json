@@ -199,7 +199,8 @@
     "notesLabel": "Notes",
     "vcardRequiredHint": "Add a first/last name or a company to generate a code.",
     "selectDateTime": "Select date & time",
-    "done": "Done"
+    "done": "Done",
+    "searchPlaceholder": "Search codes"
   },
   "qr": {
     "typeLink": "Link",

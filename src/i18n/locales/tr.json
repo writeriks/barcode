@@ -199,7 +199,8 @@
     "notesLabel": "Notlar",
     "vcardRequiredHint": "Kod oluşturmak için bir ad/soyad veya şirket girin.",
     "selectDateTime": "Tarih ve saat seç",
-    "done": "Tamam"
+    "done": "Tamam",
+    "searchPlaceholder": "Kodlarda ara"
   },
   "qr": {
     "typeLink": "Bağlantı",

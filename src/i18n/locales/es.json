@@ -246,7 +246,7 @@
     "benefitSettings": "Personaliza el escaneo por lotes, la vibración, el sonido, el historial y el Bloqueo de la app",
     "unitWeek": "semana",
     "unitMonth": "mes",
-    "perWeekEquivalent": "≈ 1,15 $/semana",
+    "perWeekEquivalent": "≈ {{price}}/semana",
     "bestValue": "MEJOR OFERTA",
     "continueButton": "Continuar — {{price}}/{{unit}}",
     "autoRenewNotice": "Se renueva automáticamente a menos que se cancele. Puedes cancelar en cualquier momento desde los ajustes de tu cuenta de App Store.",
@@ -254,6 +254,11 @@
     "privacyPolicy": "Política de privacidad",
     "termsOfUse": "Términos de uso",
     "restoreNoneTitle": "Nada que restaurar",
-    "restoreNoneBody": "No encontramos compras anteriores para esta cuenta."
+    "restoreNoneBody": "No encontramos compras anteriores para esta cuenta.",
+    "processingButton": "Procesando…",
+    "storeUnavailableTitle": "Tienda no disponible",
+    "storeUnavailableBody": "No pudimos conectar con la App Store en este momento. Inténtalo de nuevo en un momento.",
+    "purchaseFailedTitle": "Compra fallida",
+    "purchaseFailedBody": "No pudimos completar la compra. Inténtalo de nuevo."
   }
 }

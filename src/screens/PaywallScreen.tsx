@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import type { PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PillButton } from '../components/PillButton';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '../config/appInfo';
+import { fetchCurrentOffering, purchasePackage, restorePurchases } from '../premium/revenueCat';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -12,7 +14,7 @@ import { fonts } from '../theme/fonts';
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onUnlock: () => void;
+  onPurchased: () => void;
 }
 
 const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; labelKey: string }[] = [
@@ -23,46 +25,109 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; labelKey: string }[] = [
 
 type PlanId = 'weekly' | 'monthly';
 
-// Real App Store Connect pricing (USD base tier) — once RevenueCat is
-// wired up, swap these for the live localized price/period off each
-// `PurchasesPackage.product`, which is what Apple actually expects users
-// to see (their local currency, not a hardcoded USD string).
-interface Plan {
+// Shown until the real offering loads (or wherever it's unavailable —
+// Android, Expo Go, no network). Must stay roughly in line with the
+// actual App Store Connect prices so the screen never looks misleading
+// while it's still loading.
+const FALLBACK_WEEKLY_PRICE = '$1.49';
+const FALLBACK_MONTHLY_PRICE = '$4.99';
+const FALLBACK_MONTHLY_PER_WEEK = '$1.15';
+
+interface PlanDisplay {
   id: PlanId;
   price: string;
   unitKey: string;
-  subLabelKey?: string;
+  subLabel?: string;
   badgeKey?: string;
+  pkg: PurchasesPackage | null;
 }
 
-const PLANS: Plan[] = [
-  { id: 'weekly', price: '$1.49', unitKey: 'paywall.unitWeek' },
-  {
-    id: 'monthly',
-    price: '$4.99',
-    unitKey: 'paywall.unitMonth',
-    subLabelKey: 'paywall.perWeekEquivalent',
-    badgeKey: 'paywall.bestValue',
-  },
-];
+function buildPlans(offering: PurchasesOffering | null, perWeekLabel: (price: string) => string): PlanDisplay[] {
+  const weeklyPkg = offering?.weekly ?? null;
+  const monthlyPkg = offering?.monthly ?? null;
+
+  return [
+    {
+      id: 'weekly',
+      price: weeklyPkg?.product.priceString ?? FALLBACK_WEEKLY_PRICE,
+      unitKey: 'paywall.unitWeek',
+      pkg: weeklyPkg,
+    },
+    {
+      id: 'monthly',
+      price: monthlyPkg?.product.priceString ?? FALLBACK_MONTHLY_PRICE,
+      unitKey: 'paywall.unitMonth',
+      subLabel: perWeekLabel(monthlyPkg?.product.pricePerWeekString ?? FALLBACK_MONTHLY_PER_WEEK),
+      badgeKey: 'paywall.bestValue',
+      pkg: monthlyPkg,
+    },
+  ];
+}
 
 /** The upgrade pitch, shown whenever a free user taps a premium-gated
- * toggle or hits the free history limit. Purchases aren't wired to
- * RevenueCat yet (see premium/premiumPreference.ts) — "unlock" just flips
- * the local dev entitlement — but the screen itself is meant to be
- * production-ready: it's what gets screenshotted for Apple's
- * auto-renewable subscription review (Guideline 3.1.2), which is why the
- * price/length/renewal terms and the Privacy/Terms links are all here. */
-export function PaywallScreen({ visible, onClose, onUnlock }: Props) {
+ * toggle or hits the free history limit. Fetches the live RevenueCat
+ * offering (weekly/monthly packages, predefined package types — see the
+ * RevenueCat dashboard) and drives a real purchase; falls back to
+ * placeholder pricing wherever the store isn't reachable (Android, Expo
+ * Go, no network) so the screen still renders sensibly. Includes the
+ * elements Apple's auto-renewable subscription review requires
+ * (Guideline 3.1.2): price/length per plan, an auto-renewal notice,
+ * Restore Purchases, and working Privacy Policy/Terms links. */
+export function PaywallScreen({ visible, onClose, onPurchased }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('monthly');
+  const [offering, setOffering] = useState<PurchasesOffering | null>(null);
+  const [isBusy, setIsBusy] = useState(false);
 
-  const activePlan = PLANS.find((plan) => plan.id === selectedPlan) ?? PLANS[0];
+  useEffect(() => {
+    if (!visible) return;
+    let cancelled = false;
+    fetchCurrentOffering().then((current) => {
+      if (!cancelled) setOffering(current);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [visible]);
 
-  const handleRestore = () => {
-    Alert.alert(t('paywall.restoreNoneTitle'), t('paywall.restoreNoneBody'));
+  const plans = useMemo(
+    () => buildPlans(offering, (price) => t('paywall.perWeekEquivalent', { price })),
+    [offering, t]
+  );
+  const selectedPlanDisplay = plans.find((plan) => plan.id === selectedPlan) ?? plans[0];
+
+  const handleContinue = async () => {
+    if (isBusy) return;
+    if (!selectedPlanDisplay.pkg) {
+      Alert.alert(t('paywall.storeUnavailableTitle'), t('paywall.storeUnavailableBody'));
+      return;
+    }
+    setIsBusy(true);
+    try {
+      const { isPremium, cancelled } = await purchasePackage(selectedPlanDisplay.pkg);
+      if (isPremium) onPurchased();
+      else if (!cancelled) Alert.alert(t('paywall.purchaseFailedTitle'), t('paywall.purchaseFailedBody'));
+    } catch {
+      Alert.alert(t('paywall.purchaseFailedTitle'), t('paywall.purchaseFailedBody'));
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    if (isBusy) return;
+    setIsBusy(true);
+    try {
+      const isPremium = await restorePurchases();
+      if (isPremium) onPurchased();
+      else Alert.alert(t('paywall.restoreNoneTitle'), t('paywall.restoreNoneBody'));
+    } catch {
+      Alert.alert(t('paywall.restoreNoneTitle'), t('paywall.restoreNoneBody'));
+    } finally {
+      setIsBusy(false);
+    }
   };
 
   const openLink = (url: string) => {
@@ -99,7 +164,7 @@ export function PaywallScreen({ visible, onClose, onUnlock }: Props) {
           </View>
 
           <View style={styles.plans}>
-            {PLANS.map((plan) => {
+            {plans.map((plan) => {
               const selected = plan.id === selectedPlan;
               return (
                 <Pressable
@@ -121,7 +186,7 @@ export function PaywallScreen({ visible, onClose, onUnlock }: Props) {
                   </View>
                   <Text style={styles.planPrice}>{plan.price}</Text>
                   <Text style={styles.planUnit}>{t(plan.unitKey)}</Text>
-                  {plan.subLabelKey ? <Text style={styles.planSubLabel}>{t(plan.subLabelKey)}</Text> : null}
+                  {plan.subLabel ? <Text style={styles.planSubLabel}>{plan.subLabel}</Text> : null}
                 </Pressable>
               );
             })}
@@ -130,8 +195,12 @@ export function PaywallScreen({ visible, onClose, onUnlock }: Props) {
 
         <View style={styles.footer}>
           <PillButton
-            title={t('paywall.continueButton', { price: activePlan.price, unit: t(activePlan.unitKey) })}
-            onPress={onUnlock}
+            title={
+              isBusy
+                ? t('paywall.processingButton')
+                : t('paywall.continueButton', { price: selectedPlanDisplay.price, unit: t(selectedPlanDisplay.unitKey) })
+            }
+            onPress={handleContinue}
             variant="citrus"
             style={styles.continueButton}
           />

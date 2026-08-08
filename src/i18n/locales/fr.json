@@ -246,7 +246,7 @@
     "benefitSettings": "Personnalisez le scan en rafale, les vibrations, le bip, l'historique et le Verrouillage de l'app",
     "unitWeek": "semaine",
     "unitMonth": "mois",
-    "perWeekEquivalent": "≈ 1,15 $/semaine",
+    "perWeekEquivalent": "≈ {{price}}/semaine",
     "bestValue": "MEILLEURE OFFRE",
     "continueButton": "Continuer — {{price}}/{{unit}}",
     "autoRenewNotice": "Se renouvelle automatiquement sauf annulation. Vous pouvez annuler à tout moment dans les réglages de votre compte App Store.",
@@ -254,6 +254,11 @@
     "privacyPolicy": "Politique de confidentialité",
     "termsOfUse": "Conditions d'utilisation",
     "restoreNoneTitle": "Rien à restaurer",
-    "restoreNoneBody": "Nous n'avons trouvé aucun achat précédent pour ce compte."
+    "restoreNoneBody": "Nous n'avons trouvé aucun achat précédent pour ce compte.",
+    "processingButton": "Traitement en cours…",
+    "storeUnavailableTitle": "Boutique indisponible",
+    "storeUnavailableBody": "Impossible de joindre l'App Store pour le moment. Réessayez dans un instant.",
+    "purchaseFailedTitle": "Échec de l'achat",
+    "purchaseFailedBody": "Nous n'avons pas pu finaliser cet achat. Veuillez réessayer."
   }
 }

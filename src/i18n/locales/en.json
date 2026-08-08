@@ -246,7 +246,7 @@
     "benefitSettings": "Customize batch scan, vibration, beep, history, and App Lock",
     "unitWeek": "week",
     "unitMonth": "month",
-    "perWeekEquivalent": "≈ $1.15/week",
+    "perWeekEquivalent": "≈ {{price}}/week",
     "bestValue": "BEST VALUE",
     "continueButton": "Continue — {{price}}/{{unit}}",
     "autoRenewNotice": "Auto-renews unless cancelled. Cancel anytime in your App Store account settings.",
@@ -254,6 +254,11 @@
     "privacyPolicy": "Privacy Policy",
     "termsOfUse": "Terms of Use",
     "restoreNoneTitle": "Nothing to restore",
-    "restoreNoneBody": "We couldn't find any previous purchases for this account."
+    "restoreNoneBody": "We couldn't find any previous purchases for this account.",
+    "processingButton": "Processing…",
+    "storeUnavailableTitle": "Store unavailable",
+    "storeUnavailableBody": "We couldn't reach the App Store right now. Please try again in a moment.",
+    "purchaseFailedTitle": "Purchase failed",
+    "purchaseFailedBody": "We couldn't complete that purchase. Please try again."
   }
 }

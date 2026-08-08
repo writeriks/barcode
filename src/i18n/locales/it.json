@@ -246,7 +246,7 @@
     "benefitSettings": "Personalizza scansione a raffica, vibrazione, beep, cronologia e Blocco app",
     "unitWeek": "settimana",
     "unitMonth": "mese",
-    "perWeekEquivalent": "≈ 1,15 $/settimana",
+    "perWeekEquivalent": "≈ {{price}}/settimana",
     "bestValue": "MIGLIOR OFFERTA",
     "continueButton": "Continua — {{price}}/{{unit}}",
     "autoRenewNotice": "Si rinnova automaticamente salvo disdetta. Puoi annullare in qualsiasi momento dalle impostazioni del tuo account App Store.",
@@ -254,6 +254,11 @@
     "privacyPolicy": "Informativa sulla privacy",
     "termsOfUse": "Termini di utilizzo",
     "restoreNoneTitle": "Niente da ripristinare",
-    "restoreNoneBody": "Non abbiamo trovato acquisti precedenti per questo account."
+    "restoreNoneBody": "Non abbiamo trovato acquisti precedenti per questo account.",
+    "processingButton": "Elaborazione…",
+    "storeUnavailableTitle": "Store non disponibile",
+    "storeUnavailableBody": "Al momento non è possibile raggiungere l'App Store. Riprova tra poco.",
+    "purchaseFailedTitle": "Acquisto non riuscito",
+    "purchaseFailedBody": "Non è stato possibile completare l'acquisto. Riprova."
   }
 }

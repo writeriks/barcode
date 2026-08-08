@@ -246,7 +246,7 @@
     "benefitSettings": "Passe Serienscan, Vibration, Signalton, Verlauf und App-Sperre an",
     "unitWeek": "Woche",
     "unitMonth": "Monat",
-    "perWeekEquivalent": "≈ 1,15 $/Woche",
+    "perWeekEquivalent": "≈ {{price}}/Woche",
     "bestValue": "BESTES ANGEBOT",
     "continueButton": "Weiter — {{price}}/{{unit}}",
     "autoRenewNotice": "Verlängert sich automatisch, sofern nicht gekündigt. Du kannst jederzeit in den App-Store-Kontoeinstellungen kündigen.",
@@ -254,6 +254,11 @@
     "privacyPolicy": "Datenschutzerklärung",
     "termsOfUse": "Nutzungsbedingungen",
     "restoreNoneTitle": "Nichts wiederherzustellen",
-    "restoreNoneBody": "Wir konnten keine früheren Käufe für dieses Konto finden."
+    "restoreNoneBody": "Wir konnten keine früheren Käufe für dieses Konto finden.",
+    "processingButton": "Wird verarbeitet…",
+    "storeUnavailableTitle": "Store nicht erreichbar",
+    "storeUnavailableBody": "Der App Store konnte gerade nicht erreicht werden. Bitte versuche es gleich noch einmal.",
+    "purchaseFailedTitle": "Kauf fehlgeschlagen",
+    "purchaseFailedBody": "Der Kauf konnte nicht abgeschlossen werden. Bitte versuche es erneut."
   }
 }

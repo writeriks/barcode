@@ -246,7 +246,7 @@
     "benefitSettings": "Dostosuj skanowanie seryjne, wibracje, dźwięk, historię i Blokadę aplikacji",
     "unitWeek": "tydzień",
     "unitMonth": "miesiąc",
-    "perWeekEquivalent": "≈ 1,15 USD/tydzień",
+    "perWeekEquivalent": "≈ {{price}}/tydzień",
     "bestValue": "NAJLEPSZA OFERTA",
     "continueButton": "Kontynuuj — {{price}}/{{unit}}",
     "autoRenewNotice": "Odnawia się automatycznie, jeśli nie zostanie anulowane. Możesz anulować w dowolnym momencie w ustawieniach konta App Store.",
@@ -254,6 +254,11 @@
     "privacyPolicy": "Polityka prywatności",
     "termsOfUse": "Warunki korzystania",
     "restoreNoneTitle": "Nic do przywrócenia",
-    "restoreNoneBody": "Nie znaleźliśmy żadnych wcześniejszych zakupów dla tego konta."
+    "restoreNoneBody": "Nie znaleźliśmy żadnych wcześniejszych zakupów dla tego konta.",
+    "processingButton": "Przetwarzanie…",
+    "storeUnavailableTitle": "Sklep niedostępny",
+    "storeUnavailableBody": "Nie udało się połączyć ze sklepem App Store. Spróbuj ponownie za chwilę.",
+    "purchaseFailedTitle": "Zakup nieudany",
+    "purchaseFailedBody": "Nie udało się zrealizować zakupu. Spróbuj ponownie."
   }
 }

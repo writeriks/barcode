@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { PaywallScreen } from '../screens/PaywallScreen';
 import { setAdsEnabled } from '../services/ads/adsEnabled';
 import { getPremiumDevOverride, setPremiumDevOverride } from './premiumPreference';
+import { configurePurchases, fetchIsPremium, subscribeToPremiumChanges } from './revenueCat';
 
 interface PremiumContextValue {
   isPremium: boolean;
@@ -14,20 +15,42 @@ const PremiumContext = createContext<PremiumContextValue | null>(null);
 
 /** Whether the current user has premium access, plus a way to trigger the
  * paywall from anywhere — the modal itself lives here too, mounted once,
- * so no screen needs to own its own paywall state. Backed by a local dev
- * override for now (see premiumPreference.ts); swapping in real
- * RevenueCat entitlements later only touches that file and the effect
- * below, not any of the call sites using usePremium(). */
+ * so no screen needs to own its own paywall state.
+ *
+ * `isPremium` is `isEntitled || devOverride`: `isEntitled` comes from
+ * RevenueCat (see premium/revenueCat.ts) and reflects a real purchase;
+ * `devOverride` is the `__DEV__`-only Settings toggle (premiumPreference.ts)
+ * that lets premium be tested on the simulator, where StoreKit's sandbox
+ * doesn't work. */
 export function PremiumProvider({ children }: { children: ReactNode }) {
-  const [isPremium, setIsPremiumState] = useState(false);
+  const [isEntitled, setIsEntitled] = useState(false);
+  const [devOverride, setDevOverrideState] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [isPaywallVisible, setIsPaywallVisible] = useState(false);
 
+  const isPremium = isEntitled || devOverride;
+
   useEffect(() => {
-    getPremiumDevOverride().then((enabled) => {
-      setIsPremiumState(enabled);
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
+
+    (async () => {
+      await configurePurchases();
+      const [entitled, override] = await Promise.all([fetchIsPremium(), getPremiumDevOverride()]);
+      if (cancelled) return;
+      setIsEntitled(entitled);
+      setDevOverrideState(override);
       setIsReady(true);
-    });
+
+      const unsub = await subscribeToPremiumChanges(setIsEntitled);
+      if (cancelled) unsub();
+      else unsubscribe = unsub;
+    })();
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, []);
 
   // Ads check this flag directly (see services/ads/adsEnabled.ts) rather
@@ -37,16 +60,20 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   }, [isPremium, isReady]);
 
   const setPremium = useCallback((enabled: boolean) => {
-    setIsPremiumState(enabled);
+    setDevOverrideState(enabled);
     setPremiumDevOverride(enabled);
   }, []);
 
   const openPaywall = useCallback(() => setIsPaywallVisible(true), []);
+  const closePaywall = useCallback(() => setIsPaywallVisible(false), []);
 
-  const handleUnlock = useCallback(() => {
-    setPremium(true);
+  // RevenueCat's listener will also fire on a real purchase/restore, but
+  // updating here immediately avoids a flash of the paywall before that
+  // async event arrives.
+  const handlePurchased = useCallback(() => {
+    setIsEntitled(true);
     setIsPaywallVisible(false);
-  }, [setPremium]);
+  }, []);
 
   const value = useMemo(
     () => ({ isPremium, isReady, setPremium, openPaywall }),
@@ -56,7 +83,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   return (
     <PremiumContext.Provider value={value}>
       {children}
-      <PaywallScreen visible={isPaywallVisible} onClose={() => setIsPaywallVisible(false)} onUnlock={handleUnlock} />
+      <PaywallScreen visible={isPaywallVisible} onClose={closePaywall} onPurchased={handlePurchased} />
     </PremiumContext.Provider>
   );
 }

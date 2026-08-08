@@ -246,7 +246,7 @@
     "benefitSettings": "Batch tarama, titreşim, bip sesi, geçmiş ve Uygulama Kilidi'ni özelleştir",
     "unitWeek": "hafta",
     "unitMonth": "ay",
-    "perWeekEquivalent": "≈ 1,15$/hafta",
+    "perWeekEquivalent": "≈ {{price}}/hafta",
     "bestValue": "EN AVANTAJLI",
     "continueButton": "Devam Et — {{price}}/{{unit}}",
     "autoRenewNotice": "İptal edilmediği sürece otomatik yenilenir. İstediğin zaman App Store hesap ayarlarından iptal edebilirsin.",
@@ -254,6 +254,11 @@
     "privacyPolicy": "Gizlilik Politikası",
     "termsOfUse": "Kullanım Şartları",
     "restoreNoneTitle": "Geri yüklenecek bir şey yok",
-    "restoreNoneBody": "Bu hesap için önceki bir satın alma bulamadık."
+    "restoreNoneBody": "Bu hesap için önceki bir satın alma bulamadık.",
+    "processingButton": "İşleniyor…",
+    "storeUnavailableTitle": "Mağazaya ulaşılamıyor",
+    "storeUnavailableBody": "Şu anda App Store’a ulaşılamadı. Lütfen birazdan tekrar dene.",
+    "purchaseFailedTitle": "Satın alma başarısız",
+    "purchaseFailedBody": "Satın alma tamamlanamadı. Lütfen tekrar dene."
   }
 }

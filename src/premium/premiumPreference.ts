@@ -2,13 +2,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = '@beep/premium_dev_override';
 
-/** Temporary stand-in for real subscription state until RevenueCat (or
- * another IAP provider) is wired up — a dev-only toggle in Settings and
- * the paywall's "unlock" button both flip this, so premium gating can be
- * built and tested before real purchases exist. Once that's ready, this
- * is the one file that changes (read entitlements instead of
- * AsyncStorage) — PremiumContext and everything consuming usePremium()
- * stays the same. */
+/** A `__DEV__`-only manual override (see the Settings toggle), layered on
+ * top of RevenueCat's real entitlement in PremiumContext — StoreKit's
+ * sandbox doesn't work on the simulator, so this lets premium gating be
+ * tested without a real purchase. Not used in release builds. */
 export async function getPremiumDevOverride(): Promise<boolean> {
   const stored = await AsyncStorage.getItem(STORAGE_KEY);
   return stored === 'true';

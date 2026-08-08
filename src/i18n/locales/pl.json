@@ -244,7 +244,16 @@
     "benefitNoAds": "Brak reklam w całej aplikacji",
     "benefitHistory": "Do 100 skanów w historii zamiast 30",
     "benefitSettings": "Dostosuj skanowanie seryjne, wibracje, dźwięk, historię i Blokadę aplikacji",
-    "unlockButton": "Odblokuj Premium (Test)",
-    "testDisclaimer": "Jeszcze bez prawdziwych zakupów — to tymczasowy element testowy."
+    "unitWeek": "tydzień",
+    "unitMonth": "miesiąc",
+    "perWeekEquivalent": "≈ 1,15 USD/tydzień",
+    "bestValue": "NAJLEPSZA OFERTA",
+    "continueButton": "Kontynuuj — {{price}}/{{unit}}",
+    "autoRenewNotice": "Odnawia się automatycznie, jeśli nie zostanie anulowane. Możesz anulować w dowolnym momencie w ustawieniach konta App Store.",
+    "restorePurchases": "Przywróć zakupy",
+    "privacyPolicy": "Polityka prywatności",
+    "termsOfUse": "Warunki korzystania",
+    "restoreNoneTitle": "Nic do przywrócenia",
+    "restoreNoneBody": "Nie znaleźliśmy żadnych wcześniejszych zakupów dla tego konta."
   }
 }

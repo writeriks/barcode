@@ -244,7 +244,16 @@
     "benefitNoAds": "No ads, anywhere in the app",
     "benefitHistory": "Keep up to 100 scans in your history instead of 30",
     "benefitSettings": "Customize batch scan, vibration, beep, history, and App Lock",
-    "unlockButton": "Unlock Premium (Test)",
-    "testDisclaimer": "No real purchases yet — this is a placeholder for testing."
+    "unitWeek": "week",
+    "unitMonth": "month",
+    "perWeekEquivalent": "≈ $1.15/week",
+    "bestValue": "BEST VALUE",
+    "continueButton": "Continue — {{price}}/{{unit}}",
+    "autoRenewNotice": "Auto-renews unless cancelled. Cancel anytime in your App Store account settings.",
+    "restorePurchases": "Restore Purchases",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfUse": "Terms of Use",
+    "restoreNoneTitle": "Nothing to restore",
+    "restoreNoneBody": "We couldn't find any previous purchases for this account."
   }
 }

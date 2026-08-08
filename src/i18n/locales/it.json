@@ -244,7 +244,16 @@
     "benefitNoAds": "Nessun annuncio in nessuna parte dell'app",
     "benefitHistory": "Fino a 100 scansioni nella cronologia invece di 30",
     "benefitSettings": "Personalizza scansione a raffica, vibrazione, beep, cronologia e Blocco app",
-    "unlockButton": "Sblocca Premium (Test)",
-    "testDisclaimer": "Ancora nessun acquisto reale — questo è un segnaposto per i test."
+    "unitWeek": "settimana",
+    "unitMonth": "mese",
+    "perWeekEquivalent": "≈ 1,15 $/settimana",
+    "bestValue": "MIGLIOR OFFERTA",
+    "continueButton": "Continua — {{price}}/{{unit}}",
+    "autoRenewNotice": "Si rinnova automaticamente salvo disdetta. Puoi annullare in qualsiasi momento dalle impostazioni del tuo account App Store.",
+    "restorePurchases": "Ripristina acquisti",
+    "privacyPolicy": "Informativa sulla privacy",
+    "termsOfUse": "Termini di utilizzo",
+    "restoreNoneTitle": "Niente da ripristinare",
+    "restoreNoneBody": "Non abbiamo trovato acquisti precedenti per questo account."
   }
 }

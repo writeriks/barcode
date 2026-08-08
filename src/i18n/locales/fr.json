@@ -244,7 +244,16 @@
     "benefitNoAds": "Aucune publicité, nulle part dans l'app",
     "benefitHistory": "Jusqu’à 100 scans dans votre historique au lieu de 30",
     "benefitSettings": "Personnalisez le scan en rafale, les vibrations, le bip, l'historique et le Verrouillage de l'app",
-    "unlockButton": "Débloquer Premium (Test)",
-    "testDisclaimer": "Pas encore d’achats réels — ceci est un espace réservé pour les tests."
+    "unitWeek": "semaine",
+    "unitMonth": "mois",
+    "perWeekEquivalent": "≈ 1,15 $/semaine",
+    "bestValue": "MEILLEURE OFFRE",
+    "continueButton": "Continuer — {{price}}/{{unit}}",
+    "autoRenewNotice": "Se renouvelle automatiquement sauf annulation. Vous pouvez annuler à tout moment dans les réglages de votre compte App Store.",
+    "restorePurchases": "Restaurer les achats",
+    "privacyPolicy": "Politique de confidentialité",
+    "termsOfUse": "Conditions d'utilisation",
+    "restoreNoneTitle": "Rien à restaurer",
+    "restoreNoneBody": "Nous n'avons trouvé aucun achat précédent pour ce compte."
   }
 }

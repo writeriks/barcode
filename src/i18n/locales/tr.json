@@ -244,7 +244,16 @@
     "benefitNoAds": "Uygulamanın hiçbir yerinde reklam yok",
     "benefitHistory": "Geçmişinde 30 yerine 100 taramaya kadar yer",
     "benefitSettings": "Batch tarama, titreşim, bip sesi, geçmiş ve Uygulama Kilidi'ni özelleştir",
-    "unlockButton": "Premium'u Aç (Test)",
-    "testDisclaimer": "Henüz gerçek satın alma yok — bu test amaçlı bir yer tutucu."
+    "unitWeek": "hafta",
+    "unitMonth": "ay",
+    "perWeekEquivalent": "≈ 1,15$/hafta",
+    "bestValue": "EN AVANTAJLI",
+    "continueButton": "Devam Et — {{price}}/{{unit}}",
+    "autoRenewNotice": "İptal edilmediği sürece otomatik yenilenir. İstediğin zaman App Store hesap ayarlarından iptal edebilirsin.",
+    "restorePurchases": "Satın Alımları Geri Yükle",
+    "privacyPolicy": "Gizlilik Politikası",
+    "termsOfUse": "Kullanım Şartları",
+    "restoreNoneTitle": "Geri yüklenecek bir şey yok",
+    "restoreNoneBody": "Bu hesap için önceki bir satın alma bulamadık."
   }
 }

@@ -244,7 +244,16 @@
     "benefitNoAds": "Sin anuncios en ninguna parte de la app",
     "benefitHistory": "Hasta 100 escaneos en tu historial en lugar de 30",
     "benefitSettings": "Personaliza el escaneo por lotes, la vibración, el sonido, el historial y el Bloqueo de la app",
-    "unlockButton": "Desbloquear Premium (Prueba)",
-    "testDisclaimer": "Todavía no hay compras reales — esto es un marcador de posición para pruebas."
+    "unitWeek": "semana",
+    "unitMonth": "mes",
+    "perWeekEquivalent": "≈ 1,15 $/semana",
+    "bestValue": "MEJOR OFERTA",
+    "continueButton": "Continuar — {{price}}/{{unit}}",
+    "autoRenewNotice": "Se renueva automáticamente a menos que se cancele. Puedes cancelar en cualquier momento desde los ajustes de tu cuenta de App Store.",
+    "restorePurchases": "Restaurar compras",
+    "privacyPolicy": "Política de privacidad",
+    "termsOfUse": "Términos de uso",
+    "restoreNoneTitle": "Nada que restaurar",
+    "restoreNoneBody": "No encontramos compras anteriores para esta cuenta."
   }
 }

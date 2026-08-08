@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PillButton } from '../components/PillButton';
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '../config/appInfo';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -20,15 +21,55 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; labelKey: string }[] = [
   { icon: 'options-outline', labelKey: 'paywall.benefitSettings' },
 ];
 
+type PlanId = 'weekly' | 'monthly';
+
+// Real App Store Connect pricing (USD base tier) — once RevenueCat is
+// wired up, swap these for the live localized price/period off each
+// `PurchasesPackage.product`, which is what Apple actually expects users
+// to see (their local currency, not a hardcoded USD string).
+interface Plan {
+  id: PlanId;
+  price: string;
+  unitKey: string;
+  subLabelKey?: string;
+  badgeKey?: string;
+}
+
+const PLANS: Plan[] = [
+  { id: 'weekly', price: '$1.49', unitKey: 'paywall.unitWeek' },
+  {
+    id: 'monthly',
+    price: '$4.99',
+    unitKey: 'paywall.unitMonth',
+    subLabelKey: 'paywall.perWeekEquivalent',
+    badgeKey: 'paywall.bestValue',
+  },
+];
+
 /** The upgrade pitch, shown whenever a free user taps a premium-gated
- * toggle or hits the free history limit. There's no real purchase flow
- * yet (see premiumPreference.ts) — the "unlock" button here just flips
- * the local dev entitlement, clearly labeled as a test action rather
- * than pretending to be a real purchase. */
+ * toggle or hits the free history limit. Purchases aren't wired to
+ * RevenueCat yet (see premium/premiumPreference.ts) — "unlock" just flips
+ * the local dev entitlement — but the screen itself is meant to be
+ * production-ready: it's what gets screenshotted for Apple's
+ * auto-renewable subscription review (Guideline 3.1.2), which is why the
+ * price/length/renewal terms and the Privacy/Terms links are all here. */
 export function PaywallScreen({ visible, onClose, onUnlock }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>('monthly');
+
+  const activePlan = PLANS.find((plan) => plan.id === selectedPlan) ?? PLANS[0];
+
+  const handleRestore = () => {
+    Alert.alert(t('paywall.restoreNoneTitle'), t('paywall.restoreNoneBody'));
+  };
+
+  const openLink = (url: string) => {
+    Linking.canOpenURL(url).then((supported) => {
+      if (supported) Linking.openURL(url);
+    });
+  };
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
@@ -56,11 +97,58 @@ export function PaywallScreen({ visible, onClose, onUnlock }: Props) {
               </View>
             ))}
           </View>
+
+          <View style={styles.plans}>
+            {PLANS.map((plan) => {
+              const selected = plan.id === selectedPlan;
+              return (
+                <Pressable
+                  key={plan.id}
+                  onPress={() => setSelectedPlan(plan.id)}
+                  style={[styles.planCard, selected && styles.planCardSelected]}
+                >
+                  {plan.badgeKey ? (
+                    <View style={styles.planBadge}>
+                      <Text style={styles.planBadgeText}>{t(plan.badgeKey)}</Text>
+                    </View>
+                  ) : null}
+                  <View style={styles.planRadio}>
+                    <Ionicons
+                      name={selected ? 'radio-button-on' : 'radio-button-off'}
+                      size={20}
+                      color={selected ? colors.mint : colors.text}
+                    />
+                  </View>
+                  <Text style={styles.planPrice}>{plan.price}</Text>
+                  <Text style={styles.planUnit}>{t(plan.unitKey)}</Text>
+                  {plan.subLabelKey ? <Text style={styles.planSubLabel}>{t(plan.subLabelKey)}</Text> : null}
+                </Pressable>
+              );
+            })}
+          </View>
         </ScrollView>
 
         <View style={styles.footer}>
-          <PillButton title={t('paywall.unlockButton')} onPress={onUnlock} variant="citrus" style={styles.unlockButton} />
-          <Text style={styles.disclaimer}>{t('paywall.testDisclaimer')}</Text>
+          <PillButton
+            title={t('paywall.continueButton', { price: activePlan.price, unit: t(activePlan.unitKey) })}
+            onPress={onUnlock}
+            variant="citrus"
+            style={styles.continueButton}
+          />
+          <Text style={styles.autoRenewNotice}>{t('paywall.autoRenewNotice')}</Text>
+          <View style={styles.legalRow}>
+            <Pressable onPress={handleRestore} hitSlop={6}>
+              <Text style={styles.legalLink}>{t('paywall.restorePurchases')}</Text>
+            </Pressable>
+            <Text style={styles.legalDivider}>·</Text>
+            <Pressable onPress={() => openLink(PRIVACY_POLICY_URL)} hitSlop={6}>
+              <Text style={styles.legalLink}>{t('paywall.privacyPolicy')}</Text>
+            </Pressable>
+            <Text style={styles.legalDivider}>·</Text>
+            <Pressable onPress={() => openLink(TERMS_OF_USE_URL)} hitSlop={6}>
+              <Text style={styles.legalLink}>{t('paywall.termsOfUse')}</Text>
+            </Pressable>
+          </View>
         </View>
       </SafeAreaView>
     </Modal>
@@ -149,21 +237,94 @@ function createStyles(colors: ColorTheme) {
       fontSize: 14,
       color: colors.text,
     },
+    plans: {
+      flexDirection: 'row',
+      width: '100%',
+      gap: 12,
+      marginTop: 22,
+    },
+    planCard: {
+      flex: 1,
+      alignItems: 'center',
+      backgroundColor: colors.panel,
+      borderWidth: 1.5,
+      borderColor: colors.panelLine,
+      borderRadius: 18,
+      paddingTop: 22,
+      paddingBottom: 16,
+      paddingHorizontal: 10,
+      gap: 4,
+    },
+    planCardSelected: {
+      borderColor: colors.mint,
+    },
+    planBadge: {
+      position: 'absolute',
+      top: -10,
+      alignSelf: 'center',
+      backgroundColor: colors.mint,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 3,
+    },
+    planBadgeText: {
+      fontFamily: fonts.displayBold,
+      fontSize: 9.5,
+      letterSpacing: 0.4,
+      color: colors.inkOnCream,
+    },
+    planRadio: {
+      marginBottom: 4,
+    },
+    planPrice: {
+      fontFamily: fonts.displayBold,
+      fontSize: 20,
+      color: colors.text,
+    },
+    planUnit: {
+      fontSize: 12.5,
+      color: colors.text,
+      opacity: 0.6,
+    },
+    planSubLabel: {
+      fontSize: 11,
+      color: colors.mintText,
+      marginTop: 4,
+    },
     footer: {
       paddingHorizontal: 28,
       paddingBottom: 20,
-      paddingTop: 8,
+      paddingTop: 12,
       gap: 10,
       alignItems: 'stretch',
     },
-    unlockButton: {
+    continueButton: {
       width: '100%',
     },
-    disclaimer: {
-      fontSize: 11.5,
+    autoRenewNotice: {
+      fontSize: 11,
+      lineHeight: 15,
       color: colors.text,
       opacity: 0.5,
       textAlign: 'center',
+    },
+    legalRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 8,
+      marginTop: 2,
+    },
+    legalLink: {
+      fontSize: 11.5,
+      color: colors.text,
+      opacity: 0.65,
+      textDecorationLine: 'underline',
+    },
+    legalDivider: {
+      fontSize: 11.5,
+      color: colors.text,
+      opacity: 0.3,
     },
   });
 }

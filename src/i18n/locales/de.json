@@ -83,7 +83,14 @@
     "historySaving": "Verlauf",
     "historySavingDescription": "Verlauf deiner Scans speichern",
     "duplicateScans": "Doppelte Scans",
-    "duplicateScansDescription": "Auch dann einen neuen Eintrag speichern, wenn dieser Code schon gescannt wurde"
+    "duplicateScansDescription": "Auch dann einen neuen Eintrag speichern, wenn dieser Code schon gescannt wurde",
+    "premiumSection": "Premium",
+    "premiumActive": "Premium aktiv",
+    "premiumActiveDescription": "Danke, dass du Blippo unterstützt — genieße die volle App.",
+    "premiumUpgrade": "Auf Premium upgraden",
+    "premiumUpgradeDescription": "Werbung entfernen, Einstellungen freischalten und mehr Verlauf speichern.",
+    "premiumDevToggle": "Premium (Test)",
+    "premiumDevToggleDescription": "Nur für Entwickler gedachter Schalter, um Premium ohne echten Kauf zu testen."
   },
   "tabs": {
     "scanner": "Scanner",
@@ -133,7 +140,8 @@
     "metaQrZoom": "QR Zoom",
     "metaQrWifi": "QR WLAN",
     "metaQrVcard": "QR Kontakt",
-    "metaQrEvent": "QR Termin"
+    "metaQrEvent": "QR Termin",
+    "freeLimitReached": "Der kostenlose Plan speichert deine letzten {{count}} Scans — upgrade für mehr."
   },
   "myCodes": {
     "title": "Meine Codes",
@@ -229,5 +237,14 @@
     "typeEvent": "Termin",
     "openWhatsapp": "WhatsApp öffnen",
     "openZoom": "Zoom beitreten"
+  },
+  "paywall": {
+    "title": "Blippo Premium freischalten",
+    "subtitle": "Werbung entfernen, jede Einstellung anpassen und mehr Verlauf speichern.",
+    "benefitNoAds": "Keine Werbung, nirgendwo in der App",
+    "benefitHistory": "Bis zu 100 Scans im Verlauf statt 30",
+    "benefitSettings": "Passe Serienscan, Vibration, Signalton, Verlauf und App-Sperre an",
+    "unlockButton": "Premium freischalten (Test)",
+    "testDisclaimer": "Noch keine echten Käufe — dies ist ein Platzhalter zum Testen."
   }
 }

@@ -83,7 +83,14 @@
     "historySaving": "Historia",
     "historySavingDescription": "Zapisuj historię swoich skanów",
     "duplicateScans": "Zduplikowane skany",
-    "duplicateScansDescription": "Zapisuj nowy wpis, nawet jeśli już to zeskanowano"
+    "duplicateScansDescription": "Zapisuj nowy wpis, nawet jeśli już to zeskanowano",
+    "premiumSection": "Premium",
+    "premiumActive": "Premium aktywne",
+    "premiumActiveDescription": "Dziękujemy za wsparcie Blippo — ciesz się pełną aplikacją.",
+    "premiumUpgrade": "Przejdź na Premium",
+    "premiumUpgradeDescription": "Usuń reklamy, odblokuj ustawienia i przechowuj więcej historii.",
+    "premiumDevToggle": "Premium (test)",
+    "premiumDevToggleDescription": "Przełącznik tylko dla deweloperów do testowania Premium bez prawdziwego zakupu."
   },
   "tabs": {
     "scanner": "Skaner",
@@ -133,7 +140,8 @@
     "metaQrZoom": "QR Zoom",
     "metaQrWifi": "QR Wi-Fi",
     "metaQrVcard": "QR kontakt",
-    "metaQrEvent": "QR wydarzenie"
+    "metaQrEvent": "QR wydarzenie",
+    "freeLimitReached": "Plan darmowy przechowuje ostatnie {{count}} skanów — ulepsz, aby mieć więcej."
   },
   "myCodes": {
     "title": "Moje kody",
@@ -229,5 +237,14 @@
     "typeEvent": "Wydarzenie",
     "openWhatsapp": "Otwórz WhatsApp",
     "openZoom": "Dołącz do Zoom"
+  },
+  "paywall": {
+    "title": "Odblokuj Blippo Premium",
+    "subtitle": "Usuń reklamy, dostosuj każde ustawienie i przechowuj więcej historii.",
+    "benefitNoAds": "Brak reklam w całej aplikacji",
+    "benefitHistory": "Do 100 skanów w historii zamiast 30",
+    "benefitSettings": "Dostosuj skanowanie seryjne, wibracje, dźwięk, historię i Blokadę aplikacji",
+    "unlockButton": "Odblokuj Premium (Test)",
+    "testDisclaimer": "Jeszcze bez prawdziwych zakupów — to tymczasowy element testowy."
   }
 }

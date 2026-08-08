@@ -23,6 +23,7 @@ import { getLanguageOverride, setLanguageOverride } from './src/i18n/languagePre
 import { isAppLockEnabled as getAppLockEnabled } from './src/services/appLock';
 import { getAnalyticsClient } from './src/services/analytics';
 import { initializeAds } from './src/services/ads/initializeAds';
+import { PremiumProvider } from './src/premium/PremiumContext';
 import { ThemeProvider, useThemeColors, useThemeMode, useThemePreference } from './src/theme/ThemeContext';
 import { getDeviceLanguageCode } from './src/utils/locale';
 
@@ -33,7 +34,9 @@ export default function App() {
 
   const app = (
     <ThemeProvider>
-      <AppContent />
+      <PremiumProvider>
+        <AppContent />
+      </PremiumProvider>
     </ThemeProvider>
   );
 

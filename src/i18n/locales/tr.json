@@ -83,7 +83,14 @@
     "historySaving": "Geçmiş",
     "historySavingDescription": "Taramalarının kaydını tut",
     "duplicateScans": "Tekrar taramalar",
-    "duplicateScansDescription": "Daha önce taradığın bir kodu tekrar tarasan bile yeni kayıt oluştur"
+    "duplicateScansDescription": "Daha önce taradığın bir kodu tekrar tarasan bile yeni kayıt oluştur",
+    "premiumSection": "Premium",
+    "premiumActive": "Premium aktif",
+    "premiumActiveDescription": "Blippo'yu desteklediğin için teşekkürler — uygulamanın tamamının keyfini çıkar.",
+    "premiumUpgrade": "Premium'a Geç",
+    "premiumUpgradeDescription": "Reklamları kaldır, ayarların kilidini aç, daha fazla geçmiş sakla.",
+    "premiumDevToggle": "Premium (test)",
+    "premiumDevToggleDescription": "Gerçek satın alma olmadan premium’u test etmek için geliştirici anahtarı."
   },
   "tabs": {
     "scanner": "Tarayıcı",
@@ -133,7 +140,8 @@
     "metaQrZoom": "QR Zoom",
     "metaQrWifi": "QR Wi-Fi",
     "metaQrVcard": "QR kişi",
-    "metaQrEvent": "QR etkinlik"
+    "metaQrEvent": "QR etkinlik",
+    "freeLimitReached": "Ücretsiz plan son {{count}} taramanı saklar — daha fazlası için yükselt."
   },
   "myCodes": {
     "title": "Kodlarım",
@@ -229,5 +237,14 @@
     "typeEvent": "Etkinlik",
     "openWhatsapp": "WhatsApp'ı Aç",
     "openZoom": "Zoom'a Katıl"
+  },
+  "paywall": {
+    "title": "Blippo Premium'un Kilidini Aç",
+    "subtitle": "Reklamları kaldır, tüm ayarları özelleştir, daha fazla geçmiş sakla.",
+    "benefitNoAds": "Uygulamanın hiçbir yerinde reklam yok",
+    "benefitHistory": "Geçmişinde 30 yerine 100 taramaya kadar yer",
+    "benefitSettings": "Batch tarama, titreşim, bip sesi, geçmiş ve Uygulama Kilidi'ni özelleştir",
+    "unlockButton": "Premium'u Aç (Test)",
+    "testDisclaimer": "Henüz gerçek satın alma yok — bu test amaçlı bir yer tutucu."
   }
 }

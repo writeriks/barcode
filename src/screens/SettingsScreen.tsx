@@ -8,6 +8,7 @@ import { BottomSheet } from '../components/BottomSheet';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { LANGUAGE_NATIVE_NAMES } from '../i18n/languageNames';
+import { usePremium } from '../premium/PremiumContext';
 import { isPrivacyOptionsRequired, showPrivacyOptionsForm } from '../services/ads/consent';
 import { authenticateAppUnlock, isDeviceLockSupported, setAppLockEnabled } from '../services/appLock';
 import { captureAnalyticsEvent } from '../services/analytics';
@@ -50,6 +51,7 @@ export function SettingsScreen({
   const tabBarHeight = useBottomTabBarHeight();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const { isPremium, setPremium, openPaywall } = usePremium();
   const [showPrivacyRow, setShowPrivacyRow] = useState(false);
   const [vibrateEnabled, setVibrateEnabledState] = useState(true);
   const [beepEnabled, setBeepEnabledState] = useState(true);
@@ -126,6 +128,18 @@ export function SettingsScreen({
   const currentLanguageLabel =
     currentOverride === null ? t('settings.systemDefault') : LANGUAGE_NATIVE_NAMES[currentOverride];
 
+  // All of the toggles below are premium-only — a free user tapping one
+  // opens the paywall instead of changing anything.
+  const withPremiumGate =
+    (handler: (value: boolean) => void) =>
+    (value: boolean): void => {
+      if (!isPremium) {
+        openPaywall();
+        return;
+      }
+      handler(value);
+    };
+
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <Text style={styles.title}>{t('settings.title')}</Text>
@@ -142,12 +156,38 @@ export function SettingsScreen({
           ]}
         />
 
+        <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.premiumSection')}</Text>
+        <Pressable onPress={isPremium ? undefined : openPaywall} style={styles.row}>
+          <View style={styles.toggleText}>
+            <Text style={styles.rowLabel}>{isPremium ? t('settings.premiumActive') : t('settings.premiumUpgrade')}</Text>
+            <Text style={styles.toggleDescription}>
+              {isPremium ? t('settings.premiumActiveDescription') : t('settings.premiumUpgradeDescription')}
+            </Text>
+          </View>
+          {isPremium ? (
+            <Ionicons name="checkmark-circle" size={20} color={colors.mint} />
+          ) : (
+            <Ionicons name="chevron-forward" size={18} color={colors.text} style={styles.dropdownChevron} />
+          )}
+        </Pressable>
+        {__DEV__ ? (
+          <ToggleRow
+            label={t('settings.premiumDevToggle')}
+            description={t('settings.premiumDevToggleDescription')}
+            value={isPremium}
+            onValueChange={setPremium}
+            colors={colors}
+            styles={styles}
+          />
+        ) : null}
+
         <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.appSettingsSection')}</Text>
         <ToggleRow
           label={t('settings.lockApp')}
           description={t('settings.lockAppDescription')}
           value={appLockEnabled}
-          onValueChange={handleToggleAppLock}
+          onValueChange={withPremiumGate(handleToggleAppLock)}
+          locked={!isPremium}
           colors={colors}
           styles={styles}
         />
@@ -157,7 +197,8 @@ export function SettingsScreen({
           label={t('settings.batchScan')}
           description={t('settings.batchScanDescription')}
           value={batchScanEnabled}
-          onValueChange={handleToggleBatchScan}
+          onValueChange={withPremiumGate(handleToggleBatchScan)}
+          locked={!isPremium}
           colors={colors}
           styles={styles}
         />
@@ -165,7 +206,8 @@ export function SettingsScreen({
           label={t('settings.vibrate')}
           description={t('settings.vibrateDescription')}
           value={vibrateEnabled}
-          onValueChange={handleToggleVibrate}
+          onValueChange={withPremiumGate(handleToggleVibrate)}
+          locked={!isPremium}
           colors={colors}
           styles={styles}
         />
@@ -173,7 +215,8 @@ export function SettingsScreen({
           label={t('settings.beep')}
           description={t('settings.beepDescription')}
           value={beepEnabled}
-          onValueChange={handleToggleBeep}
+          onValueChange={withPremiumGate(handleToggleBeep)}
+          locked={!isPremium}
           colors={colors}
           styles={styles}
         />
@@ -181,7 +224,8 @@ export function SettingsScreen({
           label={t('settings.historySaving')}
           description={t('settings.historySavingDescription')}
           value={historyEnabled}
-          onValueChange={handleToggleHistory}
+          onValueChange={withPremiumGate(handleToggleHistory)}
+          locked={!isPremium}
           colors={colors}
           styles={styles}
         />
@@ -189,7 +233,8 @@ export function SettingsScreen({
           label={t('settings.duplicateScans')}
           description={t('settings.duplicateScansDescription')}
           value={duplicateScansEnabled}
-          onValueChange={handleToggleDuplicateScans}
+          onValueChange={withPremiumGate(handleToggleDuplicateScans)}
+          locked={!isPremium}
           colors={colors}
           styles={styles}
         />
@@ -270,6 +315,7 @@ function ToggleRow({
   description,
   value,
   onValueChange,
+  locked,
   colors,
   styles,
 }: {
@@ -277,13 +323,17 @@ function ToggleRow({
   description: string;
   value: boolean;
   onValueChange: (value: boolean) => void;
+  locked?: boolean;
   colors: ColorTheme;
   styles: Styles;
 }) {
   return (
     <View style={styles.row}>
       <View style={styles.toggleText}>
-        <Text style={styles.rowLabel}>{label}</Text>
+        <View style={styles.toggleLabelRow}>
+          <Text style={styles.rowLabel}>{label}</Text>
+          {locked ? <Ionicons name="lock-closed" size={12} color={colors.text} style={styles.lockIcon} /> : null}
+        </View>
         <Text style={styles.toggleDescription}>{description}</Text>
       </View>
       <Switch
@@ -372,6 +422,14 @@ function createStyles(colors: ColorTheme) {
       flex: 1,
       marginRight: 12,
       gap: 3,
+    },
+    toggleLabelRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    lockIcon: {
+      opacity: 0.5,
     },
     toggleDescription: {
       fontSize: 12,

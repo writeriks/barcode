@@ -83,7 +83,14 @@
     "historySaving": "Historique",
     "historySavingDescription": "Enregistrez l'historique de vos scans",
     "duplicateScans": "Scans en double",
-    "duplicateScansDescription": "Enregistrez une nouvelle entrée même si vous avez déjà scanné ce code"
+    "duplicateScansDescription": "Enregistrez une nouvelle entrée même si vous avez déjà scanné ce code",
+    "premiumSection": "Premium",
+    "premiumActive": "Premium actif",
+    "premiumActiveDescription": "Merci de soutenir Blippo — profitez de l'app complète.",
+    "premiumUpgrade": "Passer à Premium",
+    "premiumUpgradeDescription": "Supprimez les publicités, déverrouillez les réglages et conservez plus d’historique.",
+    "premiumDevToggle": "Premium (test)",
+    "premiumDevToggleDescription": "Interrupteur réservé aux développeurs pour tester Premium sans achat réel."
   },
   "tabs": {
     "scanner": "Scanner",
@@ -133,7 +140,8 @@
     "metaQrZoom": "QR Zoom",
     "metaQrWifi": "QR Wi-Fi",
     "metaQrVcard": "QR contact",
-    "metaQrEvent": "QR événement"
+    "metaQrEvent": "QR événement",
+    "freeLimitReached": "Le plan gratuit conserve vos {{count}} derniers scans — passez à un plan supérieur pour plus."
   },
   "myCodes": {
     "title": "Mes codes",
@@ -229,5 +237,14 @@
     "typeEvent": "Événement",
     "openWhatsapp": "Ouvrir WhatsApp",
     "openZoom": "Rejoindre Zoom"
+  },
+  "paywall": {
+    "title": "Débloquez Blippo Premium",
+    "subtitle": "Supprimez les publicités, personnalisez tous les réglages et conservez plus d'historique.",
+    "benefitNoAds": "Aucune publicité, nulle part dans l'app",
+    "benefitHistory": "Jusqu’à 100 scans dans votre historique au lieu de 30",
+    "benefitSettings": "Personnalisez le scan en rafale, les vibrations, le bip, l'historique et le Verrouillage de l'app",
+    "unlockButton": "Débloquer Premium (Test)",
+    "testDisclaimer": "Pas encore d’achats réels — ceci est un espace réservé pour les tests."
   }
 }

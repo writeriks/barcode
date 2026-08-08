@@ -1,9 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getPremiumDevOverride } from '../premium/premiumPreference';
 import { isDuplicateScansEnabled, isHistorySavingEnabled } from './historyPreference';
 import type { ScanHistoryEntry } from '../types/history';
 
 const STORAGE_KEY = '@beep/scan_history';
-const MAX_ENTRIES = 100;
+export const FREE_MAX_ENTRIES = 30;
+export const PREMIUM_MAX_ENTRIES = 100;
 
 function isSameScan(a: ScanHistoryEntry, b: ScanHistoryEntry): boolean {
   if (a.kind === 'product' && b.kind === 'product') return a.barcode === b.barcode;
@@ -35,17 +37,20 @@ export async function getHistory(): Promise<ScanHistoryEntry[]> {
   }
 }
 
-/** Prepends the newest scan and caps the log at MAX_ENTRIES. Respects the
- * "save history" and "save duplicate scans" toggles — a no-op when history
- * saving is off, and a no-op when duplicates are off and this exact
- * barcode/QR content is already in the log. */
+/** Prepends the newest scan and caps the log at FREE_MAX_ENTRIES (or
+ * PREMIUM_MAX_ENTRIES for premium users). Respects the "save history" and
+ * "save duplicate scans" toggles — a no-op when history saving is off, and
+ * a no-op when duplicates are off and this exact barcode/QR content is
+ * already in the log. */
 export async function addHistoryEntry(entry: ScanHistoryEntry): Promise<void> {
   if (!(await isHistorySavingEnabled())) return;
 
   const existing = await getHistory();
   if (!(await isDuplicateScansEnabled()) && existing.some((e) => isSameScan(e, entry))) return;
 
-  const next = [entry, ...existing].slice(0, MAX_ENTRIES);
+  const isPremium = await getPremiumDevOverride();
+  const maxEntries = isPremium ? PREMIUM_MAX_ENTRIES : FREE_MAX_ENTRIES;
+  const next = [entry, ...existing].slice(0, maxEntries);
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
 }
 

@@ -12,12 +12,14 @@ import { BottomSheet } from '../components/BottomSheet';
 import { FilterPillRow, type PillAccent, type PillOption } from '../components/FilterPillRow';
 import { HistoryStatusBadge } from '../components/HistoryStatusBadge';
 import { PromptModal } from '../components/PromptModal';
+import { usePremium } from '../premium/PremiumContext';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { createFolder, deleteFolder, getFolders } from '../services/historyFolders';
 import { shareHistoryEntriesAsCsv } from '../services/historyExport';
 import {
   clearFolderFromEntries,
   deleteHistoryEntries,
+  FREE_MAX_ENTRIES,
   getHistory,
   setEntriesFolder,
   type HistoryEntryKey,
@@ -91,6 +93,7 @@ export function HistoryScreen({ navigation }: Props) {
   const mode = useThemeMode();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const placeholderColor = mode === 'light' ? 'rgba(36,25,51,0.35)' : 'rgba(255,246,233,0.4)';
+  const { isPremium, openPaywall } = usePremium();
 
   const [entries, setEntries] = useState<ScanHistoryEntry[]>([]);
   const [folders, setFolders] = useState<HistoryFolder[]>([]);
@@ -313,6 +316,14 @@ export function HistoryScreen({ navigation }: Props) {
       <Text style={styles.title}>{t('history.title')}</Text>
       {isEditMode ? (
         <Text style={styles.selectedCount}>{t('history.selectedCount', { count: selectedKeys.size })}</Text>
+      ) : null}
+
+      {!isPremium && entries.length >= FREE_MAX_ENTRIES ? (
+        <Pressable onPress={openPaywall} style={styles.upgradeBanner}>
+          <Ionicons name="sparkles" size={14} color={colors.citrus} />
+          <Text style={styles.upgradeBannerText}>{t('history.freeLimitReached', { count: FREE_MAX_ENTRIES })}</Text>
+          <Ionicons name="chevron-forward" size={14} color={colors.text} style={styles.upgradeBannerChevron} />
+        </Pressable>
       ) : null}
 
       {entries.length === 0 ? (
@@ -632,6 +643,27 @@ function createStyles(colors: ColorTheme) {
       paddingHorizontal: 20,
       marginTop: -4,
       marginBottom: 8,
+    },
+    upgradeBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      marginHorizontal: 20,
+      marginBottom: 12,
+      backgroundColor: 'rgba(255,210,63,0.12)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,210,63,0.35)',
+      borderRadius: 14,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+    upgradeBannerText: {
+      flex: 1,
+      fontSize: 12.5,
+      color: colors.text,
+    },
+    upgradeBannerChevron: {
+      opacity: 0.6,
     },
     empty: {
       flex: 1,

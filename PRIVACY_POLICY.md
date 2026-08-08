@@ -1,6 +1,6 @@
 # Privacy Policy — Blippo
 
-_Last updated: [fill in date when you publish this]_
+_Last updated: August 8, 2026_
 
 This policy describes how the Blippo barcode and QR scanner app ("Blippo", "the app", "we") handles information. Blippo has no account system, no login, and no backend server of its own — almost everything you do in the app stays on your device.
 
@@ -8,9 +8,10 @@ This policy describes how the Blippo barcode and QR scanner app ("Blippo", "the 
 
 The app stores the following locally, using standard on-device storage (AsyncStorage). None of it is uploaded to us — we don't operate a server that receives it:
 
-- **Scan history** — barcodes and QR codes you've scanned, and whatever product info came back for them (capped at the most recent 100 entries).
-- **My Codes** — any QR codes you create yourself in the app.
-- **Language preference** — if you override the app's automatic language detection in Settings.
+- **Scan history** — barcodes and QR codes you've scanned, and whatever product info came back for them (capped at the most recent 100 entries), including any folders you've organized them into.
+- **My Codes** — any QR codes you create yourself in the app (links, text, email, phone, SMS, WhatsApp, Zoom, Wi-Fi, contact cards, calendar events, and more).
+- **App Lock preference** — whether you've turned on Face ID/Touch ID/passcode locking, and your device's authentication choice. Unlocking is handled entirely by your device's own operating system — Blippo never receives or stores your biometric data.
+- **Language, theme, and other preferences** — if you override the app's automatic detection in Settings.
 
 Uninstalling the app or clearing its storage deletes all of this, since there is no copy anywhere else.
 
@@ -18,6 +19,7 @@ Uninstalling the app or clearing its storage deletes all of this, since there is
 
 - **Open Food Facts** — when you scan a barcode, the app sends that barcode number (and your device's language code, to get results in your language) to [Open Food Facts](https://world.openfoodfacts.org), an open, third-party food product database, to look up product information. See Open Food Facts's own privacy policy on their website for how they handle that request.
 - **QR codes** — decoding a QR code happens entirely on your device. Nothing about a scanned QR code (its content, or the fact that you scanned it) is sent anywhere by us.
+- **Analytics (PostHog)** — we use [PostHog](https://posthog.com) to understand how the app is used, so we know what to improve. Events we send are things like "a scan completed", "a setting was changed", or "a QR action was taken" — along with generic metadata such as the scan method, the code's type (link, email, Wi-Fi, etc.), or the setting's new value. We never send the actual barcode number, the decoded QR content, product names, or anything else you scanned or typed. Analytics data is tied to an anonymous device identifier, not to your name or any account, since the app doesn't have one.
 
 ## Camera and photo access
 
@@ -43,7 +45,7 @@ Blippo isn't directed at children and we don't knowingly collect information fro
 
 - Clear or reset the app's local data at any time via your device's app settings, or by uninstalling the app.
 - Change your ad consent choice via **Settings → Privacy choices** where that option appears.
-- Change your language preference via **Settings**.
+- Turn App Lock on or off, and change your language or theme, via **Settings**.
 
 ## Changes to this policy
 

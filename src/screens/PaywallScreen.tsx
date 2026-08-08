@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PillButton } from '../components/PillButton';
@@ -25,81 +25,66 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; labelKey: string }[] = [
 
 type PlanId = 'weekly' | 'monthly';
 
-// Shown until the real offering loads (or wherever it's unavailable —
-// Android, Expo Go, no network). Must stay roughly in line with the
-// actual App Store Connect prices so the screen never looks misleading
-// while it's still loading.
-const FALLBACK_WEEKLY_PRICE = '$1.49';
-const FALLBACK_MONTHLY_PRICE = '$4.99';
-const FALLBACK_MONTHLY_PER_WEEK = '$1.15';
-
+// Deliberately no hardcoded fallback price — every price on this screen
+// comes from RevenueCat's live offering or isn't shown at all. A plan
+// with no package (still loading, or the offering/entitlement isn't
+// configured yet — see premium/revenueCat.ts) renders unpriced and
+// can't be purchased.
 interface PlanDisplay {
   id: PlanId;
-  price: string;
   unitKey: string;
-  subLabel?: string;
   badgeKey?: string;
   pkg: PurchasesPackage | null;
 }
 
-function buildPlans(offering: PurchasesOffering | null, perWeekLabel: (price: string) => string): PlanDisplay[] {
+function buildPlans(offering: PurchasesOffering | null): PlanDisplay[] {
   const weeklyPkg = offering?.weekly ?? null;
   const monthlyPkg = offering?.monthly ?? null;
 
   return [
-    {
-      id: 'weekly',
-      price: weeklyPkg?.product.priceString ?? FALLBACK_WEEKLY_PRICE,
-      unitKey: 'paywall.unitWeek',
-      pkg: weeklyPkg,
-    },
-    {
-      id: 'monthly',
-      price: monthlyPkg?.product.priceString ?? FALLBACK_MONTHLY_PRICE,
-      unitKey: 'paywall.unitMonth',
-      subLabel: perWeekLabel(monthlyPkg?.product.pricePerWeekString ?? FALLBACK_MONTHLY_PER_WEEK),
-      badgeKey: 'paywall.bestValue',
-      pkg: monthlyPkg,
-    },
+    { id: 'weekly', unitKey: 'paywall.unitWeek', pkg: weeklyPkg },
+    { id: 'monthly', unitKey: 'paywall.unitMonth', badgeKey: 'paywall.bestValue', pkg: monthlyPkg },
   ];
 }
 
 /** The upgrade pitch, shown whenever a free user taps a premium-gated
- * toggle or hits the free history limit. Fetches the live RevenueCat
- * offering (weekly/monthly packages, predefined package types — see the
- * RevenueCat dashboard) and drives a real purchase; falls back to
- * placeholder pricing wherever the store isn't reachable (Android, Expo
- * Go, no network) so the screen still renders sensibly. Includes the
- * elements Apple's auto-renewable subscription review requires
- * (Guideline 3.1.2): price/length per plan, an auto-renewal notice,
- * Restore Purchases, and working Privacy Policy/Terms links. */
+ * toggle or hits the free history limit. Every price shown here comes
+ * live from RevenueCat's current offering (weekly/monthly packages,
+ * predefined package types — see the RevenueCat dashboard) — there is no
+ * hardcoded fallback, so wherever the offering can't be fetched (Expo Go,
+ * Android, no network, or the dashboard isn't configured yet) the plan
+ * renders unpriced and can't be purchased. Includes the elements Apple's
+ * auto-renewable subscription review requires (Guideline 3.1.2):
+ * price/length per plan, an auto-renewal notice, Restore Purchases, and
+ * working Privacy Policy/Terms links. */
 export function PaywallScreen({ visible, onClose, onPurchased }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('monthly');
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
+  const [offeringsLoaded, setOfferingsLoaded] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
 
   useEffect(() => {
     if (!visible) return;
     let cancelled = false;
+    setOfferingsLoaded(false);
     fetchCurrentOffering().then((current) => {
-      if (!cancelled) setOffering(current);
+      if (cancelled) return;
+      setOffering(current);
+      setOfferingsLoaded(true);
     });
     return () => {
       cancelled = true;
     };
   }, [visible]);
 
-  const plans = useMemo(
-    () => buildPlans(offering, (price) => t('paywall.perWeekEquivalent', { price })),
-    [offering, t]
-  );
+  const plans = useMemo(() => buildPlans(offering), [offering]);
   const selectedPlanDisplay = plans.find((plan) => plan.id === selectedPlan) ?? plans[0];
 
   const handleContinue = async () => {
-    if (isBusy) return;
+    if (isBusy || !offeringsLoaded) return;
     if (!selectedPlanDisplay.pkg) {
       Alert.alert(t('paywall.storeUnavailableTitle'), t('paywall.storeUnavailableBody'));
       return;
@@ -184,9 +169,21 @@ export function PaywallScreen({ visible, onClose, onPurchased }: Props) {
                       color={selected ? colors.mint : colors.text}
                     />
                   </View>
-                  <Text style={styles.planPrice}>{plan.price}</Text>
-                  <Text style={styles.planUnit}>{t(plan.unitKey)}</Text>
-                  {plan.subLabel ? <Text style={styles.planSubLabel}>{plan.subLabel}</Text> : null}
+                  {!offeringsLoaded ? (
+                    <ActivityIndicator size="small" color={colors.text} style={styles.planLoading} />
+                  ) : plan.pkg ? (
+                    <>
+                      <Text style={styles.planPrice}>{plan.pkg.product.priceString}</Text>
+                      <Text style={styles.planUnit}>{t(plan.unitKey)}</Text>
+                      {plan.id === 'monthly' && plan.pkg.product.pricePerWeekString ? (
+                        <Text style={styles.planSubLabel}>
+                          {t('paywall.perWeekEquivalent', { price: plan.pkg.product.pricePerWeekString })}
+                        </Text>
+                      ) : null}
+                    </>
+                  ) : (
+                    <Text style={styles.planUnavailable}>{t('paywall.planUnavailable')}</Text>
+                  )}
                 </Pressable>
               );
             })}
@@ -198,7 +195,14 @@ export function PaywallScreen({ visible, onClose, onPurchased }: Props) {
             title={
               isBusy
                 ? t('paywall.processingButton')
-                : t('paywall.continueButton', { price: selectedPlanDisplay.price, unit: t(selectedPlanDisplay.unitKey) })
+                : !offeringsLoaded
+                  ? t('paywall.loadingButton')
+                  : selectedPlanDisplay.pkg
+                    ? t('paywall.continueButton', {
+                        price: selectedPlanDisplay.pkg.product.priceString,
+                        unit: t(selectedPlanDisplay.unitKey),
+                      })
+                    : t('paywall.storeUnavailableTitle')
             }
             onPress={handleContinue}
             variant="citrus"
@@ -359,6 +363,15 @@ function createStyles(colors: ColorTheme) {
       fontSize: 11,
       color: colors.mintText,
       marginTop: 4,
+    },
+    planLoading: {
+      marginVertical: 8,
+    },
+    planUnavailable: {
+      fontSize: 12,
+      color: colors.text,
+      opacity: 0.5,
+      marginVertical: 8,
     },
     footer: {
       paddingHorizontal: 28,

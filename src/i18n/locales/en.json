@@ -259,6 +259,8 @@
     "storeUnavailableTitle": "Store unavailable",
     "storeUnavailableBody": "We couldn't reach the App Store right now. Please try again in a moment.",
     "purchaseFailedTitle": "Purchase failed",
-    "purchaseFailedBody": "We couldn't complete that purchase. Please try again."
+    "purchaseFailedBody": "We couldn't complete that purchase. Please try again.",
+    "loadingButton": "Loading…",
+    "planUnavailable": "Unavailable"
   }
 }

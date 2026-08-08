@@ -259,6 +259,8 @@
     "storeUnavailableTitle": "Tienda no disponible",
     "storeUnavailableBody": "No pudimos conectar con la App Store en este momento. Inténtalo de nuevo en un momento.",
     "purchaseFailedTitle": "Compra fallida",
-    "purchaseFailedBody": "No pudimos completar la compra. Inténtalo de nuevo."
+    "purchaseFailedBody": "No pudimos completar la compra. Inténtalo de nuevo.",
+    "loadingButton": "Cargando…",
+    "planUnavailable": "No disponible"
   }
 }

@@ -259,6 +259,8 @@
     "storeUnavailableTitle": "Store nicht erreichbar",
     "storeUnavailableBody": "Der App Store konnte gerade nicht erreicht werden. Bitte versuche es gleich noch einmal.",
     "purchaseFailedTitle": "Kauf fehlgeschlagen",
-    "purchaseFailedBody": "Der Kauf konnte nicht abgeschlossen werden. Bitte versuche es erneut."
+    "purchaseFailedBody": "Der Kauf konnte nicht abgeschlossen werden. Bitte versuche es erneut.",
+    "loadingButton": "Wird geladen…",
+    "planUnavailable": "Nicht verfügbar"
   }
 }

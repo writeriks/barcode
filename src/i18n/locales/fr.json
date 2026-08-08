@@ -259,6 +259,8 @@
     "storeUnavailableTitle": "Boutique indisponible",
     "storeUnavailableBody": "Impossible de joindre l'App Store pour le moment. Réessayez dans un instant.",
     "purchaseFailedTitle": "Échec de l'achat",
-    "purchaseFailedBody": "Nous n'avons pas pu finaliser cet achat. Veuillez réessayer."
+    "purchaseFailedBody": "Nous n'avons pas pu finaliser cet achat. Veuillez réessayer.",
+    "loadingButton": "Chargement…",
+    "planUnavailable": "Indisponible"
   }
 }

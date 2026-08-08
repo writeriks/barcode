@@ -259,6 +259,8 @@
     "storeUnavailableTitle": "Mağazaya ulaşılamıyor",
     "storeUnavailableBody": "Şu anda App Store’a ulaşılamadı. Lütfen birazdan tekrar dene.",
     "purchaseFailedTitle": "Satın alma başarısız",
-    "purchaseFailedBody": "Satın alma tamamlanamadı. Lütfen tekrar dene."
+    "purchaseFailedBody": "Satın alma tamamlanamadı. Lütfen tekrar dene.",
+    "loadingButton": "Yükleniyor…",
+    "planUnavailable": "Kullanılamıyor"
   }
 }

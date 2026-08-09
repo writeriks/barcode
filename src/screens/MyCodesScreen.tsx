@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
+import * as Clipboard from 'expo-clipboard';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -382,6 +384,11 @@ export function MyCodesScreen() {
     Share.share({ message: code.content });
   };
 
+  const handleCopyContent = async (code: MyCode) => {
+    await Clipboard.setStringAsync(code.content);
+    Alert.alert(t('qr.copied'));
+  };
+
   const handleDelete = async (id: string) => {
     await deleteMyCode(id);
     setViewing(null);
@@ -399,9 +406,16 @@ export function MyCodesScreen() {
               <QRCode value={viewing.content} size={220} color={colors.inkOnCream} backgroundColor={colors.cream} />
             </View>
             <Text style={styles.viewerLabel}>{viewing.label}</Text>
-            <Text style={styles.viewerContent} numberOfLines={2}>
-              {viewing.content}
-            </Text>
+            <Pressable
+              onPress={() => handleCopyContent(viewing)}
+              style={({ pressed }) => [styles.viewerContentRow, pressed && styles.viewerContentPressed]}
+              hitSlop={6}
+            >
+              <Text style={styles.viewerContent} numberOfLines={2}>
+                {viewing.content}
+              </Text>
+              <Ionicons name="copy-outline" size={13} color={colors.text} style={styles.viewerCopyIcon} />
+            </Pressable>
             <View style={styles.viewerActions}>
               <PillButton
                 title={t('myCodes.share')}
@@ -781,12 +795,24 @@ function createStyles(colors: ColorTheme) {
       color: colors.text,
       textAlign: 'center',
     },
+    viewerContentRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      maxWidth: 280,
+    },
+    viewerContentPressed: {
+      opacity: 0.7,
+    },
     viewerContent: {
+      flexShrink: 1,
       fontSize: 13,
       color: colors.text,
       opacity: 0.6,
       textAlign: 'center',
-      maxWidth: 280,
+    },
+    viewerCopyIcon: {
+      opacity: 0.5,
     },
     viewerActions: {
       flexDirection: 'row',

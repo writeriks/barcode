@@ -128,10 +128,16 @@ export function QrContentView({ data }: Props) {
           </View>
         </View>
       ) : (
-        <View style={styles.contentCard}>
-          <Text style={styles.contentLabel}>{t('qr.decodedContent')}</Text>
+        <Pressable
+          onPress={handleCopy}
+          style={({ pressed }) => [styles.contentCard, pressed && styles.contentCardPressed]}
+        >
+          <View style={styles.contentLabelRow}>
+            <Text style={styles.contentLabel}>{t('qr.decodedContent')}</Text>
+            <Ionicons name="copy-outline" size={13} color={colors.text} style={styles.contentCopyIcon} />
+          </View>
           <Text style={[styles.contentValue, type !== 'text' && styles.contentValueLink]}>{data}</Text>
-        </View>
+        </Pressable>
       )}
 
       <View style={styles.actions}>
@@ -186,6 +192,17 @@ function createStyles(colors: ColorTheme) {
       borderColor: colors.panelLine,
       borderRadius: 14,
       padding: 14,
+    },
+    contentCardPressed: {
+      opacity: 0.7,
+    },
+    contentLabelRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    contentCopyIcon: {
+      opacity: 0.55,
     },
     contentLabel: {
       fontFamily: fonts.displayBold,

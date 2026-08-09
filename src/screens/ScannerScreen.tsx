@@ -3,6 +3,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useIsFocused } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { BlurView } from 'expo-blur';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import { scanFromURLAsync } from 'expo-camera';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -57,6 +58,21 @@ const SCANNED_TYPES = [
   'upc_e',
 ] as const;
 const VIEWFINDER_HEIGHT = 130;
+
+// scanFromURLAsync's still-image decoder (ZXingObjC on iOS) is
+// noticeably weaker than the live camera's AVFoundation-based scanner —
+// a barcode that scans instantly live can fail from a small/low-res
+// uploaded photo of the exact same code, because each bar ends up only a
+// couple of pixels wide. Upscaling narrow images before decoding gives
+// the decoder more pixels per module to work with.
+const MIN_SCAN_WIDTH = 1000;
+
+async function prepareForScanning(uri: string, width: number): Promise<string> {
+  if (width >= MIN_SCAN_WIDTH) return uri;
+  const rendered = await ImageManipulator.manipulate(uri).resize({ width: MIN_SCAN_WIDTH }).renderAsync();
+  const saved = await rendered.saveAsync({ format: SaveFormat.PNG });
+  return saved.uri;
+}
 
 /**
  * Scans every barcode/QR format expo-camera supports natively (see
@@ -140,7 +156,9 @@ export function ScannerScreen({ onScanned, batchMode, batchCount = 0, onFinishBa
 
     setIsUploading(true);
     try {
-      const matches = await scanFromURLAsync(result.assets[0].uri, [...SCANNED_TYPES]);
+      const asset = result.assets[0];
+      const scanUri = await prepareForScanning(asset.uri, asset.width);
+      const matches = await scanFromURLAsync(scanUri, [...SCANNED_TYPES]);
       if (matches.length > 0 && !hasHandledScanRef.current) {
         hasHandledScanRef.current = true;
         playScanFeedback();

@@ -18,7 +18,11 @@ const config: ExpoConfig = {
   icon: './assets/icon.png',
   userInterfaceStyle: 'dark',
   ios: {
-    supportsTablet: true,
+    // iPhone-only on purpose — App Store Connect then only asks for iPhone
+    // screenshots/metadata, no iPad requirements. The app still opens on
+    // iPad (in iPhone compatibility mode), it's just not listed/optimized
+    // as an iPad app.
+    supportsTablet: false,
     // TODO: confirm/change before a real App Store submission — this must
     // match the bundle ID registered in your Apple Developer account.
     bundleIdentifier: 'com.writeriks.beep',

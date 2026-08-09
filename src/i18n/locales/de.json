@@ -59,7 +59,7 @@
     "close": "Schließen",
     "languageSection": "Sprache",
     "privacySection": "Datenschutz",
-    "privacyChoices": "Datenschutzeinstellungen",
+    "privacyChoices": "Meine Daten verwalten",
     "scanFeedbackSection": "Scan-Feedback",
     "vibrate": "Vibration",
     "vibrateDescription": "Bei erfolgreichem Scan vibrieren",
@@ -90,7 +90,16 @@
     "premiumUpgrade": "Auf Premium upgraden",
     "premiumUpgradeDescription": "Werbung entfernen, Einstellungen freischalten und mehr Verlauf speichern.",
     "premiumDevToggle": "Premium (Test)",
-    "premiumDevToggleDescription": "Nur für Entwickler gedachter Schalter, um Premium ohne echten Kauf zu testen."
+    "premiumDevToggleDescription": "Nur für Entwickler gedachter Schalter, um Premium ohne echten Kauf zu testen.",
+    "aboutSection": "Über die App",
+    "website": "Website",
+    "faq": "FAQ",
+    "contact": "Kontaktiere uns",
+    "contactSubject": "Support",
+    "contactPlaceholder": "Beschreibe dein Problem oder deine Frage:",
+    "contactUnavailableTitle": "Keine Mail-App gefunden",
+    "contactUnavailableBody": "Wir konnten keine E-Mail-App öffnen. Du erreichst uns unter {{email}}.",
+    "copyEmail": "E-Mail kopieren"
   },
   "tabs": {
     "scanner": "Scanner",

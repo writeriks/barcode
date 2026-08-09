@@ -1,4 +1,4 @@
-export const APP_NAME = 'BarcodeIngredients';
+export const APP_NAME = 'Blippo';
 export const APP_VERSION = '1.0.0';
 export const CONTACT_EMAIL = 'emirhaktan@gmail.com';
 
@@ -6,9 +6,13 @@ export const CONTACT_EMAIL = 'emirhaktan@gmail.com';
  * them a way to reach us if we're causing trouble. */
 export const USER_AGENT = `${APP_NAME}/${APP_VERSION} (${CONTACT_EMAIL})`;
 
-// TODO: point these at the real deployed barcode-web domain once it's
-// live — Apple requires working Privacy Policy/Terms links on any
-// auto-renewable subscription screen (Guideline 3.1.2), so these can't
-// stay placeholders when the app actually ships.
-export const PRIVACY_POLICY_URL = 'https://blippo.app/privacy';
-export const TERMS_OF_USE_URL = 'https://blippo.app/terms';
+// The real deployed barcode-web site.
+export const WEBSITE_URL = 'https://barcode-web-omega.vercel.app/';
+export const FAQ_URL = 'https://barcode-web-omega.vercel.app/faq';
+export const PRIVACY_POLICY_URL = 'https://barcode-web-omega.vercel.app/privacy';
+export const TERMS_OF_USE_URL = 'https://barcode-web-omega.vercel.app/terms';
+
+/** User-facing support address — shown in Settings' Contact row. Distinct
+ * from CONTACT_EMAIL above, which only exists to satisfy Open Food Facts'
+ * API usage policy and isn't meant for end users to write to. */
+export const SUPPORT_EMAIL = 'patymateapp@gmail.com';

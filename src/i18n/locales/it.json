@@ -59,7 +59,7 @@
     "close": "Chiudi",
     "languageSection": "Lingua",
     "privacySection": "Privacy",
-    "privacyChoices": "Scelte sulla privacy",
+    "privacyChoices": "Gestisci i miei dati",
     "scanFeedbackSection": "Feedback di scansione",
     "vibrate": "Vibrazione",
     "vibrateDescription": "Vibra quando una scansione ha successo",
@@ -90,7 +90,16 @@
     "premiumUpgrade": "Passa a Premium",
     "premiumUpgradeDescription": "Rimuovi gli annunci, sblocca le impostazioni e conserva più cronologia.",
     "premiumDevToggle": "Premium (test)",
-    "premiumDevToggleDescription": "Interruttore solo per sviluppatori per testare Premium senza un acquisto reale."
+    "premiumDevToggleDescription": "Interruttore solo per sviluppatori per testare Premium senza un acquisto reale.",
+    "aboutSection": "Informazioni",
+    "website": "Sito web",
+    "faq": "FAQ",
+    "contact": "Contattaci",
+    "contactSubject": "Assistenza",
+    "contactPlaceholder": "Descrivi il tuo problema o la tua domanda:",
+    "contactUnavailableTitle": "Nessuna app di posta trovata",
+    "contactUnavailableBody": "Non siamo riusciti ad aprire un'app di posta. Puoi contattarci all'indirizzo {{email}}.",
+    "copyEmail": "Copia email"
   },
   "tabs": {
     "scanner": "Scanner",

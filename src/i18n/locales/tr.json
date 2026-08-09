@@ -59,7 +59,7 @@
     "close": "Kapat",
     "languageSection": "Dil",
     "privacySection": "Gizlilik",
-    "privacyChoices": "Gizlilik tercihleri",
+    "privacyChoices": "Verilerimi Yönet",
     "scanFeedbackSection": "Tarama geri bildirimi",
     "vibrate": "Titreşim",
     "vibrateDescription": "Tarama başarılı olduğunda titreşim ver",
@@ -90,7 +90,16 @@
     "premiumUpgrade": "Premium'a Geç",
     "premiumUpgradeDescription": "Reklamları kaldır, ayarların kilidini aç, daha fazla geçmiş sakla.",
     "premiumDevToggle": "Premium (test)",
-    "premiumDevToggleDescription": "Gerçek satın alma olmadan premium’u test etmek için geliştirici anahtarı."
+    "premiumDevToggleDescription": "Gerçek satın alma olmadan premium’u test etmek için geliştirici anahtarı.",
+    "aboutSection": "Hakkında",
+    "website": "Web Sitesi",
+    "faq": "SSS",
+    "contact": "Bize Ulaşın",
+    "contactSubject": "Destek",
+    "contactPlaceholder": "Sorununuzu veya sorunuzu buraya yazabilirsiniz:",
+    "contactUnavailableTitle": "Mail Uygulaması Bulunamadı",
+    "contactUnavailableBody": "Bir e-posta uygulaması açamadık. Bize {{email}} adresinden ulaşabilirsiniz.",
+    "copyEmail": "E-postayı Kopyala"
   },
   "tabs": {
     "scanner": "Tarayıcı",

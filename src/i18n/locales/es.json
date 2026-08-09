@@ -59,7 +59,7 @@
     "close": "Cerrar",
     "languageSection": "Idioma",
     "privacySection": "Privacidad",
-    "privacyChoices": "Preferencias de privacidad",
+    "privacyChoices": "Gestionar mis datos",
     "scanFeedbackSection": "Respuesta de escaneo",
     "vibrate": "Vibración",
     "vibrateDescription": "Vibrar cuando un escaneo se realiza con éxito",
@@ -90,7 +90,16 @@
     "premiumUpgrade": "Actualizar a Premium",
     "premiumUpgradeDescription": "Elimina los anuncios, desbloquea los ajustes y guarda más historial.",
     "premiumDevToggle": "Premium (prueba)",
-    "premiumDevToggleDescription": "Interruptor solo para desarrolladores para probar Premium sin una compra real."
+    "premiumDevToggleDescription": "Interruptor solo para desarrolladores para probar Premium sin una compra real.",
+    "aboutSection": "Acerca de",
+    "website": "Sitio web",
+    "faq": "Preguntas frecuentes",
+    "contact": "Contáctanos",
+    "contactSubject": "Soporte",
+    "contactPlaceholder": "Describe tu problema o pregunta:",
+    "contactUnavailableTitle": "No se encontró una app de correo",
+    "contactUnavailableBody": "No pudimos abrir una aplicación de correo. Puedes escribirnos a {{email}}.",
+    "copyEmail": "Copiar correo"
   },
   "tabs": {
     "scanner": "Escáner",

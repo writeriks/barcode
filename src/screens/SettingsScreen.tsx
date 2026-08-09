@@ -1,11 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import * as Application from 'expo-application';
+import * as Clipboard from 'expo-clipboard';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomSheet } from '../components/BottomSheet';
 import { SegmentedControl } from '../components/SegmentedControl';
+import { APP_NAME, FAQ_URL, PRIVACY_POLICY_URL, SUPPORT_EMAIL, TERMS_OF_USE_URL, WEBSITE_URL } from '../config/appInfo';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { LANGUAGE_NATIVE_NAMES } from '../i18n/languageNames';
 import { usePremium } from '../premium/PremiumContext';
@@ -127,6 +130,35 @@ export function SettingsScreen({
 
   const currentLanguageLabel =
     currentOverride === null ? t('settings.systemDefault') : LANGUAGE_NATIVE_NAMES[currentOverride];
+
+  const openLink = (url: string) => {
+    Linking.canOpenURL(url).then((supported) => {
+      if (supported) Linking.openURL(url);
+    });
+  };
+
+  const handleContact = async () => {
+    const version = Application.nativeApplicationVersion ?? '?';
+    const build = Application.nativeBuildVersion ?? '?';
+    const subject = encodeURIComponent(`${APP_NAME} — ${t('settings.contactSubject')}`);
+    const body = encodeURIComponent(
+      `${t('settings.contactPlaceholder')}\n\n\n---\nApp: ${APP_NAME}\nVersion: ${version} (${build})\nPlatform: ${Platform.OS} ${Platform.Version}`
+    );
+    const mailto = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+
+    const supported = await Linking.canOpenURL(mailto);
+    if (supported) {
+      Linking.openURL(mailto);
+      return;
+    }
+    Alert.alert(t('settings.contactUnavailableTitle'), t('settings.contactUnavailableBody', { email: SUPPORT_EMAIL }), [
+      {
+        text: t('settings.copyEmail'),
+        onPress: () => Clipboard.setStringAsync(SUPPORT_EMAIL),
+      },
+      { text: t('settings.close') },
+    ]);
+  };
 
   // All of the toggles below are premium-only — a free user tapping one
   // opens the paywall instead of changing anything.
@@ -257,6 +289,25 @@ export function SettingsScreen({
             <Row label={t('settings.privacyChoices')} selected={false} onPress={showPrivacyOptionsForm} styles={styles} />
           </>
         ) : null}
+
+        <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.aboutSection')}</Text>
+        <LinkRow icon="globe-outline" label={t('settings.website')} onPress={() => openLink(WEBSITE_URL)} colors={colors} styles={styles} />
+        <LinkRow icon="help-circle-outline" label={t('settings.faq')} onPress={() => openLink(FAQ_URL)} colors={colors} styles={styles} />
+        <LinkRow
+          icon="shield-checkmark-outline"
+          label={t('paywall.privacyPolicy')}
+          onPress={() => openLink(PRIVACY_POLICY_URL)}
+          colors={colors}
+          styles={styles}
+        />
+        <LinkRow
+          icon="document-text-outline"
+          label={t('paywall.termsOfUse')}
+          onPress={() => openLink(TERMS_OF_USE_URL)}
+          colors={colors}
+          styles={styles}
+        />
+        <LinkRow icon="mail-outline" label={t('settings.contact')} onPress={handleContact} colors={colors} styles={styles} />
       </ScrollView>
 
       <BottomSheet
@@ -306,6 +357,30 @@ function Row({
     >
       <Text style={styles.rowLabel}>{label}</Text>
       {selected ? <Text style={styles.checkmark}>✓</Text> : null}
+    </Pressable>
+  );
+}
+
+function LinkRow({
+  icon,
+  label,
+  onPress,
+  colors,
+  styles,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress: () => void;
+  colors: ColorTheme;
+  styles: Styles;
+}) {
+  return (
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}>
+      <View style={styles.toggleLabelRow}>
+        <Ionicons name={icon} size={16} color={colors.text} style={styles.linkRowIcon} />
+        <Text style={styles.rowLabel}>{label}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={16} color={colors.text} style={styles.dropdownChevron} />
     </Pressable>
   );
 }
@@ -430,6 +505,9 @@ function createStyles(colors: ColorTheme) {
     },
     lockIcon: {
       opacity: 0.5,
+    },
+    linkRowIcon: {
+      opacity: 0.6,
     },
     toggleDescription: {
       fontSize: 12,

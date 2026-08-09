@@ -59,7 +59,7 @@
     "close": "Zamknij",
     "languageSection": "Język",
     "privacySection": "Prywatność",
-    "privacyChoices": "Preferencje prywatności",
+    "privacyChoices": "Zarządzaj moimi danymi",
     "scanFeedbackSection": "Sygnalizacja skanowania",
     "vibrate": "Wibracje",
     "vibrateDescription": "Wibruj po udanym skanowaniu",
@@ -90,7 +90,16 @@
     "premiumUpgrade": "Przejdź na Premium",
     "premiumUpgradeDescription": "Usuń reklamy, odblokuj ustawienia i przechowuj więcej historii.",
     "premiumDevToggle": "Premium (test)",
-    "premiumDevToggleDescription": "Przełącznik tylko dla deweloperów do testowania Premium bez prawdziwego zakupu."
+    "premiumDevToggleDescription": "Przełącznik tylko dla deweloperów do testowania Premium bez prawdziwego zakupu.",
+    "aboutSection": "O aplikacji",
+    "website": "Strona internetowa",
+    "faq": "FAQ",
+    "contact": "Skontaktuj się z nami",
+    "contactSubject": "Wsparcie",
+    "contactPlaceholder": "Opisz swój problem lub pytanie:",
+    "contactUnavailableTitle": "Nie znaleziono aplikacji pocztowej",
+    "contactUnavailableBody": "Nie mogliśmy otworzyć aplikacji pocztowej. Możesz się z nami skontaktować pod adresem {{email}}.",
+    "copyEmail": "Kopiuj e-mail"
   },
   "tabs": {
     "scanner": "Skaner",

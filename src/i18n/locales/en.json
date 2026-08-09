@@ -59,7 +59,7 @@
     "close": "Close",
     "languageSection": "Language",
     "privacySection": "Privacy",
-    "privacyChoices": "Privacy choices",
+    "privacyChoices": "Manage My Data",
     "scanFeedbackSection": "Scan feedback",
     "vibrate": "Vibrate",
     "vibrateDescription": "Vibrate when a scan is successful",
@@ -90,7 +90,16 @@
     "premiumUpgrade": "Upgrade to Premium",
     "premiumUpgradeDescription": "Remove ads, unlock settings, and keep more history.",
     "premiumDevToggle": "Premium (test)",
-    "premiumDevToggleDescription": "Developer-only switch to test premium without a real purchase."
+    "premiumDevToggleDescription": "Developer-only switch to test premium without a real purchase.",
+    "aboutSection": "About",
+    "website": "Website",
+    "faq": "FAQ",
+    "contact": "Contact Us",
+    "contactSubject": "Support",
+    "contactPlaceholder": "Please describe your issue or question:",
+    "contactUnavailableTitle": "No Mail App Found",
+    "contactUnavailableBody": "We couldn't open a mail app. You can reach us at {{email}}.",
+    "copyEmail": "Copy Email"
   },
   "tabs": {
     "scanner": "Scanner",

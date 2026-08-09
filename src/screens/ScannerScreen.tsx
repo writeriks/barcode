@@ -14,6 +14,7 @@ import {
   Animated,
   Easing,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -22,6 +23,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PillButton } from '../components/PillButton';
+import { isExpoGo } from '../services/ads/environment';
 import { playScanFeedback } from '../services/scanFeedback';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -59,12 +61,8 @@ const SCANNED_TYPES = [
 ] as const;
 const VIEWFINDER_HEIGHT = 130;
 
-// scanFromURLAsync's still-image decoder (ZXingObjC on iOS) is
-// noticeably weaker than the live camera's AVFoundation-based scanner —
-// a barcode that scans instantly live can fail from a small/low-res
-// uploaded photo of the exact same code, because each bar ends up only a
-// couple of pixels wide. Upscaling narrow images before decoding gives
-// the decoder more pixels per module to work with.
+// A conservative safety margin for any still-image decoder — doesn't
+// hurt to give one more pixels per module on a small source image.
 const MIN_SCAN_WIDTH = 1000;
 
 async function prepareForScanning(uri: string, width: number): Promise<string> {
@@ -72,6 +70,38 @@ async function prepareForScanning(uri: string, width: number): Promise<string> {
   const rendered = await ImageManipulator.manipulate(uri).resize({ width: MIN_SCAN_WIDTH }).renderAsync();
   const saved = await rendered.saveAsync({ format: SaveFormat.PNG });
   return saved.uri;
+}
+
+/**
+ * expo-camera's `scanFromURLAsync` only looks for QR codes on iOS — its
+ * native implementation calls `CIDetector(ofType: CIDetectorTypeQRCode)`
+ * unconditionally and ignores the barcode-types argument entirely (see
+ * node_modules/expo-camera/ios/CameraViewModule.swift). A photo of an
+ * EAN-13/UPC/Code128/etc. barcode never gets found there, even though
+ * the exact same code scans instantly from the live camera (which uses
+ * AVFoundation, not CIDetector). Android's implementation is unaffected
+ * — it already uses ML Kit and honors the full type list.
+ *
+ * modules/expo-barcode-vision is a local native module that fixes this
+ * on iOS using Apple's Vision framework (VNDetectBarcodesRequest, every
+ * symbology). It only exists once the app is rebuilt with it linked in
+ * — never available under Expo Go — so it's tried first and only on
+ * iOS, falling back to expo-camera's own scanner (which still covers
+ * Android, and QR on iOS, correctly) whenever it's unavailable or finds
+ * nothing.
+ */
+async function scanUploadedPhoto(uri: string): Promise<{ data: string; type: string }[]> {
+  if (Platform.OS === 'ios' && !isExpoGo()) {
+    try {
+      const { scanFromURLAsync: scanWithVision } = await import('expo-barcode-vision');
+      const visionMatches = await scanWithVision(uri);
+      if (visionMatches.length > 0) return visionMatches;
+    } catch {
+      // Native module not linked in this build (e.g. still running an
+      // older build before this was added) — fall through.
+    }
+  }
+  return scanFromURLAsync(uri, [...SCANNED_TYPES]);
 }
 
 /**
@@ -158,7 +188,7 @@ export function ScannerScreen({ onScanned, batchMode, batchCount = 0, onFinishBa
     try {
       const asset = result.assets[0];
       const scanUri = await prepareForScanning(asset.uri, asset.width);
-      const matches = await scanFromURLAsync(scanUri, [...SCANNED_TYPES]);
+      const matches = await scanUploadedPhoto(scanUri);
       if (matches.length > 0 && !hasHandledScanRef.current) {
         hasHandledScanRef.current = true;
         playScanFeedback();

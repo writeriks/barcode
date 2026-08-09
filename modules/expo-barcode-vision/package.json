@@ -1,0 +1,7 @@
+{
+  "name": "expo-barcode-vision",
+  "version": "0.1.0",
+  "description": "Static-image barcode/QR detection via Apple's Vision framework — a local module that fills the gap in expo-camera's scanFromURLAsync, which on iOS only detects QR codes from a photo.",
+  "main": "index.ts",
+  "license": "MIT"
+}

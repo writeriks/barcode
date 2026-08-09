@@ -20,6 +20,7 @@ import {
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomBannerAd } from '../components/BottomBannerAd';
+import { BottomSheet } from '../components/BottomSheet';
 import { FadeSwitcher } from '../components/FadeSwitcher';
 import { FilterPillRow, type PillOption } from '../components/FilterPillRow';
 import { PillButton } from '../components/PillButton';
@@ -278,6 +279,7 @@ export function MyCodesScreen({ navigation }: Props) {
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewing, setViewing] = useState<MyCode | null>(null);
+  const [menuCode, setMenuCode] = useState<MyCode | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTypes, setActiveTypes] = useState<Set<QrContentType>>(new Set());
 
@@ -623,6 +625,9 @@ export function MyCodesScreen({ navigation }: Props) {
                               <Text style={styles.rowLabel} numberOfLines={1}>
                                 {item.label}
                               </Text>
+                              <Pressable onPress={() => setMenuCode(item)} hitSlop={10} style={styles.rowMenuButton}>
+                                <Ionicons name="ellipsis-vertical" size={16} color={colors.text} style={styles.rowMenuIcon} />
+                              </Pressable>
                             </Pressable>
                           );
                         }}
@@ -637,6 +642,41 @@ export function MyCodesScreen({ navigation }: Props) {
           </>
         )}
       </FadeSwitcher>
+
+      <BottomSheet visible={menuCode !== null} onClose={() => setMenuCode(null)} title={t('myCodes.codeOptionsTitle')}>
+        <View style={styles.sheetList}>
+          <Pressable
+            onPress={() => {
+              if (menuCode) handleEdit(menuCode);
+              setMenuCode(null);
+            }}
+            style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}
+          >
+            <Ionicons name="create-outline" size={18} color={colors.mint} />
+            <Text style={styles.menuRowText}>{t('myCodes.edit')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              if (menuCode) handleShare(menuCode);
+              setMenuCode(null);
+            }}
+            style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}
+          >
+            <Ionicons name="share-outline" size={18} color={colors.citrusText} />
+            <Text style={styles.menuRowText}>{t('myCodes.share')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              if (menuCode) handleDelete(menuCode.id);
+              setMenuCode(null);
+            }}
+            style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}
+          >
+            <Ionicons name="trash-outline" size={18} color={colors.coralText} />
+            <Text style={[styles.menuRowText, styles.menuRowTextDestructive]}>{t('myCodes.delete')}</Text>
+          </Pressable>
+        </View>
+      </BottomSheet>
     </SafeAreaView>
   );
 }
@@ -758,6 +798,35 @@ function createStyles(colors: ColorTheme) {
       fontFamily: fonts.displayBold,
       fontSize: 14.5,
       color: colors.text,
+    },
+    rowMenuButton: {
+      padding: 4,
+    },
+    rowMenuIcon: {
+      opacity: 0.5,
+    },
+    sheetList: {
+      gap: 10,
+      paddingBottom: 6,
+    },
+    menuRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    menuRowText: {
+      fontFamily: fonts.displayBold,
+      fontSize: 14.5,
+      color: colors.text,
+    },
+    menuRowTextDestructive: {
+      color: colors.coralText,
     },
     form: {
       padding: 20,

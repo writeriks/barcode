@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, FlatList, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { BottomSheet } from '../components/BottomSheet';
@@ -116,6 +116,7 @@ export function HistoryScreen({ navigation }: Props) {
   const [assigningKeys, setAssigningKeys] = useState<HistoryEntryKey[] | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+  const [menuEntry, setMenuEntry] = useState<ScanHistoryEntry | null>(null);
 
   const reload = useCallback(() => {
     getHistory().then(setEntries);
@@ -256,6 +257,30 @@ export function HistoryScreen({ navigation }: Props) {
           await deleteHistoryEntries(keys);
           setAssigningKeys(null);
           setSelectedKeys(new Set());
+          reload();
+        },
+      },
+    ]);
+  };
+
+  const handleShareMenuEntry = () => {
+    if (!menuEntry) return;
+    captureAnalyticsEvent('history_entry_shared', { kind: menuEntry.kind });
+    Share.share({ message: menuEntry.kind === 'qr' ? menuEntry.data : menuEntry.barcode });
+    setMenuEntry(null);
+  };
+
+  const handleDeleteMenuEntry = () => {
+    if (!menuEntry) return;
+    const key = { kind: menuEntry.kind, timestamp: menuEntry.timestamp };
+    setMenuEntry(null);
+    Alert.alert(t('history.deleteEntryTitle'), t('history.deleteEntryBody'), [
+      { text: t('history.cancel'), style: 'cancel' },
+      {
+        text: t('history.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          await deleteHistoryEntries([key]);
           reload();
         },
       },
@@ -433,6 +458,11 @@ export function HistoryScreen({ navigation }: Props) {
                       </Text>
                     </View>
                     <HistoryStatusBadge entry={item} />
+                    {!isEditMode ? (
+                      <Pressable onPress={() => setMenuEntry(item)} hitSlop={10} style={styles.rowMenuButton}>
+                        <Ionicons name="ellipsis-vertical" size={16} color={colors.text} style={styles.rowMenuIcon} />
+                      </Pressable>
+                    ) : null}
                   </Pressable>
                 );
               }}
@@ -524,6 +554,22 @@ export function HistoryScreen({ navigation }: Props) {
           <Ionicons name="trash-outline" size={16} color={colors.coralText} />
           <Text style={styles.deleteEntryText}>{t('history.deleteEntry')}</Text>
         </Pressable>
+      </BottomSheet>
+
+      <BottomSheet visible={menuEntry !== null} onClose={() => setMenuEntry(null)} title={t('history.entryOptionsTitle')}>
+        <View style={styles.sheetList}>
+          <Pressable onPress={handleShareMenuEntry} style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}>
+            <Ionicons name="share-outline" size={18} color={colors.citrusText} />
+            <Text style={styles.menuRowText}>{t('history.share')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={handleDeleteMenuEntry}
+            style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}
+          >
+            <Ionicons name="trash-outline" size={18} color={colors.coralText} />
+            <Text style={[styles.menuRowText, styles.menuRowTextDestructive]}>{t('history.delete')}</Text>
+          </Pressable>
+        </View>
       </BottomSheet>
 
       <PromptModal
@@ -745,6 +791,12 @@ function createStyles(colors: ColorTheme) {
     checkboxDim: {
       opacity: 0.4,
     },
+    rowMenuButton: {
+      padding: 4,
+    },
+    rowMenuIcon: {
+      opacity: 0.5,
+    },
     rowText: {
       flex: 1,
     },
@@ -811,6 +863,9 @@ function createStyles(colors: ColorTheme) {
       fontFamily: fonts.displayBold,
       fontSize: 14.5,
       color: colors.text,
+    },
+    menuRowTextDestructive: {
+      color: colors.coralText,
     },
     folderRow: {
       flexDirection: 'row',

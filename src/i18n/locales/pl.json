@@ -155,7 +155,8 @@
     "metaQrInstagram": "QR Instagram",
     "metaQrTwitter": "QR Twitter",
     "metaQrSpotify": "QR Spotify",
-    "metaQrViber": "QR Viber"
+    "metaQrViber": "QR Viber",
+    "entryOptionsTitle": "Opcje wpisu"
   },
   "myCodes": {
     "title": "Moje kody",
@@ -235,7 +236,8 @@
     "spotifyLabel": "Profil Spotify",
     "spotifyPlaceholder": "Nazwa użytkownika lub open.spotify.com/...",
     "viberLabel": "Viber",
-    "viberPlaceholder": "Nazwa użytkownika lub link"
+    "viberPlaceholder": "Nazwa użytkownika lub link",
+    "codeOptionsTitle": "Opcje kodu"
   },
   "qr": {
     "typeLink": "Link",

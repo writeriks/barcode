@@ -155,7 +155,8 @@
     "metaQrInstagram": "QR Instagram",
     "metaQrTwitter": "QR Twitter",
     "metaQrSpotify": "QR Spotify",
-    "metaQrViber": "QR Viber"
+    "metaQrViber": "QR Viber",
+    "entryOptionsTitle": "Kayıt Seçenekleri"
   },
   "myCodes": {
     "title": "Kodlarım",
@@ -235,7 +236,8 @@
     "spotifyLabel": "Spotify profili",
     "spotifyPlaceholder": "Kullanıcı adı veya open.spotify.com/...",
     "viberLabel": "Viber",
-    "viberPlaceholder": "Kullanıcı adı veya link"
+    "viberPlaceholder": "Kullanıcı adı veya link",
+    "codeOptionsTitle": "Kod Seçenekleri"
   },
   "qr": {
     "typeLink": "Bağlantı",

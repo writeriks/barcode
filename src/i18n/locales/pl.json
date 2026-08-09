@@ -208,7 +208,10 @@
     "vcardRequiredHint": "Podaj imię/nazwisko lub firmę, aby wygenerować kod.",
     "selectDateTime": "Wybierz datę i godzinę",
     "done": "Gotowe",
-    "searchPlaceholder": "Szukaj kodów"
+    "searchPlaceholder": "Szukaj kodów",
+    "edit": "Edytuj",
+    "share": "Udostępnij",
+    "update": "Zaktualizuj"
   },
   "qr": {
     "typeLink": "Link",

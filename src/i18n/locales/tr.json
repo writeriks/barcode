@@ -208,7 +208,10 @@
     "vcardRequiredHint": "Kod oluşturmak için bir ad/soyad veya şirket girin.",
     "selectDateTime": "Tarih ve saat seç",
     "done": "Tamam",
-    "searchPlaceholder": "Kodlarda ara"
+    "searchPlaceholder": "Kodlarda ara",
+    "edit": "Düzenle",
+    "share": "Paylaş",
+    "update": "Güncelle"
   },
   "qr": {
     "typeLink": "Bağlantı",

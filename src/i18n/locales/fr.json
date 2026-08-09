@@ -208,7 +208,10 @@
     "vcardRequiredHint": "Ajoutez un nom/prénom ou une entreprise pour générer le code.",
     "selectDateTime": "Choisir la date et l'heure",
     "done": "Terminé",
-    "searchPlaceholder": "Rechercher des codes"
+    "searchPlaceholder": "Rechercher des codes",
+    "edit": "Modifier",
+    "share": "Partager",
+    "update": "Mettre à jour"
   },
   "qr": {
     "typeLink": "Lien",

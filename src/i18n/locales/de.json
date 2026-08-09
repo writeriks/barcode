@@ -208,7 +208,10 @@
     "vcardRequiredHint": "Gib einen Namen oder eine Firma an, um einen Code zu erstellen.",
     "selectDateTime": "Datum und Uhrzeit wählen",
     "done": "Fertig",
-    "searchPlaceholder": "Codes durchsuchen"
+    "searchPlaceholder": "Codes durchsuchen",
+    "edit": "Bearbeiten",
+    "share": "Teilen",
+    "update": "Aktualisieren"
   },
   "qr": {
     "typeLink": "Link",

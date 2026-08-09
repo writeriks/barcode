@@ -208,7 +208,10 @@
     "vcardRequiredHint": "Add a first/last name or a company to generate a code.",
     "selectDateTime": "Select date & time",
     "done": "Done",
-    "searchPlaceholder": "Search codes"
+    "searchPlaceholder": "Search codes",
+    "edit": "Edit",
+    "share": "Share",
+    "update": "Update"
   },
   "qr": {
     "typeLink": "Link",

@@ -3,7 +3,18 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomBannerAd } from '../components/BottomBannerAd';
@@ -21,7 +32,7 @@ import { VCardForm, defaultVCardFields, type VCardFields } from '../components/q
 import { WifiForm, defaultWifiFields, type WifiFields } from '../components/qrForms/WifiForm';
 import { ZoomForm, defaultZoomFields, type ZoomFields } from '../components/qrForms/ZoomForm';
 import { captureAnalyticsEvent } from '../services/analytics';
-import { deleteMyCode, getMyCodes, saveMyCode } from '../services/myCodes';
+import { deleteMyCode, getMyCodes, saveMyCode, updateMyCode } from '../services/myCodes';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -41,6 +52,18 @@ import {
   buildWifiContent,
   buildZoomContent,
 } from '../utils/qrContentBuilders';
+import {
+  parseEmailFields,
+  parseEventFields,
+  parseLinkFields,
+  parsePhoneFields,
+  parseSmsFields,
+  parseTextFields,
+  parseVCardFields,
+  parseWhatsappFields,
+  parseWifiFields,
+  parseZoomFields,
+} from '../utils/qrContentParsers';
 import { QR_GENERATE_TYPES, QR_TYPE_ACCENT, QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
 
 interface FormState {
@@ -159,6 +182,54 @@ function defaultLabelFor(type: QrContentType, content: string, fields: FormState
   }
 }
 
+/** The inverse of buildContent — reopens an existing code in the same
+ * structured form it was created with, pre-filled from its saved content.
+ * 'otp' isn't a generator type (scan-only), so an OTP-classified legacy
+ * entry edits as freeform text instead. */
+function fieldsFromCode(
+  code: MyCode,
+  defaultCountry: CountryCallingCode | null
+): { type: QrContentType; fields: FormState } {
+  const detectedType = codeTypeOf(code);
+  const type = detectedType === 'otp' ? 'text' : detectedType;
+  const fields = makeDefaultFormState(defaultCountry);
+
+  switch (type) {
+    case 'link':
+      fields.link = parseLinkFields(code.content);
+      break;
+    case 'text':
+      fields.text = detectedType === 'otp' ? { message: code.content } : parseTextFields(code.content);
+      break;
+    case 'email':
+      fields.email = parseEmailFields(code.content);
+      break;
+    case 'phone':
+      fields.phone = parsePhoneFields(code.content, defaultCountry);
+      break;
+    case 'sms':
+      fields.sms = parseSmsFields(code.content, defaultCountry);
+      break;
+    case 'whatsapp':
+      fields.whatsapp = parseWhatsappFields(code.content, defaultCountry);
+      break;
+    case 'zoom':
+      fields.zoom = parseZoomFields(code.content);
+      break;
+    case 'wifi':
+      fields.wifi = parseWifiFields(code.content);
+      break;
+    case 'vcard':
+      fields.vcard = parseVCardFields(code.content, defaultCountry);
+      break;
+    case 'event':
+      fields.event = parseEventFields(code.content);
+      break;
+  }
+
+  return { type, fields };
+}
+
 export function MyCodesScreen() {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
@@ -168,6 +239,7 @@ export function MyCodesScreen() {
   const placeholderColor = mode === 'light' ? 'rgba(36,25,51,0.35)' : 'rgba(255,246,233,0.4)';
   const [codes, setCodes] = useState<MyCode[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [viewing, setViewing] = useState<MyCode | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTypes, setActiveTypes] = useState<Set<QrContentType>>(new Set());
@@ -236,23 +308,46 @@ export function MyCodesScreen() {
 
   const handleSave = async () => {
     if (!content) return;
-    const code: MyCode = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      label: label.trim() || defaultLabelFor(type, content, fields),
-      content,
-      createdAt: Date.now(),
-      type,
-    };
-    await saveMyCode(code);
-    captureAnalyticsEvent('my_code_created', { type });
+    const resolvedLabel = label.trim() || defaultLabelFor(type, content, fields);
+    if (editingId) {
+      const original = codes.find((c) => c.id === editingId);
+      await updateMyCode({ id: editingId, label: resolvedLabel, content, createdAt: original?.createdAt ?? Date.now(), type });
+      captureAnalyticsEvent('my_code_updated', { type });
+    } else {
+      await saveMyCode({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        label: resolvedLabel,
+        content,
+        createdAt: Date.now(),
+        type,
+      });
+      captureAnalyticsEvent('my_code_created', { type });
+    }
     setIsCreating(false);
+    setEditingId(null);
     resetForm();
     reload();
   };
 
   const handleCancel = () => {
     setIsCreating(false);
+    setEditingId(null);
     resetForm();
+  };
+
+  const handleEdit = (code: MyCode) => {
+    const { type: parsedType, fields: parsedFields } = fieldsFromCode(code, defaultCountry);
+    setEditingId(code.id);
+    setType(parsedType);
+    setLabel(code.label);
+    setFields(parsedFields);
+    setViewing(null);
+    setIsCreating(true);
+  };
+
+  const handleShare = (code: MyCode) => {
+    captureAnalyticsEvent('my_code_shared', { type: codeTypeOf(code) });
+    Share.share({ message: code.content });
   };
 
   const handleDelete = async (id: string) => {
@@ -276,8 +371,32 @@ export function MyCodesScreen() {
               {viewing.content}
             </Text>
             <View style={styles.viewerActions}>
-              <PillButton title={t('myCodes.delete')} onPress={() => handleDelete(viewing.id)} variant="ghost" />
-              <PillButton title={t('settings.close')} onPress={() => setViewing(null)} variant="punch" />
+              <PillButton
+                title={t('myCodes.share')}
+                onPress={() => handleShare(viewing)}
+                variant="ghost"
+                style={styles.flexButton}
+              />
+              <PillButton
+                title={t('myCodes.edit')}
+                onPress={() => handleEdit(viewing)}
+                variant="ghost"
+                style={styles.flexButton}
+              />
+            </View>
+            <View style={styles.viewerActions}>
+              <PillButton
+                title={t('myCodes.delete')}
+                onPress={() => handleDelete(viewing.id)}
+                variant="ghost"
+                style={styles.flexButton}
+              />
+              <PillButton
+                title={t('settings.close')}
+                onPress={() => setViewing(null)}
+                variant="punch"
+                style={styles.flexButton}
+              />
             </View>
           </View>
         ) : (
@@ -336,7 +455,7 @@ export function MyCodesScreen() {
                   <View style={styles.formActions}>
                     <PillButton title={t('myCodes.cancel')} onPress={handleCancel} variant="ghost" />
                     <PillButton
-                      title={t('myCodes.save')}
+                      title={t(editingId ? 'myCodes.update' : 'myCodes.save')}
                       onPress={handleSave}
                       variant="citrus"
                       style={!content && styles.saveDisabled}
@@ -601,6 +720,9 @@ function createStyles(colors: ColorTheme) {
       flexDirection: 'row',
       gap: 12,
       marginTop: 8,
+    },
+    flexButton: {
+      flex: 1,
     },
   });
 }

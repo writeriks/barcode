@@ -1,7 +1,28 @@
-export type QrContentType = 'link' | 'email' | 'phone' | 'sms' | 'whatsapp' | 'zoom' | 'wifi' | 'vcard' | 'event' | 'otp' | 'text';
+export type QrContentType =
+  | 'link'
+  | 'email'
+  | 'phone'
+  | 'sms'
+  | 'whatsapp'
+  | 'zoom'
+  | 'wifi'
+  | 'vcard'
+  | 'event'
+  | 'otp'
+  | 'text'
+  | 'facebook'
+  | 'instagram'
+  | 'twitter'
+  | 'spotify'
+  | 'viber';
 
 const WHATSAPP_LINK_PATTERN = /^https?:\/\/(wa\.me|api\.whatsapp\.com)\//i;
 const ZOOM_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?zoom\.us\/j\//i;
+const FACEBOOK_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?facebook\.com\//i;
+const INSTAGRAM_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?instagram\.com\//i;
+const TWITTER_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?(twitter\.com|x\.com)\//i;
+const SPOTIFY_LINK_PATTERN = /^https?:\/\/(open\.)?spotify\.com\//i;
+const VIBER_LINK_PATTERN = /^https?:\/\/(vb\.me|(invite\.)?viber\.com)\//i;
 
 /** Local, network-free classification of a decoded QR string — enough to
  * pick the right primary action (Open link / Open email / Call number),
@@ -10,10 +31,15 @@ const ZOOM_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?zoom\.us\/j\//i;
  * field here — that's a display-time concern, not a classification one. */
 export function classifyQrContent(data: string): QrContentType {
   const trimmed = data.trim();
-  // Check before the generic http(s) link case below — both are still
-  // plain URLs, just ones worth recognizing more specifically.
+  // Check before the generic http(s) link case below — all of these are
+  // still plain URLs, just ones worth recognizing more specifically.
   if (WHATSAPP_LINK_PATTERN.test(trimmed)) return 'whatsapp';
   if (ZOOM_LINK_PATTERN.test(trimmed)) return 'zoom';
+  if (FACEBOOK_LINK_PATTERN.test(trimmed)) return 'facebook';
+  if (INSTAGRAM_LINK_PATTERN.test(trimmed)) return 'instagram';
+  if (TWITTER_LINK_PATTERN.test(trimmed)) return 'twitter';
+  if (SPOTIFY_LINK_PATTERN.test(trimmed)) return 'spotify';
+  if (VIBER_LINK_PATTERN.test(trimmed)) return 'viber';
   if (/^https?:\/\//i.test(trimmed)) return 'link';
   if (/^mailto:/i.test(trimmed)) return 'email';
   // SMSTO: is the older Nokia-era scheme some generators still emit;
@@ -39,6 +65,11 @@ export function resolveQrOpenUri(data: string, type: QrContentType): string | nu
     case 'link':
     case 'whatsapp':
     case 'zoom':
+    case 'facebook':
+    case 'instagram':
+    case 'twitter':
+    case 'spotify':
+    case 'viber':
       return trimmed;
     case 'email':
       return trimmed.toLowerCase().startsWith('mailto:') ? trimmed : `mailto:${trimmed}`;

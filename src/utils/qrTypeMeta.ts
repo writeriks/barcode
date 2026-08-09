@@ -17,6 +17,11 @@ export const QR_TYPE_ICON: Record<QrContentType, keyof typeof Ionicons.glyphMap>
   event: 'calendar-outline',
   otp: 'key-outline',
   text: 'document-text-outline',
+  facebook: 'logo-facebook',
+  instagram: 'logo-instagram',
+  twitter: 'logo-twitter',
+  spotify: 'musical-notes-outline',
+  viber: 'chatbubbles-outline',
 };
 
 export const QR_TYPE_LABEL_KEY: Record<QrContentType, string> = {
@@ -31,6 +36,11 @@ export const QR_TYPE_LABEL_KEY: Record<QrContentType, string> = {
   event: 'qr.typeEvent',
   otp: 'qr.typeOtp',
   text: 'qr.typeText',
+  facebook: 'qr.typeFacebook',
+  instagram: 'qr.typeInstagram',
+  twitter: 'qr.typeTwitter',
+  spotify: 'qr.typeSpotify',
+  viber: 'qr.typeViber',
 };
 
 /** Matches History's per-type filter-pill colors, so the same type reads
@@ -47,6 +57,11 @@ export const QR_TYPE_ACCENT: Record<QrContentType, PillAccent> = {
   event: 'coral',
   otp: 'punch',
   text: 'mint',
+  facebook: 'mint',
+  instagram: 'coral',
+  twitter: 'mint',
+  spotify: 'citrus',
+  viber: 'coral',
 };
 
 /** Only the types the generator actually has a form for — 'otp' is
@@ -64,4 +79,29 @@ export const QR_GENERATE_TYPES: QrContentType[] = [
   'wifi',
   'vcard',
   'event',
+  'facebook',
+  'instagram',
+  'twitter',
+  'spotify',
+  'viber',
 ];
+
+/** Generator types gated behind premium — a free user tapping one of
+ * these in QrTypePicker opens the paywall instead of switching to it. */
+export const QR_PREMIUM_TYPES: ReadonlySet<QrContentType> = new Set<QrContentType>([
+  'facebook',
+  'instagram',
+  'twitter',
+  'spotify',
+  'viber',
+]);
+
+/** Base URL each SocialProfileForm prefixes onto a bare username — see
+ * buildSocialProfileContent. A pasted full URL bypasses this entirely. */
+export const QR_SOCIAL_BASE_URL: Record<'facebook' | 'instagram' | 'twitter' | 'spotify' | 'viber', string> = {
+  facebook: 'https://facebook.com/',
+  instagram: 'https://instagram.com/',
+  twitter: 'https://twitter.com/',
+  spotify: 'https://open.spotify.com/user/',
+  viber: 'https://vb.me/',
+};

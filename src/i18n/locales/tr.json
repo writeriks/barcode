@@ -141,7 +141,12 @@
     "metaQrWifi": "QR Wi-Fi",
     "metaQrVcard": "QR kişi",
     "metaQrEvent": "QR etkinlik",
-    "freeLimitReached": "Ücretsiz plan son {{count}} taramanı saklar — daha fazlası için yükselt."
+    "freeLimitReached": "Ücretsiz plan son {{count}} taramanı saklar — daha fazlası için yükselt.",
+    "metaQrFacebook": "QR Facebook",
+    "metaQrInstagram": "QR Instagram",
+    "metaQrTwitter": "QR Twitter",
+    "metaQrSpotify": "QR Spotify",
+    "metaQrViber": "QR Viber"
   },
   "myCodes": {
     "title": "Kodlarım",
@@ -211,7 +216,17 @@
     "searchPlaceholder": "Kodlarda ara",
     "edit": "Düzenle",
     "share": "Paylaş",
-    "update": "Güncelle"
+    "update": "Güncelle",
+    "facebookLabel": "Facebook profili",
+    "facebookPlaceholder": "Kullanıcı adı veya facebook.com/...",
+    "instagramLabel": "Instagram profili",
+    "instagramPlaceholder": "Kullanıcı adı veya instagram.com/...",
+    "twitterLabel": "Twitter / X profili",
+    "twitterPlaceholder": "Kullanıcı adı veya twitter.com/...",
+    "spotifyLabel": "Spotify profili",
+    "spotifyPlaceholder": "Kullanıcı adı veya open.spotify.com/...",
+    "viberLabel": "Viber",
+    "viberPlaceholder": "Kullanıcı adı veya link"
   },
   "qr": {
     "typeLink": "Bağlantı",
@@ -239,7 +254,12 @@
     "typeVcard": "Kartvizit",
     "typeEvent": "Etkinlik",
     "openWhatsapp": "WhatsApp'ı Aç",
-    "openZoom": "Zoom'a Katıl"
+    "openZoom": "Zoom'a Katıl",
+    "typeFacebook": "Facebook",
+    "typeInstagram": "Instagram",
+    "typeTwitter": "Twitter / X",
+    "typeSpotify": "Spotify",
+    "typeViber": "Viber"
   },
   "paywall": {
     "title": "Blippo Premium'un Kilidini Aç",

@@ -10,6 +10,7 @@ import { defaultEventFields, type EventFields } from '../components/qrForms/Even
 import { defaultLinkFields, type LinkFields } from '../components/qrForms/LinkForm';
 import { defaultPhoneFields, type PhoneFields } from '../components/qrForms/PhoneForm';
 import { defaultPhoneMessageFields, type PhoneMessageFields } from '../components/qrForms/PhoneMessageForm';
+import { type SocialFields } from '../components/qrForms/SocialProfileForm';
 import { defaultTextFields, type TextFields } from '../components/qrForms/TextForm';
 import { defaultVCardFields, type VCardFields } from '../components/qrForms/VCardForm';
 import { defaultWifiFields, type WifiFields } from '../components/qrForms/WifiForm';
@@ -146,6 +147,13 @@ export function parseSmsFields(content: string, defaultCountry: CountryCallingCo
 
 export function parseWhatsappFields(content: string, defaultCountry: CountryCallingCode | null): PhoneMessageFields {
   return parsePhoneMessageFields(content, /^https:\/\/wa\.me\/(.+)$/i, 'text', defaultCountry);
+}
+
+/** The stored content is always a full URL (buildSocialProfileContent
+ * either passes a pasted URL through as-is or prefixes a bare username
+ * into one), so it round-trips straight back into the field unchanged. */
+export function parseSocialProfileFields(content: string): SocialFields {
+  return { value: content };
 }
 
 export function parseZoomFields(content: string): ZoomFields {

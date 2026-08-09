@@ -18,9 +18,13 @@ function typeColor(colors: ColorTheme, type: QrContentType): string {
     case 'email':
     case 'phone':
     case 'zoom':
+    case 'facebook':
+    case 'twitter':
       return colors.mintText;
     case 'sms':
     case 'whatsapp':
+    case 'instagram':
+    case 'viber':
       return colors.coralText;
     case 'otp':
       return colors.punch;
@@ -28,6 +32,7 @@ function typeColor(colors: ColorTheme, type: QrContentType): string {
     case 'wifi':
     case 'vcard':
     case 'event':
+    case 'spotify':
       return colors.citrusText;
   }
 }
@@ -44,6 +49,11 @@ const OPEN_LABEL_KEY: Record<QrContentType, string> = {
   event: 'qr.openLink',
   otp: 'qr.openLink',
   text: 'qr.openLink',
+  facebook: 'qr.openLink',
+  instagram: 'qr.openLink',
+  twitter: 'qr.openLink',
+  spotify: 'qr.openLink',
+  viber: 'qr.openLink',
 };
 
 const SECRET_MASK = '•••• •••• •••• ••••';

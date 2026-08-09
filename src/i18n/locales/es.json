@@ -141,7 +141,12 @@
     "metaQrWifi": "QR Wi-Fi",
     "metaQrVcard": "QR contacto",
     "metaQrEvent": "QR evento",
-    "freeLimitReached": "El plan gratuito guarda tus últimos {{count}} escaneos — mejora tu plan para más."
+    "freeLimitReached": "El plan gratuito guarda tus últimos {{count}} escaneos — mejora tu plan para más.",
+    "metaQrFacebook": "QR Facebook",
+    "metaQrInstagram": "QR Instagram",
+    "metaQrTwitter": "QR Twitter",
+    "metaQrSpotify": "QR Spotify",
+    "metaQrViber": "QR Viber"
   },
   "myCodes": {
     "title": "Mis códigos",
@@ -211,7 +216,17 @@
     "searchPlaceholder": "Buscar códigos",
     "edit": "Editar",
     "share": "Compartir",
-    "update": "Actualizar"
+    "update": "Actualizar",
+    "facebookLabel": "Perfil de Facebook",
+    "facebookPlaceholder": "Usuario o facebook.com/...",
+    "instagramLabel": "Perfil de Instagram",
+    "instagramPlaceholder": "Usuario o instagram.com/...",
+    "twitterLabel": "Perfil de Twitter / X",
+    "twitterPlaceholder": "Usuario o twitter.com/...",
+    "spotifyLabel": "Perfil de Spotify",
+    "spotifyPlaceholder": "Usuario o open.spotify.com/...",
+    "viberLabel": "Viber",
+    "viberPlaceholder": "Usuario o enlace"
   },
   "qr": {
     "typeLink": "Enlace",
@@ -239,7 +254,12 @@
     "typeVcard": "Tarjeta de contacto",
     "typeEvent": "Evento",
     "openWhatsapp": "Abrir WhatsApp",
-    "openZoom": "Unirse a Zoom"
+    "openZoom": "Unirse a Zoom",
+    "typeFacebook": "Facebook",
+    "typeInstagram": "Instagram",
+    "typeTwitter": "Twitter / X",
+    "typeSpotify": "Spotify",
+    "typeViber": "Viber"
   },
   "paywall": {
     "title": "Desbloquea Blippo Premium",

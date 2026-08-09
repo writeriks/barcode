@@ -27,6 +27,7 @@ import { EventForm, defaultEventFields, type EventFields } from '../components/q
 import { LinkForm, defaultLinkFields, type LinkFields } from '../components/qrForms/LinkForm';
 import { PhoneForm, defaultPhoneFields, type PhoneFields } from '../components/qrForms/PhoneForm';
 import { PhoneMessageForm, defaultPhoneMessageFields, type PhoneMessageFields } from '../components/qrForms/PhoneMessageForm';
+import { SocialProfileForm, defaultSocialFields, type SocialFields } from '../components/qrForms/SocialProfileForm';
 import { TextForm, defaultTextFields, type TextFields } from '../components/qrForms/TextForm';
 import { VCardForm, defaultVCardFields, type VCardFields } from '../components/qrForms/VCardForm';
 import { WifiForm, defaultWifiFields, type WifiFields } from '../components/qrForms/WifiForm';
@@ -46,6 +47,7 @@ import {
   buildLinkContent,
   buildPhoneContent,
   buildSmsContent,
+  buildSocialProfileContent,
   buildTextContent,
   buildVCardContent,
   buildWhatsAppContent,
@@ -58,13 +60,14 @@ import {
   parseLinkFields,
   parsePhoneFields,
   parseSmsFields,
+  parseSocialProfileFields,
   parseTextFields,
   parseVCardFields,
   parseWhatsappFields,
   parseWifiFields,
   parseZoomFields,
 } from '../utils/qrContentParsers';
-import { QR_GENERATE_TYPES, QR_TYPE_ACCENT, QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
+import { QR_GENERATE_TYPES, QR_SOCIAL_BASE_URL, QR_TYPE_ACCENT, QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
 
 interface FormState {
   link: LinkFields;
@@ -77,6 +80,11 @@ interface FormState {
   wifi: WifiFields;
   vcard: VCardFields;
   event: EventFields;
+  facebook: SocialFields;
+  instagram: SocialFields;
+  twitter: SocialFields;
+  spotify: SocialFields;
+  viber: SocialFields;
 }
 
 function makeDefaultFormState(defaultCountry: CountryCallingCode | null): FormState {
@@ -91,6 +99,11 @@ function makeDefaultFormState(defaultCountry: CountryCallingCode | null): FormSt
     wifi: defaultWifiFields,
     vcard: defaultVCardFields(defaultCountry),
     event: defaultEventFields,
+    facebook: defaultSocialFields,
+    instagram: defaultSocialFields,
+    twitter: defaultSocialFields,
+    spotify: defaultSocialFields,
+    viber: defaultSocialFields,
   };
 }
 
@@ -146,6 +159,12 @@ function buildContent(type: QrContentType, fields: FormState): string | null {
       });
     case 'event':
       return buildEventContent(fields.event);
+    case 'facebook':
+    case 'instagram':
+    case 'twitter':
+    case 'spotify':
+    case 'viber':
+      return buildSocialProfileContent(QR_SOCIAL_BASE_URL[type], fields[type].value);
     case 'otp':
       return null;
   }
@@ -177,6 +196,12 @@ function defaultLabelFor(type: QrContentType, content: string, fields: FormState
       return [fields.vcard.firstName, fields.vcard.lastName].filter(Boolean).join(' ') || fields.vcard.company || content;
     case 'event':
       return fields.event.title || content;
+    case 'facebook':
+    case 'instagram':
+    case 'twitter':
+    case 'spotify':
+    case 'viber':
+      return fields[type].value || content;
     default:
       return content;
   }
@@ -224,6 +249,13 @@ function fieldsFromCode(
       break;
     case 'event':
       fields.event = parseEventFields(code.content);
+      break;
+    case 'facebook':
+    case 'instagram':
+    case 'twitter':
+    case 'spotify':
+    case 'viber':
+      fields[type] = parseSocialProfileFields(code.content);
       break;
   }
 
@@ -450,6 +482,46 @@ export function MyCodesScreen() {
                   )}
                   {type === 'event' && (
                     <EventForm value={fields.event} onChange={(event) => setFields({ ...fields, event })} />
+                  )}
+                  {type === 'facebook' && (
+                    <SocialProfileForm
+                      value={fields.facebook}
+                      onChange={(facebook) => setFields({ ...fields, facebook })}
+                      label={t('myCodes.facebookLabel')}
+                      placeholder={t('myCodes.facebookPlaceholder')}
+                    />
+                  )}
+                  {type === 'instagram' && (
+                    <SocialProfileForm
+                      value={fields.instagram}
+                      onChange={(instagram) => setFields({ ...fields, instagram })}
+                      label={t('myCodes.instagramLabel')}
+                      placeholder={t('myCodes.instagramPlaceholder')}
+                    />
+                  )}
+                  {type === 'twitter' && (
+                    <SocialProfileForm
+                      value={fields.twitter}
+                      onChange={(twitter) => setFields({ ...fields, twitter })}
+                      label={t('myCodes.twitterLabel')}
+                      placeholder={t('myCodes.twitterPlaceholder')}
+                    />
+                  )}
+                  {type === 'spotify' && (
+                    <SocialProfileForm
+                      value={fields.spotify}
+                      onChange={(spotify) => setFields({ ...fields, spotify })}
+                      label={t('myCodes.spotifyLabel')}
+                      placeholder={t('myCodes.spotifyPlaceholder')}
+                    />
+                  )}
+                  {type === 'viber' && (
+                    <SocialProfileForm
+                      value={fields.viber}
+                      onChange={(viber) => setFields({ ...fields, viber })}
+                      label={t('myCodes.viberLabel')}
+                      placeholder={t('myCodes.viberPlaceholder')}
+                    />
                   )}
 
                   <View style={styles.formActions}>

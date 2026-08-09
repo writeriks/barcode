@@ -58,6 +58,16 @@ export function buildZoomContent(fields: { meetingId: string; password: string }
   return `https://zoom.us/j/${meetingId}${buildQuery({ pwd: fields.password })}`;
 }
 
+/** Shared by the Facebook/Instagram/Twitter/Spotify/Viber generators —
+ * all five just need a profile/track URL, built from either a bare
+ * username or a full link the user pastes in directly. */
+export function buildSocialProfileContent(profileBaseUrl: string, value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)) return trimmed;
+  return `${profileBaseUrl}${trimmed.replace(/^@/, '')}`;
+}
+
 export type WifiNetworkType = 'WEP' | 'WPA' | 'nopass';
 
 /** WIFI: field values need `\`, `;`, `,`, `"` backslash-escaped — those

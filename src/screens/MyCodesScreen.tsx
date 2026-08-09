@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useBottomTabBarHeight, type BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -34,6 +34,7 @@ import { TextForm, defaultTextFields, type TextFields } from '../components/qrFo
 import { VCardForm, defaultVCardFields, type VCardFields } from '../components/qrForms/VCardForm';
 import { WifiForm, defaultWifiFields, type WifiFields } from '../components/qrForms/WifiForm';
 import { ZoomForm, defaultZoomFields, type ZoomFields } from '../components/qrForms/ZoomForm';
+import type { RootTabParamList } from '../navigation/types';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { deleteMyCode, getMyCodes, saveMyCode, updateMyCode } from '../services/myCodes';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
@@ -264,7 +265,9 @@ function fieldsFromCode(
   return { type, fields };
 }
 
-export function MyCodesScreen() {
+type Props = BottomTabScreenProps<RootTabParamList, 'MyCodes'>;
+
+export function MyCodesScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
   const colors = useThemeColors();
@@ -288,6 +291,16 @@ export function MyCodesScreen() {
   }, []);
 
   useFocusEffect(reload);
+
+  // Re-tapping the already-active My Codes tab while viewing a code's
+  // detail should pop back to the list, not do nothing.
+  useEffect(() => {
+    return navigation.addListener('tabPress', () => {
+      if (navigation.isFocused() && viewing) {
+        setViewing(null);
+      }
+    });
+  }, [navigation, viewing]);
 
   const content = useMemo(() => buildContent(type, fields), [type, fields]);
 

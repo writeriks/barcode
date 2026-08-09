@@ -12,6 +12,7 @@ import { APP_NAME, FAQ_URL, PRIVACY_POLICY_URL, SUPPORT_EMAIL, TERMS_OF_USE_URL,
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { LANGUAGE_NATIVE_NAMES } from '../i18n/languageNames';
 import { usePremium } from '../premium/PremiumContext';
+import { showManageSubscriptions } from '../premium/revenueCat';
 import { isPrivacyOptionsRequired, showPrivacyOptionsForm } from '../services/ads/consent';
 import { authenticateAppUnlock, isDeviceLockSupported, setAppLockEnabled } from '../services/appLock';
 import { captureAnalyticsEvent } from '../services/analytics';
@@ -131,6 +132,11 @@ export function SettingsScreen({
   const currentLanguageLabel =
     currentOverride === null ? t('settings.systemDefault') : LANGUAGE_NATIVE_NAMES[currentOverride];
 
+  const handleManageSubscription = () => {
+    captureAnalyticsEvent('manage_subscription_opened');
+    showManageSubscriptions();
+  };
+
   const openLink = (url: string) => {
     Linking.canOpenURL(url).then((supported) => {
       if (supported) Linking.openURL(url);
@@ -189,7 +195,10 @@ export function SettingsScreen({
         />
 
         <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.premiumSection')}</Text>
-        <Pressable onPress={isPremium ? undefined : openPaywall} style={styles.row}>
+        <Pressable
+          onPress={isPremium ? handleManageSubscription : openPaywall}
+          style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+        >
           <View style={styles.toggleText}>
             <Text style={styles.rowLabel}>{isPremium ? t('settings.premiumActive') : t('settings.premiumUpgrade')}</Text>
             <Text style={styles.toggleDescription}>
@@ -197,7 +206,10 @@ export function SettingsScreen({
             </Text>
           </View>
           {isPremium ? (
-            <Ionicons name="checkmark-circle" size={20} color={colors.mint} />
+            <View style={styles.premiumActiveIcons}>
+              <Ionicons name="checkmark-circle" size={20} color={colors.mint} />
+              <Ionicons name="chevron-forward" size={16} color={colors.text} style={styles.dropdownChevron} />
+            </View>
           ) : (
             <Ionicons name="chevron-forward" size={18} color={colors.text} style={styles.dropdownChevron} />
           )}
@@ -479,6 +491,11 @@ function createStyles(colors: ColorTheme) {
     },
     dropdownChevron: {
       opacity: 0.55,
+    },
+    premiumActiveIcons: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
     },
     sheetList: {
       gap: 10,

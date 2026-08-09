@@ -91,3 +91,14 @@ export async function restorePurchases(): Promise<boolean> {
   const info = await Purchases.restorePurchases();
   return hasEntitlement(info);
 }
+
+/** Opens the platform's native subscription management screen (on iOS,
+ * the same sheet as Settings → Apple ID → Subscriptions → Blippo) —
+ * RevenueCat has no management UI of its own, the App Store owns the
+ * actual billing relationship, so cancelling/changing plans always has
+ * to go through Apple. No-op wherever purchases aren't supported. */
+export async function showManageSubscriptions(): Promise<void> {
+  if (!isSupported()) return;
+  const { default: Purchases } = await loadModule();
+  await Purchases.showManageSubscriptions();
+}

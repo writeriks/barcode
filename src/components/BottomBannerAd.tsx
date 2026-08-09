@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ComponentType } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ADMOB_BANNER_UNIT_ID } from '../config/adsEnv';
-import { areAdsEnabled } from '../services/ads/adsEnabled';
+import { areAdsEnabled, subscribeToAdsEnabled } from '../services/ads/adsEnabled';
 import { isExpoGo } from '../services/ads/environment';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -37,9 +37,18 @@ export function BottomBannerAd() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [banner, setBanner] = useState<ResolvedBanner | null>(null);
   const [loadState, setLoadState] = useState<LoadState>('pending');
+  const [adsAllowed, setAdsAllowed] = useState(areAdsEnabled());
+
+  // Ads can turn off mid-session (premium activates while this screen is
+  // already mounted) — subscribe so an already-loaded banner disappears
+  // immediately instead of waiting for the next mount to re-check.
+  useEffect(() => subscribeToAdsEnabled(setAdsAllowed), []);
 
   useEffect(() => {
-    if (isExpoGo() || !areAdsEnabled()) return;
+    if (isExpoGo() || !adsAllowed) {
+      setBanner(null);
+      return;
+    }
     let cancelled = false;
 
     import('react-native-google-mobile-ads').then(({ BannerAd, BannerAdSize, TestIds }) => {
@@ -54,7 +63,7 @@ export function BottomBannerAd() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [adsAllowed]);
 
   if (!banner || loadState === 'failed') {
     return null;

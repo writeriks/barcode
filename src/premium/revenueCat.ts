@@ -4,8 +4,11 @@ import { REVENUECAT_API_KEY_IOS } from '../config/revenueCatEnv';
 import { isExpoGo } from '../services/ads/environment';
 
 /** Must match the entitlement identifier configured in the RevenueCat
- * dashboard that the weekly/monthly products both grant. */
-export const PREMIUM_ENTITLEMENT_ID = 'premium';
+ * dashboard that the weekly/monthly products both grant — RevenueCat →
+ * Product catalog → Entitlements → "blippo Pro" (Product catalog →
+ * Entitlements → Identifier field; not the "REST API Identifier" shown
+ * further down that page, which is a different internal ID). */
+export const PREMIUM_ENTITLEMENT_ID = 'blippo Pro';
 
 /** react-native-purchases isn't part of Expo Go's bundled native modules —
  * importing it crashes at import time under Expo Go, same problem the ads

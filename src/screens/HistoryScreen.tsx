@@ -263,6 +263,12 @@ export function HistoryScreen({ navigation }: Props) {
     ]);
   };
 
+  const handleMoveMenuEntry = () => {
+    if (!menuEntry) return;
+    setAssigningKeys([{ kind: menuEntry.kind, timestamp: menuEntry.timestamp }]);
+    setMenuEntry(null);
+  };
+
   const handleShareMenuEntry = () => {
     if (!menuEntry) return;
     captureAnalyticsEvent('history_entry_shared', { kind: menuEntry.kind });
@@ -558,6 +564,10 @@ export function HistoryScreen({ navigation }: Props) {
 
       <BottomSheet visible={menuEntry !== null} onClose={() => setMenuEntry(null)} title={t('history.entryOptionsTitle')}>
         <View style={styles.sheetList}>
+          <Pressable onPress={handleMoveMenuEntry} style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}>
+            <Ionicons name="folder-outline" size={18} color={colors.mint} />
+            <Text style={styles.menuRowText}>{t('history.move')}</Text>
+          </Pressable>
           <Pressable onPress={handleShareMenuEntry} style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}>
             <Ionicons name="share-outline" size={18} color={colors.citrusText} />
             <Text style={styles.menuRowText}>{t('history.share')}</Text>

@@ -57,6 +57,11 @@ const QR_META_KEY: Record<QrContentType, string> = {
   twitter: 'history.metaQrTwitter',
   spotify: 'history.metaQrSpotify',
   viber: 'history.metaQrViber',
+  location: 'history.metaQrLocation',
+  mecard: 'history.metaQrMecard',
+  upi: 'history.metaQrUpi',
+  paypal: 'history.metaQrPaypal',
+  linkedin: 'history.metaQrLinkedin',
 };
 
 const TYPE_FILTER_OPTIONS: { value: TypeFilterValue; labelKey: string; accent: PillAccent }[] = [
@@ -77,6 +82,11 @@ const TYPE_FILTER_OPTIONS: { value: TypeFilterValue; labelKey: string; accent: P
   { value: 'twitter', labelKey: 'qr.typeTwitter', accent: 'mint' },
   { value: 'spotify', labelKey: 'qr.typeSpotify', accent: 'citrus' },
   { value: 'viber', labelKey: 'qr.typeViber', accent: 'coral' },
+  { value: 'location', labelKey: 'qr.typeLocation', accent: 'mint' },
+  { value: 'mecard', labelKey: 'qr.typeMecard', accent: 'citrus' },
+  { value: 'upi', labelKey: 'qr.typeUpi', accent: 'coral' },
+  { value: 'paypal', labelKey: 'qr.typePaypal', accent: 'mint' },
+  { value: 'linkedin', labelKey: 'qr.typeLinkedin', accent: 'citrus' },
 ];
 
 function entryKey(entry: ScanHistoryEntry): string {

@@ -156,6 +156,11 @@
     "metaQrTwitter": "QR Twitter",
     "metaQrSpotify": "QR Spotify",
     "metaQrViber": "QR Viber",
+    "metaQrLocation": "QR lokalizacja",
+    "metaQrMecard": "QR wizytówka",
+    "metaQrUpi": "QR płatność UPI",
+    "metaQrPaypal": "QR PayPal",
+    "metaQrLinkedin": "QR LinkedIn",
     "entryOptionsTitle": "Opcje wpisu"
   },
   "myCodes": {
@@ -237,7 +242,25 @@
     "spotifyPlaceholder": "Nazwa użytkownika lub open.spotify.com/...",
     "viberLabel": "Viber",
     "viberPlaceholder": "Nazwa użytkownika lub link",
-    "codeOptionsTitle": "Opcje kodu"
+    "codeOptionsTitle": "Opcje kodu",
+    "nameLabel": "Imię i nazwisko",
+    "namePlaceholder": "Imię i nazwisko",
+    "emailLabel": "E-mail",
+    "latitudeLabel": "Szerokość geograficzna",
+    "latitudePlaceholder": "37.7749",
+    "longitudeLabel": "Długość geograficzna",
+    "longitudePlaceholder": "-122.4194",
+    "vpaLabel": "Identyfikator UPI (VPA)",
+    "vpaPlaceholder": "nazwa@bank",
+    "payeeNameLabel": "Nazwa odbiorcy",
+    "amountLabel": "Kwota",
+    "amountPlaceholder": "Opcjonalnie",
+    "noteLabel": "Notatka",
+    "notePlaceholder": "Opcjonalnie",
+    "paypalLabel": "PayPal.me",
+    "paypalPlaceholder": "Nazwa użytkownika lub paypal.me/...",
+    "linkedinLabel": "Profil LinkedIn",
+    "linkedinPlaceholder": "Nazwa użytkownika lub linkedin.com/in/..."
   },
   "qr": {
     "typeLink": "Link",
@@ -270,7 +293,14 @@
     "typeInstagram": "Instagram",
     "typeTwitter": "Twitter / X",
     "typeSpotify": "Spotify",
-    "typeViber": "Viber"
+    "typeViber": "Viber",
+    "typeLocation": "Lokalizacja",
+    "typeMecard": "Wizytówka",
+    "typeUpi": "Płatność UPI",
+    "typePaypal": "PayPal",
+    "typeLinkedin": "LinkedIn",
+    "openLocation": "Otwórz w Mapach",
+    "openUpi": "Zapłać przez UPI"
   },
   "paywall": {
     "title": "Odblokuj Blippo Premium",

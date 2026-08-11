@@ -156,6 +156,11 @@
     "metaQrTwitter": "QR Twitter",
     "metaQrSpotify": "QR Spotify",
     "metaQrViber": "QR Viber",
+    "metaQrLocation": "QR konum",
+    "metaQrMecard": "QR kartvizit",
+    "metaQrUpi": "QR UPI ödemesi",
+    "metaQrPaypal": "QR PayPal",
+    "metaQrLinkedin": "QR LinkedIn",
     "entryOptionsTitle": "Kayıt Seçenekleri"
   },
   "myCodes": {
@@ -237,7 +242,25 @@
     "spotifyPlaceholder": "Kullanıcı adı veya open.spotify.com/...",
     "viberLabel": "Viber",
     "viberPlaceholder": "Kullanıcı adı veya link",
-    "codeOptionsTitle": "Kod Seçenekleri"
+    "codeOptionsTitle": "Kod Seçenekleri",
+    "nameLabel": "İsim",
+    "namePlaceholder": "Ad Soyad",
+    "emailLabel": "E-posta",
+    "latitudeLabel": "Enlem",
+    "latitudePlaceholder": "37.7749",
+    "longitudeLabel": "Boylam",
+    "longitudePlaceholder": "-122.4194",
+    "vpaLabel": "UPI Kimliği (VPA)",
+    "vpaPlaceholder": "kullaniciadi@banka",
+    "payeeNameLabel": "Alıcı adı",
+    "amountLabel": "Tutar",
+    "amountPlaceholder": "İsteğe bağlı",
+    "noteLabel": "Not",
+    "notePlaceholder": "İsteğe bağlı",
+    "paypalLabel": "PayPal.me",
+    "paypalPlaceholder": "Kullanıcı adı veya paypal.me/...",
+    "linkedinLabel": "LinkedIn profili",
+    "linkedinPlaceholder": "Kullanıcı adı veya linkedin.com/in/..."
   },
   "qr": {
     "typeLink": "Bağlantı",
@@ -270,7 +293,14 @@
     "typeInstagram": "Instagram",
     "typeTwitter": "Twitter / X",
     "typeSpotify": "Spotify",
-    "typeViber": "Viber"
+    "typeViber": "Viber",
+    "typeLocation": "Konum",
+    "typeMecard": "Kartvizit",
+    "typeUpi": "UPI ödemesi",
+    "typePaypal": "PayPal",
+    "typeLinkedin": "LinkedIn",
+    "openLocation": "Haritalarda aç",
+    "openUpi": "UPI ile öde"
   },
   "paywall": {
     "title": "Blippo Premium'un Kilidini Aç",

@@ -169,6 +169,51 @@ export function buildVCardContent(fields: VCardFormFields): string | null {
   return lines.join('\n');
 }
 
+export function buildLocationContent(fields: { latitude: string; longitude: string }): string | null {
+  const latitude = fields.latitude.trim();
+  const longitude = fields.longitude.trim();
+  if (!latitude || !longitude || Number.isNaN(Number(latitude)) || Number.isNaN(Number(longitude))) return null;
+  return `geo:${latitude},${longitude}`;
+}
+
+export interface MeCardFormFields {
+  name: string;
+  dialCode: string;
+  number: string;
+  email: string;
+  company: string;
+  address: string;
+  website: string;
+}
+
+/** MECARD's fields aren't escaped the way vCard/iCalendar's are — the
+ * format has no defined escaping rule, so generators (and our own parser)
+ * just treat `;` as a plain separator and expect field values to avoid it. */
+export function buildMeCardContent(fields: MeCardFormFields): string | null {
+  const name = fields.name.trim();
+  if (!name) return null;
+
+  const parts = [`N:${name}`];
+  const digits = onlyDigits(fields.number);
+  if (digits) parts.push(`TEL:${fields.dialCode}${digits}`);
+  if (fields.email.trim()) parts.push(`EMAIL:${fields.email.trim()}`);
+  if (fields.company.trim()) parts.push(`ORG:${fields.company.trim()}`);
+  if (fields.address.trim()) parts.push(`ADR:${fields.address.trim()}`);
+  if (fields.website.trim()) parts.push(`URL:${fields.website.trim()}`);
+  return `MECARD:${parts.join(';')};;`;
+}
+
+export function buildUpiContent(fields: {
+  vpa: string;
+  payeeName: string;
+  amount: string;
+  note: string;
+}): string | null {
+  const vpa = fields.vpa.trim();
+  if (!vpa) return null;
+  return `upi://pay${buildQuery({ pa: vpa, pn: fields.payeeName, am: fields.amount, tn: fields.note })}`;
+}
+
 export interface EventFormFields {
   title: string;
   location: string;

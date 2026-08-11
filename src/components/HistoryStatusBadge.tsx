@@ -31,11 +31,14 @@ function qrTypeColor(colors: ColorTheme, type: QrContentType): string {
     case 'zoom':
     case 'facebook':
     case 'twitter':
+    case 'location':
+    case 'paypal':
       return colors.mintText;
     case 'sms':
     case 'whatsapp':
     case 'instagram':
     case 'viber':
+    case 'upi':
       return colors.coralText;
     case 'otp':
       return colors.punch;
@@ -44,6 +47,8 @@ function qrTypeColor(colors: ColorTheme, type: QrContentType): string {
     case 'vcard':
     case 'event':
     case 'spotify':
+    case 'mecard':
+    case 'linkedin':
       return colors.citrusText;
   }
 }

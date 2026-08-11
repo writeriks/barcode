@@ -14,7 +14,12 @@ export type QrContentType =
   | 'instagram'
   | 'twitter'
   | 'spotify'
-  | 'viber';
+  | 'viber'
+  | 'location'
+  | 'mecard'
+  | 'upi'
+  | 'paypal'
+  | 'linkedin';
 
 const WHATSAPP_LINK_PATTERN = /^https?:\/\/(wa\.me|api\.whatsapp\.com)\//i;
 const ZOOM_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?zoom\.us\/j\//i;
@@ -23,6 +28,8 @@ const INSTAGRAM_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?instagram\.com\//i;
 const TWITTER_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?(twitter\.com|x\.com)\//i;
 const SPOTIFY_LINK_PATTERN = /^https?:\/\/(open\.)?spotify\.com\//i;
 const VIBER_LINK_PATTERN = /^https?:\/\/(vb\.me|(invite\.)?viber\.com)\//i;
+const PAYPAL_LINK_PATTERN = /^https?:\/\/(www\.)?paypal\.me\//i;
+const LINKEDIN_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?linkedin\.com\//i;
 
 /** Local, network-free classification of a decoded QR string — enough to
  * pick the right primary action (Open link / Open email / Call number),
@@ -40,6 +47,8 @@ export function classifyQrContent(data: string): QrContentType {
   if (TWITTER_LINK_PATTERN.test(trimmed)) return 'twitter';
   if (SPOTIFY_LINK_PATTERN.test(trimmed)) return 'spotify';
   if (VIBER_LINK_PATTERN.test(trimmed)) return 'viber';
+  if (PAYPAL_LINK_PATTERN.test(trimmed)) return 'paypal';
+  if (LINKEDIN_LINK_PATTERN.test(trimmed)) return 'linkedin';
   if (/^https?:\/\//i.test(trimmed)) return 'link';
   if (/^mailto:/i.test(trimmed)) return 'email';
   // SMSTO: is the older Nokia-era scheme some generators still emit;
@@ -47,9 +56,12 @@ export function classifyQrContent(data: string): QrContentType {
   if (/^smsto:|^sms:/i.test(trimmed)) return 'sms';
   if (/^tel:/i.test(trimmed)) return 'phone';
   if (/^otpauth:\/\//i.test(trimmed)) return 'otp';
+  if (/^upi:\/\//i.test(trimmed)) return 'upi';
+  if (/^geo:/i.test(trimmed)) return 'location';
   if (/^WIFI:/i.test(trimmed)) return 'wifi';
   if (/^BEGIN:VCARD/i.test(trimmed)) return 'vcard';
   if (/^BEGIN:(VEVENT|VCALENDAR)/i.test(trimmed)) return 'event';
+  if (/^MECARD:/i.test(trimmed)) return 'mecard';
   return 'text';
 }
 
@@ -59,6 +71,8 @@ export function classifyQrContent(data: string): QrContentType {
  * single "open" action (there's no URL scheme any app registers to join a
  * network or import a contact from a raw string), so those show the
  * decoded content instead of an Open button. */
+const GEO_URI_PATTERN = /^geo:(-?\d+\.?\d*),(-?\d+\.?\d*)/i;
+
 export function resolveQrOpenUri(data: string, type: QrContentType): string | null {
   const trimmed = data.trim();
   switch (type) {
@@ -70,6 +84,9 @@ export function resolveQrOpenUri(data: string, type: QrContentType): string | nu
     case 'twitter':
     case 'spotify':
     case 'viber':
+    case 'paypal':
+    case 'linkedin':
+    case 'upi':
       return trimmed;
     case 'email':
       return trimmed.toLowerCase().startsWith('mailto:') ? trimmed : `mailto:${trimmed}`;
@@ -79,8 +96,16 @@ export function resolveQrOpenUri(data: string, type: QrContentType): string | nu
       // Normalize the older SMSTO: scheme to sms: — that's the one both
       // platforms' Linking.openURL reliably recognize.
       return trimmed.toLowerCase().startsWith('smsto:') ? `sms:${trimmed.slice(6)}` : trimmed;
+    case 'location': {
+      // geo: isn't a scheme iOS (our only target platform) resolves —
+      // that's an Android convention — so hand off to Apple Maps' web
+      // link instead, which the OS always knows how to open.
+      const match = trimmed.match(GEO_URI_PATTERN);
+      return match ? `https://maps.apple.com/?ll=${match[1]},${match[2]}` : null;
+    }
     case 'wifi':
     case 'vcard':
+    case 'mecard':
     case 'event':
     case 'otp':
     case 'text':

@@ -28,10 +28,13 @@ import { QrTypePicker } from '../components/QrTypePicker';
 import { EmailForm, defaultEmailFields, type EmailFields } from '../components/qrForms/EmailForm';
 import { EventForm, defaultEventFields, type EventFields } from '../components/qrForms/EventForm';
 import { LinkForm, defaultLinkFields, type LinkFields } from '../components/qrForms/LinkForm';
+import { LocationForm, defaultLocationFields, type LocationFields } from '../components/qrForms/LocationForm';
+import { MeCardForm, defaultMeCardFields, type MeCardFields } from '../components/qrForms/MeCardForm';
 import { PhoneForm, defaultPhoneFields, type PhoneFields } from '../components/qrForms/PhoneForm';
 import { PhoneMessageForm, defaultPhoneMessageFields, type PhoneMessageFields } from '../components/qrForms/PhoneMessageForm';
 import { SocialProfileForm, defaultSocialFields, type SocialFields } from '../components/qrForms/SocialProfileForm';
 import { TextForm, defaultTextFields, type TextFields } from '../components/qrForms/TextForm';
+import { UpiForm, defaultUpiFields, type UpiFields } from '../components/qrForms/UpiForm';
 import { VCardForm, defaultVCardFields, type VCardFields } from '../components/qrForms/VCardForm';
 import { WifiForm, defaultWifiFields, type WifiFields } from '../components/qrForms/WifiForm';
 import { ZoomForm, defaultZoomFields, type ZoomFields } from '../components/qrForms/ZoomForm';
@@ -49,10 +52,13 @@ import {
   buildEmailContent,
   buildEventContent,
   buildLinkContent,
+  buildLocationContent,
+  buildMeCardContent,
   buildPhoneContent,
   buildSmsContent,
   buildSocialProfileContent,
   buildTextContent,
+  buildUpiContent,
   buildVCardContent,
   buildWhatsAppContent,
   buildWifiContent,
@@ -62,10 +68,13 @@ import {
   parseEmailFields,
   parseEventFields,
   parseLinkFields,
+  parseLocationFields,
+  parseMeCardFields,
   parsePhoneFields,
   parseSmsFields,
   parseSocialProfileFields,
   parseTextFields,
+  parseUpiFields,
   parseVCardFields,
   parseWhatsappFields,
   parseWifiFields,
@@ -83,12 +92,17 @@ interface FormState {
   zoom: ZoomFields;
   wifi: WifiFields;
   vcard: VCardFields;
+  mecard: MeCardFields;
   event: EventFields;
+  location: LocationFields;
+  upi: UpiFields;
   facebook: SocialFields;
   instagram: SocialFields;
   twitter: SocialFields;
   spotify: SocialFields;
   viber: SocialFields;
+  paypal: SocialFields;
+  linkedin: SocialFields;
 }
 
 function makeDefaultFormState(defaultCountry: CountryCallingCode | null): FormState {
@@ -102,12 +116,17 @@ function makeDefaultFormState(defaultCountry: CountryCallingCode | null): FormSt
     zoom: defaultZoomFields,
     wifi: defaultWifiFields,
     vcard: defaultVCardFields(defaultCountry),
+    mecard: defaultMeCardFields(defaultCountry),
     event: defaultEventFields,
+    location: defaultLocationFields,
+    upi: defaultUpiFields,
     facebook: defaultSocialFields,
     instagram: defaultSocialFields,
     twitter: defaultSocialFields,
     spotify: defaultSocialFields,
     viber: defaultSocialFields,
+    paypal: defaultSocialFields,
+    linkedin: defaultSocialFields,
   };
 }
 
@@ -163,11 +182,27 @@ function buildContent(type: QrContentType, fields: FormState): string | null {
       });
     case 'event':
       return buildEventContent(fields.event);
+    case 'mecard':
+      return buildMeCardContent({
+        name: fields.mecard.name,
+        dialCode: fields.mecard.country?.dialCode ?? '',
+        number: fields.mecard.number,
+        email: fields.mecard.email,
+        company: fields.mecard.company,
+        address: fields.mecard.address,
+        website: fields.mecard.website,
+      });
+    case 'location':
+      return buildLocationContent(fields.location);
+    case 'upi':
+      return buildUpiContent(fields.upi);
     case 'facebook':
     case 'instagram':
     case 'twitter':
     case 'spotify':
     case 'viber':
+    case 'paypal':
+    case 'linkedin':
       return buildSocialProfileContent(QR_SOCIAL_BASE_URL[type], fields[type].value);
     case 'otp':
       return null;
@@ -200,11 +235,21 @@ function defaultLabelFor(type: QrContentType, content: string, fields: FormState
       return [fields.vcard.firstName, fields.vcard.lastName].filter(Boolean).join(' ') || fields.vcard.company || content;
     case 'event':
       return fields.event.title || content;
+    case 'mecard':
+      return fields.mecard.name || content;
+    case 'location':
+      return fields.location.latitude && fields.location.longitude
+        ? `${fields.location.latitude}, ${fields.location.longitude}`
+        : content;
+    case 'upi':
+      return fields.upi.payeeName || fields.upi.vpa || content;
     case 'facebook':
     case 'instagram':
     case 'twitter':
     case 'spotify':
     case 'viber':
+    case 'paypal':
+    case 'linkedin':
       return fields[type].value || content;
     default:
       return content;
@@ -254,11 +299,22 @@ function fieldsFromCode(
     case 'event':
       fields.event = parseEventFields(code.content);
       break;
+    case 'mecard':
+      fields.mecard = parseMeCardFields(code.content, defaultCountry);
+      break;
+    case 'location':
+      fields.location = parseLocationFields(code.content);
+      break;
+    case 'upi':
+      fields.upi = parseUpiFields(code.content);
+      break;
     case 'facebook':
     case 'instagram':
     case 'twitter':
     case 'spotify':
     case 'viber':
+    case 'paypal':
+    case 'linkedin':
       fields[type] = parseSocialProfileFields(code.content);
       break;
   }
@@ -512,6 +568,13 @@ export function MyCodesScreen({ navigation }: Props) {
                   {type === 'event' && (
                     <EventForm value={fields.event} onChange={(event) => setFields({ ...fields, event })} />
                   )}
+                  {type === 'mecard' && (
+                    <MeCardForm value={fields.mecard} onChange={(mecard) => setFields({ ...fields, mecard })} />
+                  )}
+                  {type === 'location' && (
+                    <LocationForm value={fields.location} onChange={(location) => setFields({ ...fields, location })} />
+                  )}
+                  {type === 'upi' && <UpiForm value={fields.upi} onChange={(upi) => setFields({ ...fields, upi })} />}
                   {type === 'facebook' && (
                     <SocialProfileForm
                       value={fields.facebook}
@@ -550,6 +613,22 @@ export function MyCodesScreen({ navigation }: Props) {
                       onChange={(viber) => setFields({ ...fields, viber })}
                       label={t('myCodes.viberLabel')}
                       placeholder={t('myCodes.viberPlaceholder')}
+                    />
+                  )}
+                  {type === 'paypal' && (
+                    <SocialProfileForm
+                      value={fields.paypal}
+                      onChange={(paypal) => setFields({ ...fields, paypal })}
+                      label={t('myCodes.paypalLabel')}
+                      placeholder={t('myCodes.paypalPlaceholder')}
+                    />
+                  )}
+                  {type === 'linkedin' && (
+                    <SocialProfileForm
+                      value={fields.linkedin}
+                      onChange={(linkedin) => setFields({ ...fields, linkedin })}
+                      label={t('myCodes.linkedinLabel')}
+                      placeholder={t('myCodes.linkedinPlaceholder')}
                     />
                   )}
 

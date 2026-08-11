@@ -8,10 +8,13 @@
 import { defaultEmailFields, type EmailFields } from '../components/qrForms/EmailForm';
 import { defaultEventFields, type EventFields } from '../components/qrForms/EventForm';
 import { defaultLinkFields, type LinkFields } from '../components/qrForms/LinkForm';
+import { defaultLocationFields, type LocationFields } from '../components/qrForms/LocationForm';
+import { defaultMeCardFields, type MeCardFields } from '../components/qrForms/MeCardForm';
 import { defaultPhoneFields, type PhoneFields } from '../components/qrForms/PhoneForm';
 import { defaultPhoneMessageFields, type PhoneMessageFields } from '../components/qrForms/PhoneMessageForm';
 import { type SocialFields } from '../components/qrForms/SocialProfileForm';
 import { defaultTextFields, type TextFields } from '../components/qrForms/TextForm';
+import { defaultUpiFields, type UpiFields } from '../components/qrForms/UpiForm';
 import { defaultVCardFields, type VCardFields } from '../components/qrForms/VCardForm';
 import { defaultWifiFields, type WifiFields } from '../components/qrForms/WifiForm';
 import { defaultZoomFields, type ZoomFields } from '../components/qrForms/ZoomForm';
@@ -162,6 +165,48 @@ export function parseZoomFields(content: string): ZoomFields {
   const [meetingId, query] = splitQuery(match[1]);
   const params = parseQueryString(query);
   return { meetingId, password: params.pwd ?? '' };
+}
+
+export function parseLocationFields(content: string): LocationFields {
+  const match = content.match(/^geo:(-?[\d.]+),(-?[\d.]+)/i);
+  if (!match) return { ...defaultLocationFields };
+  return { latitude: match[1], longitude: match[2] };
+}
+
+export function parseUpiFields(content: string): UpiFields {
+  const match = content.match(/^upi:\/\/pay\?(.*)$/i);
+  if (!match) return { ...defaultUpiFields };
+  const params = parseQueryString(match[1]);
+  return { vpa: params.pa ?? '', payeeName: params.pn ?? '', amount: params.am ?? '', note: params.tn ?? '' };
+}
+
+/** MECARD fields aren't backslash-escaped (see buildMeCardContent), so
+ * unlike extractWifiFields this is a plain `;`-split. */
+function extractMeCardFields(body: string): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const segment of body.split(';')) {
+    const colonIndex = segment.indexOf(':');
+    if (colonIndex === -1) continue;
+    result[segment.slice(0, colonIndex)] = segment.slice(colonIndex + 1);
+  }
+  return result;
+}
+
+export function parseMeCardFields(content: string, defaultCountry: CountryCallingCode | null): MeCardFields {
+  const result = defaultMeCardFields(defaultCountry);
+  if (!/^MECARD:/i.test(content)) return result;
+  const raw = extractMeCardFields(content.replace(/^MECARD:/i, '').replace(/;;\s*$/, ''));
+  result.name = raw.N ?? '';
+  if (raw.TEL) {
+    const { country, number } = splitDialCode(raw.TEL, defaultCountry);
+    result.country = country;
+    result.number = number;
+  }
+  result.email = raw.EMAIL ?? '';
+  result.company = raw.ORG ?? '';
+  result.address = raw.ADR ?? '';
+  result.website = raw.URL ?? '';
+  return result;
 }
 
 function extractWifiFields(body: string): Record<string, string> {

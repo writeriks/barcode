@@ -22,6 +22,11 @@ export const QR_TYPE_ICON: Record<QrContentType, keyof typeof Ionicons.glyphMap>
   twitter: 'logo-twitter',
   spotify: 'musical-notes-outline',
   viber: 'chatbubbles-outline',
+  location: 'location-outline',
+  mecard: 'id-card-outline',
+  upi: 'cash-outline',
+  paypal: 'logo-paypal',
+  linkedin: 'logo-linkedin',
 };
 
 export const QR_TYPE_LABEL_KEY: Record<QrContentType, string> = {
@@ -41,6 +46,11 @@ export const QR_TYPE_LABEL_KEY: Record<QrContentType, string> = {
   twitter: 'qr.typeTwitter',
   spotify: 'qr.typeSpotify',
   viber: 'qr.typeViber',
+  location: 'qr.typeLocation',
+  mecard: 'qr.typeMecard',
+  upi: 'qr.typeUpi',
+  paypal: 'qr.typePaypal',
+  linkedin: 'qr.typeLinkedin',
 };
 
 /** Matches History's per-type filter-pill colors, so the same type reads
@@ -62,6 +72,11 @@ export const QR_TYPE_ACCENT: Record<QrContentType, PillAccent> = {
   twitter: 'mint',
   spotify: 'citrus',
   viber: 'coral',
+  location: 'mint',
+  mecard: 'citrus',
+  upi: 'coral',
+  paypal: 'mint',
+  linkedin: 'citrus',
 };
 
 /** Only the types the generator actually has a form for — 'otp' is
@@ -78,12 +93,17 @@ export const QR_GENERATE_TYPES: QrContentType[] = [
   'zoom',
   'wifi',
   'vcard',
+  'mecard',
   'event',
+  'location',
+  'upi',
   'facebook',
   'instagram',
   'twitter',
   'spotify',
   'viber',
+  'paypal',
+  'linkedin',
 ];
 
 /** Generator types gated behind premium — a free user tapping one of
@@ -94,14 +114,21 @@ export const QR_PREMIUM_TYPES: ReadonlySet<QrContentType> = new Set<QrContentTyp
   'twitter',
   'spotify',
   'viber',
+  'paypal',
+  'linkedin',
 ]);
 
 /** Base URL each SocialProfileForm prefixes onto a bare username — see
  * buildSocialProfileContent. A pasted full URL bypasses this entirely. */
-export const QR_SOCIAL_BASE_URL: Record<'facebook' | 'instagram' | 'twitter' | 'spotify' | 'viber', string> = {
+export const QR_SOCIAL_BASE_URL: Record<
+  'facebook' | 'instagram' | 'twitter' | 'spotify' | 'viber' | 'paypal' | 'linkedin',
+  string
+> = {
   facebook: 'https://facebook.com/',
   instagram: 'https://instagram.com/',
   twitter: 'https://twitter.com/',
   spotify: 'https://open.spotify.com/user/',
   viber: 'https://vb.me/',
+  paypal: 'https://paypal.me/',
+  linkedin: 'https://linkedin.com/in/',
 };

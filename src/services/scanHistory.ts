@@ -10,7 +10,7 @@ export const PREMIUM_MAX_ENTRIES = 100;
 function isSameScan(a: ScanHistoryEntry, b: ScanHistoryEntry): boolean {
   if (a.kind === 'product' && b.kind === 'product') return a.barcode === b.barcode;
   if (a.kind === 'qr' && b.kind === 'qr') return a.data === b.data;
-  if (a.kind === 'document' && b.kind === 'document') return a.text === b.text;
+  if (a.kind === 'document' && b.kind === 'document') return a.pageTexts.join('\n') === b.pageTexts.join('\n');
   return false;
 }
 

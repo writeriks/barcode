@@ -102,7 +102,7 @@ function entryTypeValue(entry: ScanHistoryEntry): TypeFilterValue {
 
 function matchesSearch(entry: ScanHistoryEntry, query: string): boolean {
   if (entry.kind === 'qr') return entry.data.toLowerCase().includes(query);
-  if (entry.kind === 'document') return entry.text.toLowerCase().includes(query);
+  if (entry.kind === 'document') return entry.pageTexts.some((text) => text.toLowerCase().includes(query));
   const haystack = [entry.barcode, entry.product?.productName, entry.product?.brands]
     .filter(Boolean)
     .join(' ')
@@ -294,7 +294,8 @@ export function HistoryScreen({ navigation }: Props) {
     // dismissal (a plain setTimeout since Modal's onDismiss is iOS-only,
     // and this app also ships on Android) fixes it.
     setTimeout(() => {
-      const message = entry.kind === 'qr' ? entry.data : entry.kind === 'document' ? entry.text : entry.barcode;
+      const message =
+        entry.kind === 'qr' ? entry.data : entry.kind === 'document' ? entry.pageTexts.join('\n\n') : entry.barcode;
       Share.share({ message });
     }, 300);
   };
@@ -444,7 +445,7 @@ export function HistoryScreen({ navigation }: Props) {
                   item.kind === 'qr'
                     ? item.data
                     : item.kind === 'document'
-                      ? item.text || t('document.noTextFound')
+                      ? item.pageTexts.find((text) => text.trim().length > 0) || t('document.noTextFound')
                       : (item.product?.productName ?? item.barcode);
                 const metaKey =
                   item.kind === 'qr'

@@ -23,6 +23,7 @@
     "readAloud": "Czytaj na głos",
     "stopReading": "Zatrzymaj czytanie",
     "scanAnother": "Skanuj kolejny dokument",
+    "delete": "Usuń",
     "pageOf": "{{current}} / {{total}}",
     "typeDocument": "Dokument",
     "metaDocument": "Skan dokumentu"

@@ -23,6 +23,7 @@
     "readAloud": "Sesli oku",
     "stopReading": "Okumayı durdur",
     "scanAnother": "Başka doküman tara",
+    "delete": "Sil",
     "pageOf": "{{current}} / {{total}}",
     "typeDocument": "Doküman",
     "metaDocument": "Doküman taraması"

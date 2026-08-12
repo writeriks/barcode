@@ -29,15 +29,19 @@ import { fonts } from '../theme/fonts';
 import { resolveSpeechLanguage } from '../utils/speechLanguage';
 
 interface Props {
-  text: string;
+  /** pageTexts[i] is the OCR text for imageUris[i] — the card shows
+   * whichever page the pager is currently on, so swiping to another page
+   * swaps in that page's own text. */
+  pageTexts: string[];
   imageUris: string[];
   onScanAgain: () => void;
+  onDelete: () => void;
 }
 
 // content's horizontal padding (20 on each side) — subtracted from the
 // window width so the page pager fills exactly what's between them.
 const CONTENT_PADDING = 20;
-const PAGE_HEIGHT = 420;
+const PAGE_HEIGHT = 380;
 // Selection checkbox icon (22) + sectionRow's gap (10).
 const SELECTION_COLUMN_WIDTH = 32;
 
@@ -45,7 +49,7 @@ const SELECTION_COLUMN_WIDTH = 32;
  * in them — used both right after a fresh Scan Document capture and when
  * reopening a saved document from History, same as QrResultScreen/
  * FoundProductScreen. */
-export function DocumentResultScreen({ text, imageUris, onScanAgain }: Props) {
+export function DocumentResultScreen({ pageTexts, imageUris, onScanAgain, onDelete }: Props) {
   const { t, i18n } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
@@ -62,18 +66,24 @@ export function DocumentResultScreen({ text, imageUris, onScanAgain }: Props) {
   const [selectedDocument, setSelectedDocument] = useState(true);
   const [selectedText, setSelectedText] = useState(true);
   const fullscreenScrollRef = useRef<ScrollView>(null);
-  const hasText = text.trim().length > 0;
   const hasImages = imageUris.length > 0;
+  // Every action (read aloud, copy, share, save) acts on whichever page is
+  // currently in view — swipe the pager and the text card, and everything
+  // below it, follows.
+  const text = pageTexts[activePage] ?? '';
+  const hasText = text.trim().length > 0;
 
   // Reading aloud shouldn't keep going once this screen isn't visible
-  // anymore (navigating away, "Scan again", etc).
+  // anymore (navigating away, "Scan again", etc), or once the visible
+  // page — and therefore the text being read — has changed under it.
   useEffect(() => {
     return () => {
       Speech.stop();
     };
-  }, []);
+  }, [activePage]);
 
   const handleToggleReadAloud = () => {
+    if (!hasText) return;
     if (isSpeaking) {
       Speech.stop();
       setIsSpeaking(false);
@@ -155,6 +165,13 @@ export function DocumentResultScreen({ text, imageUris, onScanAgain }: Props) {
     if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(imageUris[activePage]);
   };
 
+  const handleDeletePress = () => {
+    Alert.alert(t('history.deleteEntryTitle'), t('history.deleteEntryBody'), [
+      { text: t('history.cancel'), style: 'cancel' },
+      { text: t('history.delete'), style: 'destructive', onPress: onDelete },
+    ]);
+  };
+
   return (
     <View style={[styles.screen, { paddingBottom: tabBarHeight }]}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -207,7 +224,14 @@ export function DocumentResultScreen({ text, imageUris, onScanAgain }: Props) {
             onPress={() => (isSelecting ? hasText && setSelectedText((v) => !v) : hasText && handleCopy())}
           >
             <View style={styles.cardHeader}>
-              <Text style={styles.sectionTitle}>{t('document.extractedText')}</Text>
+              <View style={styles.cardHeaderTitles}>
+                <Text style={styles.sectionTitle}>{t('document.extractedText')}</Text>
+                {imageUris.length > 1 ? (
+                  <Text style={styles.cardSubtitle}>
+                    {t('document.pageOf', { current: activePage + 1, total: imageUris.length })}
+                  </Text>
+                ) : null}
+              </View>
               {hasText && !isSelecting ? (
                 <Pressable onPress={handleCopy} hitSlop={8}>
                   <Ionicons name="copy-outline" size={15} color={colors.text} style={styles.copyIcon} />
@@ -238,18 +262,38 @@ export function DocumentResultScreen({ text, imageUris, onScanAgain }: Props) {
             />
           </View>
         ) : (
-          <>
-            {hasText ? (
-              <PillButton
-                title={t(isSpeaking ? 'document.stopReading' : 'document.readAloud')}
-                onPress={handleToggleReadAloud}
-                variant="citrus"
-                icon={isSpeaking ? 'stop-circle-outline' : 'volume-high-outline'}
-              />
-            ) : null}
-            <PillButton title={t('qr.share')} onPress={handleStartShareSelection} variant="ghost" />
-            <PillButton title={t('document.scanAnother')} onPress={onScanAgain} variant="punch" />
-          </>
+          <View style={styles.iconRow}>
+            <IconActionButton
+              icon={isSpeaking ? 'stop-circle-outline' : 'volume-high-outline'}
+              tint={colors.mint}
+              disabled={!hasText}
+              onPress={handleToggleReadAloud}
+              accessibilityLabel={t(isSpeaking ? 'document.stopReading' : 'document.readAloud')}
+              colors={colors}
+            />
+            <IconActionButton
+              icon="share-outline"
+              tint={colors.citrusText}
+              onPress={handleStartShareSelection}
+              accessibilityLabel={t('qr.share')}
+              colors={colors}
+            />
+            <IconActionButton
+              icon="trash-outline"
+              tint={colors.coralText}
+              onPress={handleDeletePress}
+              accessibilityLabel={t('document.delete')}
+              colors={colors}
+            />
+            <IconActionButton
+              icon="camera-outline"
+              tint={colors.punch}
+              filled
+              onPress={onScanAgain}
+              accessibilityLabel={t('document.scanAnother')}
+              colors={colors}
+            />
+          </View>
         )}
       </ScrollView>
       <BottomBannerAd />
@@ -310,6 +354,55 @@ function SelectionCheckbox({
     </Pressable>
   );
 }
+
+function IconActionButton({
+  icon,
+  tint,
+  filled,
+  disabled,
+  onPress,
+  accessibilityLabel,
+  colors,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  tint: string;
+  filled?: boolean;
+  disabled?: boolean;
+  onPress: () => void;
+  accessibilityLabel: string;
+  colors: ColorTheme;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      hitSlop={6}
+      accessibilityLabel={accessibilityLabel}
+      style={[
+        iconButtonStyle.base,
+        filled
+          ? { backgroundColor: tint }
+          : { backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.panelLine },
+        disabled && iconButtonStyle.disabled,
+      ]}
+    >
+      <Ionicons name={icon} size={19} color={filled ? colors.cream : tint} />
+    </Pressable>
+  );
+}
+
+const iconButtonStyle = StyleSheet.create({
+  base: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  disabled: {
+    opacity: 0.35,
+  },
+});
 
 function createStyles(colors: ColorTheme, windowWidth: number, pageWidth: number) {
   return StyleSheet.create({
@@ -384,8 +477,11 @@ function createStyles(colors: ColorTheme, windowWidth: number, pageWidth: number
     },
     cardHeader: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'space-between',
+    },
+    cardHeaderTitles: {
+      gap: 2,
     },
     copyIcon: {
       opacity: 0.55,
@@ -394,6 +490,13 @@ function createStyles(colors: ColorTheme, windowWidth: number, pageWidth: number
       fontFamily: fonts.displayBold,
       fontSize: 14,
       color: colors.text,
+    },
+    cardSubtitle: {
+      fontFamily: fonts.mono,
+      fontSize: 10,
+      letterSpacing: 0.4,
+      color: colors.text,
+      opacity: 0.5,
     },
     bodyText: {
       fontSize: 14,
@@ -408,6 +511,12 @@ function createStyles(colors: ColorTheme, windowWidth: number, pageWidth: number
     actionRow: {
       flexDirection: 'row',
       gap: 10,
+    },
+    iconRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: 18,
+      paddingVertical: 2,
     },
     flexButton: {
       flex: 1,

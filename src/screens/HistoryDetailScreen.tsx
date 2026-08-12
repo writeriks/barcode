@@ -1,5 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HistoryStackParamList } from '../navigation/types';
+import { deleteHistoryEntry } from '../services/scanHistory';
 import { DocumentResultScreen } from './DocumentResultScreen';
 import { FoundProductScreen } from './FoundProductScreen';
 import { MissingProductScreen } from './MissingProductScreen';
@@ -20,7 +21,17 @@ export function HistoryDetailScreen({ route, navigation }: Props) {
   }
 
   if (entry.kind === 'document') {
-    return <DocumentResultScreen text={entry.text} imageUris={entry.imageUris} onScanAgain={goBack} />;
+    return (
+      <DocumentResultScreen
+        pageTexts={entry.pageTexts}
+        imageUris={entry.imageUris}
+        onScanAgain={goBack}
+        onDelete={async () => {
+          await deleteHistoryEntry('document', entry.timestamp);
+          goBack();
+        }}
+      />
+    );
   }
 
   if (entry.product) {

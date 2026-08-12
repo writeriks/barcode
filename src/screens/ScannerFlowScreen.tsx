@@ -7,7 +7,7 @@ import { FadeSwitcher } from '../components/FadeSwitcher';
 import { useScanInterstitial } from '../hooks/useScanInterstitial';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { lookupProduct } from '../services/lookupProduct';
-import { addHistoryEntry } from '../services/scanHistory';
+import { addHistoryEntry, deleteHistoryEntry } from '../services/scanHistory';
 import { isBatchScanEnabled } from '../services/scannerPreference';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -29,7 +29,7 @@ type Screen =
   | { name: 'loading'; barcode: string }
   | { name: 'result'; result: LookupResult }
   | { name: 'qr-result'; data: string }
-  | { name: 'document-result'; text: string; imageUris: string[] };
+  | { name: 'document-result'; pageTexts: string[]; imageUris: string[]; timestamp: number };
 
 /** Maps the internal lookup status to the analytics-friendly value —
  * 'not-found' has a hyphen internally but reads oddly as an event
@@ -152,10 +152,16 @@ export function ScannerFlowScreen({ navigation }: Props) {
     [runLookup, maybeShowForScan, isBatchMode, handleBatchScanned]
   );
 
-  const handleDocumentScanned = useCallback((text: string, imageUris: string[]) => {
-    setScreen({ name: 'document-result', text, imageUris });
-    captureAnalyticsEvent('scan_completed', { kind: 'document', method: 'document_camera', result: text ? 'found' : 'not_found' });
-    addHistoryEntry({ kind: 'document', text, imageUris, timestamp: Date.now() });
+  const handleDocumentScanned = useCallback((pageTexts: string[], imageUris: string[]) => {
+    const timestamp = Date.now();
+    setScreen({ name: 'document-result', pageTexts, imageUris, timestamp });
+    const hasAnyText = pageTexts.some((text) => text.trim().length > 0);
+    captureAnalyticsEvent('scan_completed', {
+      kind: 'document',
+      method: 'document_camera',
+      result: hasAnyText ? 'found' : 'not_found',
+    });
+    addHistoryEntry({ kind: 'document', pageTexts, imageUris, timestamp });
   }, []);
 
   const goToScanner = useCallback(() => setScreen({ name: 'scanner' }), []);
@@ -185,7 +191,15 @@ export function ScannerFlowScreen({ navigation }: Props) {
 
       case 'document-result':
         return withTopSafeArea(
-          <DocumentResultScreen text={screen.text} imageUris={screen.imageUris} onScanAgain={goToScanner} />
+          <DocumentResultScreen
+            pageTexts={screen.pageTexts}
+            imageUris={screen.imageUris}
+            onScanAgain={goToScanner}
+            onDelete={async () => {
+              await deleteHistoryEntry('document', screen.timestamp);
+              goToScanner();
+            }}
+          />
         );
 
       case 'loading':

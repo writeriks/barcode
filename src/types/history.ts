@@ -17,4 +17,7 @@ export type ScanHistoryEntry =
       folderId?: string;
     }
   | { kind: 'qr'; timestamp: number; data: string; contentType: QrContentType; folderId?: string }
-  | { kind: 'document'; timestamp: number; text: string; imageUris: string[]; folderId?: string };
+  // pageTexts[i] is the OCR text for imageUris[i] — kept per-page (not
+  // joined into one string) so reopening the document and swiping to a
+  // different page shows that page's own extracted text.
+  | { kind: 'document'; timestamp: number; pageTexts: string[]; imageUris: string[]; folderId?: string };

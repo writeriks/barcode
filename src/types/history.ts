@@ -16,4 +16,5 @@ export type ScanHistoryEntry =
       product?: Product;
       folderId?: string;
     }
-  | { kind: 'qr'; timestamp: number; data: string; contentType: QrContentType; folderId?: string };
+  | { kind: 'qr'; timestamp: number; data: string; contentType: QrContentType; folderId?: string }
+  | { kind: 'document'; timestamp: number; text: string; imageUris: string[]; folderId?: string };

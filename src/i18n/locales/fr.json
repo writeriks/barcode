@@ -13,7 +13,19 @@
     "noBarcodeFound": "Aucun code-barres trouvé sur cette photo",
     "cancel": "Annuler",
     "batchCount": "{{count}} scanné(s)",
-    "batchDone": "Terminé"
+    "batchDone": "Terminé",
+    "documentScanUnavailable": "La numérisation de documents nécessite une nouvelle version de l'app — indisponible dans cet aperçu",
+    "documentScanFailed": "Impossible de numériser ce document"
+  },
+  "document": {
+    "extractedText": "Texte extrait",
+    "noTextFound": "Aucun texte trouvé dans ce scan",
+    "readAloud": "Lire à voix haute",
+    "stopReading": "Arrêter la lecture",
+    "scanAnother": "Numériser un autre document",
+    "pageNumber": "Page {{number}}",
+    "typeDocument": "Document",
+    "metaDocument": "Scan de document"
   },
   "result": {
     "unnamedProduct": "Produit sans nom",

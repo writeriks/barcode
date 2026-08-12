@@ -70,6 +70,14 @@ export function HistoryStatusBadge({ entry }: Props) {
     );
   }
 
+  if (entry.kind === 'document') {
+    return (
+      <View style={[styles.badge, { borderColor: colors.citrusText }]}>
+        <Ionicons name="document-text-outline" size={14} color={colors.citrusText} />
+      </View>
+    );
+  }
+
   const normalizedGrade = entry.product?.nutriscoreGrade?.toLowerCase();
   const color = normalizedGrade ? gradeColor(colors, normalizedGrade) : undefined;
   if (entry.status === 'found' && color) {

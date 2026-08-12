@@ -13,7 +13,19 @@
     "noBarcodeFound": "Nie znaleziono kodu kreskowego na tym zdjęciu",
     "cancel": "Anuluj",
     "batchCount": "Zeskanowano: {{count}}",
-    "batchDone": "Gotowe"
+    "batchDone": "Gotowe",
+    "documentScanUnavailable": "Skanowanie dokumentów wymaga ponownej kompilacji aplikacji — niedostępne w tym podglądzie",
+    "documentScanFailed": "Nie udało się zeskanować dokumentu"
+  },
+  "document": {
+    "extractedText": "Rozpoznany tekst",
+    "noTextFound": "Nie znaleziono tekstu w tym skanie",
+    "readAloud": "Czytaj na głos",
+    "stopReading": "Zatrzymaj czytanie",
+    "scanAnother": "Skanuj kolejny dokument",
+    "pageNumber": "Strona {{number}}",
+    "typeDocument": "Dokument",
+    "metaDocument": "Skan dokumentu"
   },
   "result": {
     "unnamedProduct": "Produkt bez nazwy",

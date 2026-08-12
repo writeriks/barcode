@@ -13,7 +13,19 @@
     "noBarcodeFound": "Bu fotoğrafta barkod bulunamadı",
     "cancel": "İptal",
     "batchCount": "{{count}} tarandı",
-    "batchDone": "Bitti"
+    "batchDone": "Bitti",
+    "documentScanUnavailable": "Doküman tarama için uygulamanın yeniden derlenmesi gerekiyor — bu önizlemede yok",
+    "documentScanFailed": "Doküman taranamadı"
+  },
+  "document": {
+    "extractedText": "Çıkarılan metin",
+    "noTextFound": "Bu taramada metin bulunamadı",
+    "readAloud": "Sesli oku",
+    "stopReading": "Okumayı durdur",
+    "scanAnother": "Başka doküman tara",
+    "pageNumber": "Sayfa {{number}}",
+    "typeDocument": "Doküman",
+    "metaDocument": "Doküman taraması"
   },
   "result": {
     "unnamedProduct": "İsimsiz ürün",

@@ -15,6 +15,7 @@ import { classifyQrContent } from '../utils/classifyQrContent';
 import type { RootTabParamList } from '../navigation/types';
 import type { ScanKind, ScanMethod } from '../types/scan';
 import type { LookupResult } from '../types/product';
+import { DocumentResultScreen } from './DocumentResultScreen';
 import { FoundProductScreen } from './FoundProductScreen';
 import { LookupErrorScreen } from './LookupErrorScreen';
 import { MissingProductScreen } from './MissingProductScreen';
@@ -27,7 +28,8 @@ type Screen =
   | { name: 'scanner' }
   | { name: 'loading'; barcode: string }
   | { name: 'result'; result: LookupResult }
-  | { name: 'qr-result'; data: string };
+  | { name: 'qr-result'; data: string }
+  | { name: 'document-result'; text: string; imageUris: string[] };
 
 /** Maps the internal lookup status to the analytics-friendly value —
  * 'not-found' has a hyphen internally but reads oddly as an event
@@ -150,6 +152,12 @@ export function ScannerFlowScreen({ navigation }: Props) {
     [runLookup, maybeShowForScan, isBatchMode, handleBatchScanned]
   );
 
+  const handleDocumentScanned = useCallback((text: string, imageUris: string[]) => {
+    setScreen({ name: 'document-result', text, imageUris });
+    captureAnalyticsEvent('scan_completed', { kind: 'document', method: 'document_camera', result: text ? 'found' : 'not_found' });
+    addHistoryEntry({ kind: 'document', text, imageUris, timestamp: Date.now() });
+  }, []);
+
   const goToScanner = useCallback(() => setScreen({ name: 'scanner' }), []);
 
   // ScannerScreen is deliberately edge-to-edge (it's a camera viewfinder),
@@ -168,10 +176,16 @@ export function ScannerFlowScreen({ navigation }: Props) {
         return (
           <ScannerScreen
             onScanned={handleScanned}
+            onDocumentScanned={handleDocumentScanned}
             batchMode={isBatchMode}
             batchCount={batchCount}
             onFinishBatch={handleFinishBatch}
           />
+        );
+
+      case 'document-result':
+        return withTopSafeArea(
+          <DocumentResultScreen text={screen.text} imageUris={screen.imageUris} onScanAgain={goToScanner} />
         );
 
       case 'loading':

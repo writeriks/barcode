@@ -34,7 +34,7 @@ import type { QrContentType } from '../utils/classifyQrContent';
 
 type Props = NativeStackScreenProps<HistoryStackParamList, 'HistoryList'>;
 
-type TypeFilterValue = 'barcode' | QrContentType;
+type TypeFilterValue = 'barcode' | 'document' | QrContentType;
 
 const FOLDER_ALL = 'all';
 const FOLDER_UNFILED = 'unfiled';
@@ -87,6 +87,7 @@ const TYPE_FILTER_OPTIONS: { value: TypeFilterValue; labelKey: string; accent: P
   { value: 'upi', labelKey: 'qr.typeUpi', accent: 'coral' },
   { value: 'paypal', labelKey: 'qr.typePaypal', accent: 'mint' },
   { value: 'linkedin', labelKey: 'qr.typeLinkedin', accent: 'citrus' },
+  { value: 'document', labelKey: 'document.typeDocument', accent: 'citrus' },
 ];
 
 function entryKey(entry: ScanHistoryEntry): string {
@@ -94,11 +95,14 @@ function entryKey(entry: ScanHistoryEntry): string {
 }
 
 function entryTypeValue(entry: ScanHistoryEntry): TypeFilterValue {
-  return entry.kind === 'product' ? 'barcode' : entry.contentType;
+  if (entry.kind === 'product') return 'barcode';
+  if (entry.kind === 'document') return 'document';
+  return entry.contentType;
 }
 
 function matchesSearch(entry: ScanHistoryEntry, query: string): boolean {
   if (entry.kind === 'qr') return entry.data.toLowerCase().includes(query);
+  if (entry.kind === 'document') return entry.text.toLowerCase().includes(query);
   const haystack = [entry.barcode, entry.product?.productName, entry.product?.brands]
     .filter(Boolean)
     .join(' ')
@@ -282,7 +286,9 @@ export function HistoryScreen({ navigation }: Props) {
   const handleShareMenuEntry = () => {
     if (!menuEntry) return;
     captureAnalyticsEvent('history_entry_shared', { kind: menuEntry.kind });
-    Share.share({ message: menuEntry.kind === 'qr' ? menuEntry.data : menuEntry.barcode });
+    const message =
+      menuEntry.kind === 'qr' ? menuEntry.data : menuEntry.kind === 'document' ? menuEntry.text : menuEntry.barcode;
+    Share.share({ message });
     setMenuEntry(null);
   };
 
@@ -427,8 +433,18 @@ export function HistoryScreen({ navigation }: Props) {
               style={styles.flex}
               contentContainerStyle={[styles.list, { paddingBottom: isEditMode ? 90 : 20 }]}
               renderItem={({ item }) => {
-                const name = item.kind === 'qr' ? item.data : (item.product?.productName ?? item.barcode);
-                const metaKey = item.kind === 'qr' ? QR_META_KEY[item.contentType] : 'history.metaBarcode';
+                const name =
+                  item.kind === 'qr'
+                    ? item.data
+                    : item.kind === 'document'
+                      ? item.text || t('document.noTextFound')
+                      : (item.product?.productName ?? item.barcode);
+                const metaKey =
+                  item.kind === 'qr'
+                    ? QR_META_KEY[item.contentType]
+                    : item.kind === 'document'
+                      ? 'document.metaDocument'
+                      : 'history.metaBarcode';
                 const folder = item.folderId ? folders.find((f) => f.id === item.folderId) : undefined;
                 const selected = selectedKeys.has(entryKey(item));
                 const handlePress = () => {
@@ -438,7 +454,11 @@ export function HistoryScreen({ navigation }: Props) {
                   }
                   captureAnalyticsEvent('history_entry_opened', {
                     kind: item.kind,
-                    ...(item.kind === 'qr' ? { contentType: item.contentType } : { status: item.status }),
+                    ...(item.kind === 'qr'
+                      ? { contentType: item.contentType }
+                      : item.kind === 'product'
+                        ? { status: item.status }
+                        : {}),
                   });
                   navigation.navigate('HistoryDetail', { entry: item });
                 };

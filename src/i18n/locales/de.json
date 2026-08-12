@@ -13,7 +13,19 @@
     "noBarcodeFound": "Kein Barcode in diesem Foto gefunden",
     "cancel": "Abbrechen",
     "batchCount": "{{count}} gescannt",
-    "batchDone": "Fertig"
+    "batchDone": "Fertig",
+    "documentScanUnavailable": "Dokumentenscan erfordert einen neuen App-Build — in dieser Vorschau nicht verfügbar",
+    "documentScanFailed": "Dokument konnte nicht gescannt werden"
+  },
+  "document": {
+    "extractedText": "Erkannter Text",
+    "noTextFound": "Kein Text in diesem Scan gefunden",
+    "readAloud": "Vorlesen",
+    "stopReading": "Vorlesen stoppen",
+    "scanAnother": "Weiteres Dokument scannen",
+    "pageNumber": "Seite {{number}}",
+    "typeDocument": "Dokument",
+    "metaDocument": "Dokumentenscan"
   },
   "result": {
     "unnamedProduct": "Unbenanntes Produkt",

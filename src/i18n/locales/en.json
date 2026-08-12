@@ -13,7 +13,19 @@
     "noBarcodeFound": "No barcode found in that photo",
     "cancel": "Cancel",
     "batchCount": "{{count}} scanned",
-    "batchDone": "Done"
+    "batchDone": "Done",
+    "documentScanUnavailable": "Document scanning needs a rebuilt app — not available in this preview",
+    "documentScanFailed": "Couldn't scan that document"
+  },
+  "document": {
+    "extractedText": "Extracted text",
+    "noTextFound": "No text found in that scan",
+    "readAloud": "Read aloud",
+    "stopReading": "Stop reading",
+    "scanAnother": "Scan another document",
+    "pageNumber": "Page {{number}}",
+    "typeDocument": "Document",
+    "metaDocument": "Document scan"
   },
   "result": {
     "unnamedProduct": "Unnamed product",

@@ -13,7 +13,19 @@
     "noBarcodeFound": "No se encontró ningún código de barras en esa foto",
     "cancel": "Cancelar",
     "batchCount": "{{count}} escaneados",
-    "batchDone": "Listo"
+    "batchDone": "Listo",
+    "documentScanUnavailable": "Escanear documentos requiere reconstruir la app — no disponible en esta vista previa",
+    "documentScanFailed": "No se pudo escanear el documento"
+  },
+  "document": {
+    "extractedText": "Texto extraído",
+    "noTextFound": "No se encontró texto en este escaneo",
+    "readAloud": "Leer en voz alta",
+    "stopReading": "Detener lectura",
+    "scanAnother": "Escanear otro documento",
+    "pageNumber": "Página {{number}}",
+    "typeDocument": "Documento",
+    "metaDocument": "Escaneo de documento"
   },
   "result": {
     "unnamedProduct": "Producto sin nombre",

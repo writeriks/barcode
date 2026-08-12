@@ -1,5 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HistoryStackParamList } from '../navigation/types';
+import { DocumentResultScreen } from './DocumentResultScreen';
 import { FoundProductScreen } from './FoundProductScreen';
 import { MissingProductScreen } from './MissingProductScreen';
 import { QrResultScreen } from './QrResultScreen';
@@ -16,6 +17,10 @@ export function HistoryDetailScreen({ route, navigation }: Props) {
 
   if (entry.kind === 'qr') {
     return <QrResultScreen data={entry.data} onScanAgain={goBack} />;
+  }
+
+  if (entry.kind === 'document') {
+    return <DocumentResultScreen text={entry.text} imageUris={entry.imageUris} onScanAgain={goBack} />;
   }
 
   if (entry.product) {

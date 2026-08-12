@@ -13,7 +13,19 @@
     "noBarcodeFound": "Nessun codice a barre trovato in quella foto",
     "cancel": "Annulla",
     "batchCount": "{{count}} scansionati",
-    "batchDone": "Fine"
+    "batchDone": "Fine",
+    "documentScanUnavailable": "La scansione documenti richiede una nuova build dell'app — non disponibile in questa anteprima",
+    "documentScanFailed": "Impossibile scansionare il documento"
+  },
+  "document": {
+    "extractedText": "Testo estratto",
+    "noTextFound": "Nessun testo trovato in questa scansione",
+    "readAloud": "Leggi ad alta voce",
+    "stopReading": "Interrompi lettura",
+    "scanAnother": "Scansiona un altro documento",
+    "pageNumber": "Pagina {{number}}",
+    "typeDocument": "Documento",
+    "metaDocument": "Scansione documento"
   },
   "result": {
     "unnamedProduct": "Prodotto senza nome",

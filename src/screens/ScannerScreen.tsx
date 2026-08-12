@@ -32,6 +32,7 @@ import type { ScanKind, ScanMethod } from '../types/scan';
 
 interface Props {
   onScanned: (data: string, kind: ScanKind, method: ScanMethod) => void;
+  onDocumentScanned: (text: string, imageUris: string[]) => void;
   /** When set, the camera stays live after a scan instead of the parent
    * navigating away — used for scanning several codes back to back. */
   batchMode?: boolean;
@@ -112,7 +113,7 @@ async function scanUploadedPhoto(uri: string): Promise<{ data: string; type: str
  * expected to unmount this screen once it navigates away to look up the
  * result, which also stops the camera.
  */
-export function ScannerScreen({ onScanned, batchMode, batchCount = 0, onFinishBatch }: Props) {
+export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCount = 0, onFinishBatch }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const mode = useThemeMode();
@@ -131,6 +132,7 @@ export function ScannerScreen({ onScanned, batchMode, batchCount = 0, onFinishBa
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
   const [manualValue, setManualValue] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [isScanningDocument, setIsScanningDocument] = useState(false);
 
   const pulse = useRef(new Animated.Value(0)).current;
   const sweep = useRef(new Animated.Value(0)).current;
@@ -200,6 +202,29 @@ export function ScannerScreen({ onScanned, batchMode, batchCount = 0, onFinishBa
       setIsUploading(false);
     }
   }, [onScanned, t]);
+
+  // VisionKit's document camera + Vision's on-device OCR — both iOS-only
+  // native APIs, same "never in Expo Go, always behind a dynamic import"
+  // rule as scanUploadedPhoto's expo-barcode-vision module above.
+  const handleScanDocument = useCallback(async () => {
+    if (Platform.OS !== 'ios' || isExpoGo()) {
+      Alert.alert(t('scanner.documentScanUnavailable'));
+      return;
+    }
+    setIsScanningDocument(true);
+    try {
+      const { scanDocumentAsync, recognizeTextAsync } = await import('expo-document-scanner');
+      const pageUris = await scanDocumentAsync();
+      if (!pageUris || pageUris.length === 0) return;
+      const pageTexts = await Promise.all(pageUris.map((uri) => recognizeTextAsync(uri)));
+      playScanFeedback();
+      onDocumentScanned(pageTexts.filter((text) => text.trim().length > 0).join('\n\n'), pageUris);
+    } catch {
+      Alert.alert(t('scanner.documentScanFailed'));
+    } finally {
+      setIsScanningDocument(false);
+    }
+  }, [onDocumentScanned, t]);
 
   const handleManualSubmit = useCallback(() => {
     const trimmed = manualValue.trim();
@@ -275,6 +300,14 @@ export function ScannerScreen({ onScanned, batchMode, batchCount = 0, onFinishBa
             onPress={handleUploadPhoto}
             disabled={isUploading}
             loading={isUploading}
+            colors={colors}
+          />
+          <View style={styles.toolbarDivider} />
+          <ToolbarButton
+            icon="document-text-outline"
+            onPress={handleScanDocument}
+            disabled={isScanningDocument}
+            loading={isScanningDocument}
             colors={colors}
           />
           <View style={styles.toolbarDivider} />
@@ -483,7 +516,7 @@ function createStyles(colors: ColorTheme, mode: 'light' | 'dark') {
     toolbar: {
       flexDirection: 'row',
       alignItems: 'center',
-      width: '50%',
+      width: '68%',
       borderRadius: 18,
       overflow: 'hidden',
       borderWidth: 1,

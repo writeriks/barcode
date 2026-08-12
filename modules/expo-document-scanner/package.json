@@ -1,0 +1,7 @@
+{
+  "name": "expo-document-scanner",
+  "version": "0.1.0",
+  "description": "Document scanning (VisionKit) and on-device text recognition (Vision) — a local module wrapping VNDocumentCameraViewController and VNRecognizeTextRequest.",
+  "main": "index.ts",
+  "license": "MIT"
+}

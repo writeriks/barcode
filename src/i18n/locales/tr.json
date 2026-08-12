@@ -23,7 +23,7 @@
     "readAloud": "Sesli oku",
     "stopReading": "Okumayı durdur",
     "scanAnother": "Başka doküman tara",
-    "pageNumber": "Sayfa {{number}}",
+    "pageOf": "{{current}} / {{total}}",
     "typeDocument": "Doküman",
     "metaDocument": "Doküman taraması"
   },

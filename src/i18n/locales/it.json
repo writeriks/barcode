@@ -23,7 +23,7 @@
     "readAloud": "Leggi ad alta voce",
     "stopReading": "Interrompi lettura",
     "scanAnother": "Scansiona un altro documento",
-    "pageNumber": "Pagina {{number}}",
+    "pageOf": "{{current}} / {{total}}",
     "typeDocument": "Documento",
     "metaDocument": "Scansione documento"
   },

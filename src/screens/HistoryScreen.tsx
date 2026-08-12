@@ -285,11 +285,18 @@ export function HistoryScreen({ navigation }: Props) {
 
   const handleShareMenuEntry = () => {
     if (!menuEntry) return;
-    captureAnalyticsEvent('history_entry_shared', { kind: menuEntry.kind });
-    const message =
-      menuEntry.kind === 'qr' ? menuEntry.data : menuEntry.kind === 'document' ? menuEntry.text : menuEntry.barcode;
-    Share.share({ message });
+    const entry = menuEntry;
+    captureAnalyticsEvent('history_entry_shared', { kind: entry.kind });
     setMenuEntry(null);
+    // BottomSheet is a native Modal — presenting the share sheet in the
+    // same tick as dismissing it races the two native presentations and
+    // the share sheet silently never appears. Deferring past the
+    // dismissal (a plain setTimeout since Modal's onDismiss is iOS-only,
+    // and this app also ships on Android) fixes it.
+    setTimeout(() => {
+      const message = entry.kind === 'qr' ? entry.data : entry.kind === 'document' ? entry.text : entry.barcode;
+      Share.share({ message });
+    }, 300);
   };
 
   const handleDeleteMenuEntry = () => {

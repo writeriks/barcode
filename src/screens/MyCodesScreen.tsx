@@ -736,8 +736,14 @@ export function MyCodesScreen({ navigation }: Props) {
           </Pressable>
           <Pressable
             onPress={() => {
-              if (menuCode) handleShare(menuCode);
+              const code = menuCode;
               setMenuCode(null);
+              // BottomSheet is a native Modal — presenting the share sheet
+              // in the same tick as dismissing it races the two native
+              // presentations and the share sheet silently never appears.
+              // Deferring past the dismissal fixes it (see the identical
+              // fix/comment in HistoryScreen.tsx's handleShareMenuEntry).
+              if (code) setTimeout(() => handleShare(code), 300);
             }}
             style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}
           >

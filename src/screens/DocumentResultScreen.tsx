@@ -144,6 +144,17 @@ export function DocumentResultScreen({ text, imageUris, onScanAgain }: Props) {
     await Share.share({ message: text });
   };
 
+  // The native share sheet is also how iOS lets a photo be saved — "Save
+  // Image" (Photos) and "Save to Files" both show up on it for free for
+  // an image attachment, so this reuses the same expo-sharing call as
+  // handleConfirmShare's document-only branch rather than needing a
+  // separate media-library permission/module just for this button.
+  const handleSaveToDevice = async () => {
+    if (!hasImages) return;
+    captureAnalyticsEvent('document_action', { action: 'save' });
+    if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(imageUris[activePage]);
+  };
+
   return (
     <View style={[styles.screen, { paddingBottom: tabBarHeight }]}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -259,6 +270,13 @@ export function DocumentResultScreen({ text, imageUris, onScanAgain }: Props) {
               </View>
             ))}
           </ScrollView>
+          <Pressable
+            onPress={handleSaveToDevice}
+            hitSlop={10}
+            style={[styles.fullscreenSave, { top: insets.top + 12 }]}
+          >
+            <Ionicons name="download-outline" size={20} color={colors.cream} />
+          </Pressable>
           <Pressable
             onPress={() => setIsFullscreenOpen(false)}
             hitSlop={10}
@@ -417,6 +435,16 @@ function createStyles(colors: ColorTheme, windowWidth: number, pageWidth: number
     fullscreenClose: {
       position: 'absolute',
       right: 16,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: 'rgba(255,255,255,0.15)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    fullscreenSave: {
+      position: 'absolute',
+      left: 16,
       width: 36,
       height: 36,
       borderRadius: 18,

@@ -123,7 +123,7 @@ export function DocumentResultScreen({ pageTexts, imageUris, onScanAgain, onDele
     setActivePage(Math.round(event.nativeEvent.contentOffset.x / windowWidth));
   };
 
-  const handleStartShareSelection = () => {
+  const handleStartEditSelection = () => {
     setSelectedDocument(hasImages);
     setSelectedText(hasText);
     setIsSelecting(true);
@@ -272,10 +272,10 @@ export function DocumentResultScreen({ pageTexts, imageUris, onScanAgain, onDele
               colors={colors}
             />
             <IconActionButton
-              icon="share-outline"
-              tint={colors.citrusText}
-              onPress={handleStartShareSelection}
-              accessibilityLabel={t('qr.share')}
+              icon="create-outline"
+              tint={colors.mint}
+              onPress={handleStartEditSelection}
+              accessibilityLabel={t('history.edit')}
               colors={colors}
             />
             <IconActionButton
@@ -350,7 +350,12 @@ function SelectionCheckbox({
 }) {
   return (
     <Pressable onPress={onPress} hitSlop={10} style={{ paddingTop: 2 }}>
-      <Ionicons name={checked ? 'checkbox' : 'square-outline'} size={22} color={checked ? colors.mint : colors.text} />
+      <Ionicons
+        name={checked ? 'checkmark-circle' : 'ellipse-outline'}
+        size={22}
+        color={checked ? colors.mint : colors.text}
+        style={!checked && { opacity: 0.4 }}
+      />
     </Pressable>
   );
 }

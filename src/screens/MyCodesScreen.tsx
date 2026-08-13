@@ -5,7 +5,6 @@ import * as Clipboard from 'expo-clipboard';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -25,6 +24,7 @@ import { FadeSwitcher } from '../components/FadeSwitcher';
 import { FilterPillRow, type PillOption } from '../components/FilterPillRow';
 import { PillButton } from '../components/PillButton';
 import { QrTypePicker } from '../components/QrTypePicker';
+import { Toast } from '../components/Toast';
 import { EmailForm, defaultEmailFields, type EmailFields } from '../components/qrForms/EmailForm';
 import { EventForm, defaultEventFields, type EventFields } from '../components/qrForms/EventForm';
 import { LinkForm, defaultLinkFields, type LinkFields } from '../components/qrForms/LinkForm';
@@ -38,6 +38,7 @@ import { UpiForm, defaultUpiFields, type UpiFields } from '../components/qrForms
 import { VCardForm, defaultVCardFields, type VCardFields } from '../components/qrForms/VCardForm';
 import { WifiForm, defaultWifiFields, type WifiFields } from '../components/qrForms/WifiForm';
 import { ZoomForm, defaultZoomFields, type ZoomFields } from '../components/qrForms/ZoomForm';
+import { useToast } from '../hooks/useToast';
 import type { RootTabParamList } from '../navigation/types';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { deleteMyCode, getMyCodes, saveMyCode, updateMyCode } from '../services/myCodes';
@@ -338,6 +339,7 @@ export function MyCodesScreen({ navigation }: Props) {
   const [menuCode, setMenuCode] = useState<MyCode | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTypes, setActiveTypes] = useState<Set<QrContentType>>(new Set());
+  const { message: toastMessage, showToast } = useToast();
 
   const defaultCountry = useMemo(() => findCountryByRegionCode(getDeviceRegionCode()) ?? null, []);
   const [type, setType] = useState<QrContentType>('link');
@@ -457,7 +459,7 @@ export function MyCodesScreen({ navigation }: Props) {
 
   const handleCopyContent = async (code: MyCode) => {
     await Clipboard.setStringAsync(code.content);
-    Alert.alert(t('qr.copied'));
+    showToast(t('qr.copied'));
   };
 
   const handleDelete = async (id: string) => {
@@ -762,6 +764,8 @@ export function MyCodesScreen({ navigation }: Props) {
           </Pressable>
         </View>
       </BottomSheet>
+
+      <Toast message={toastMessage} bottom={tabBarHeight + 20} />
     </SafeAreaView>
   );
 }

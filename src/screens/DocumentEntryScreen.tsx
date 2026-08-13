@@ -108,6 +108,7 @@ export function DocumentEntryScreen({ timestamp, imageUris: initialImageUris, pa
           onDelete={() => handleDeleteSinglePage(view.index)}
           onScanAgain={view.from === 'standalone' ? onClose : undefined}
           onBack={view.from === 'gallery' ? handleBackToGallery : undefined}
+          onCopied={() => showToast(t('qr.copied'))}
         />
       )}
       <Toast message={toastMessage} bottom={tabBarHeight + 80} />

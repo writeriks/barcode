@@ -5,6 +5,8 @@ import { Animated, Easing, Linking, StyleSheet, Text, View } from 'react-native'
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { CopyableBarcode } from '../components/CopyableBarcode';
 import { PillButton } from '../components/PillButton';
+import { Toast } from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -24,6 +26,7 @@ export function MissingProductScreen({ barcode, onScanAgain }: Props) {
   const tabBarHeight = useBottomTabBarHeight();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const { message: toastMessage, showToast } = useToast();
   const bob = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -79,9 +82,10 @@ export function MissingProductScreen({ barcode, onScanAgain }: Props) {
 
         <PillButton title={t('missing.scanAnother')} onPress={onScanAgain} variant="ghost" />
 
-        <CopyableBarcode barcode={barcode} />
+        <CopyableBarcode barcode={barcode} onCopied={() => showToast(t('qr.copied'))} />
       </View>
       <BottomBannerAd />
+      <Toast message={toastMessage} bottom={tabBarHeight + 80} />
     </View>
   );
 }

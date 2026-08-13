@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Linking, Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { useThemeColors } from '../theme/ThemeContext';
@@ -70,12 +70,13 @@ const SECRET_MASK = '•••• •••• •••• ••••';
 
 interface Props {
   data: string;
+  onCopied?: () => void;
 }
 
 /** Shared QR presentation: the code itself, a content-type chip, the raw
  * decoded value, and type-aware actions. Used both by the live scan result
  * and by the read-only History detail view. */
-export function QrContentView({ data }: Props) {
+export function QrContentView({ data, onCopied }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -97,7 +98,7 @@ export function QrContentView({ data }: Props) {
   const handleCopy = async () => {
     captureAnalyticsEvent('qr_action', { action: otpInfo ? 'copy_secret' : 'copy', contentType: type });
     await Clipboard.setStringAsync(otpInfo ? otpInfo.secret : data);
-    Alert.alert(t('qr.copied'));
+    onCopied?.();
   };
 
   const handleShare = () => {

@@ -6,6 +6,8 @@ import { BottomBannerAd } from '../components/BottomBannerAd';
 import { CopyableBarcode } from '../components/CopyableBarcode';
 import { PillButton } from '../components/PillButton';
 import { ScoreReveal } from '../components/ScoreReveal';
+import { Toast } from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -32,6 +34,7 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
   const tabBarHeight = useBottomTabBarHeight();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const { message: toastMessage, showToast } = useToast();
   const nutrimentRows = NUTRIMENT_ROWS.filter(
     (row) => typeof product.nutriments?.[row.key] === 'number'
   );
@@ -43,7 +46,11 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
   return (
     <View style={[styles.screen, { paddingBottom: tabBarHeight }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <CopyableBarcode barcode={product.code} style={styles.barcodeChip} />
+        <CopyableBarcode
+          barcode={product.code}
+          style={styles.barcodeChip}
+          onCopied={() => showToast(t('qr.copied'))}
+        />
 
         <View style={styles.productCard}>
           {product.imageUrl ? (
@@ -103,6 +110,7 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
         <PillButton title={t('result.scanAnother')} onPress={onScanAgain} variant="punch" />
       </ScrollView>
       <BottomBannerAd />
+      <Toast message={toastMessage} bottom={tabBarHeight + 80} />
     </View>
   );
 }

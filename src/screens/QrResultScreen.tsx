@@ -5,6 +5,8 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
 import { QrContentView } from '../components/QrContentView';
+import { Toast } from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 
@@ -18,14 +20,16 @@ export function QrResultScreen({ data, onScanAgain }: Props) {
   const tabBarHeight = useBottomTabBarHeight();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const { message: toastMessage, showToast } = useToast();
 
   return (
     <View style={[styles.screen, { paddingBottom: tabBarHeight }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <QrContentView data={data} />
+        <QrContentView data={data} onCopied={() => showToast(t('qr.copied'))} />
         <PillButton title={t('qr.scanAgain')} onPress={onScanAgain} variant="ghost" />
       </ScrollView>
       <BottomBannerAd />
+      <Toast message={toastMessage} bottom={tabBarHeight + 80} />
     </View>
   );
 }

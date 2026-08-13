@@ -1,8 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -13,20 +12,20 @@ interface Props {
   /** Positioning is left to the caller (e.g. alignSelf) since it differs
    * between a left-aligned result screen and a centered mascot screen. */
   style?: StyleProp<ViewStyle>;
+  onCopied?: () => void;
 }
 
 /** Tappable barcode chip — copies the raw digits to the clipboard. Shared
  * between FoundProductScreen and MissingProductScreen so both scan
  * outcomes get the same affordance. */
-export function CopyableBarcode({ barcode, style }: Props) {
-  const { t } = useTranslation();
+export function CopyableBarcode({ barcode, style, onCopied }: Props) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const handleCopy = async () => {
     await Clipboard.setStringAsync(barcode);
     captureAnalyticsEvent('barcode_copied');
-    Alert.alert(t('qr.copied'));
+    onCopied?.();
   };
 
   return (

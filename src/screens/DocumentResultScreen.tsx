@@ -26,12 +26,13 @@ interface Props {
    * re-scanning isn't this nested screen's job. */
   onScanAgain?: () => void;
   onBack?: () => void;
+  onCopied?: () => void;
 }
 
 /** A single scanned page: its image and the text Vision's OCR recognized
  * in it. Used both as the sole screen for a one-page document and, nested
  * under DocumentGalleryScreen, for one page of a multi-page document. */
-export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, onBack }: Props) {
+export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, onBack, onCopied }: Props) {
   const { t, i18n } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
@@ -68,7 +69,7 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, on
   const handleCopy = async () => {
     captureAnalyticsEvent('document_action', { action: 'copy' });
     await Clipboard.setStringAsync(text);
-    Alert.alert(t('qr.copied'));
+    onCopied?.();
   };
 
   // Only one page and one text on this screen — nothing to pick between,

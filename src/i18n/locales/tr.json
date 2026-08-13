@@ -24,7 +24,11 @@
     "stopReading": "Okumayı durdur",
     "scanAnother": "Başka doküman tara",
     "delete": "Sil",
-    "pageOf": "{{current}} / {{total}}",
+    "backToGallery": "Galeriye dön",
+    "galleryTitle": "{{count}} sayfa",
+    "deletePagesTitle": "Seçili sayfalar silinsin mi?",
+    "deletePagesBody": "Bu işlem geri alınamaz.",
+    "savedToFiles": "Dosyalar'a kaydedildi",
     "typeDocument": "Doküman",
     "metaDocument": "Doküman taraması"
   },

@@ -24,7 +24,11 @@
     "stopReading": "Vorlesen stoppen",
     "scanAnother": "Weiteres Dokument scannen",
     "delete": "Löschen",
-    "pageOf": "{{current}} / {{total}}",
+    "backToGallery": "Zurück zur Galerie",
+    "galleryTitle": "{{count}} Seiten",
+    "deletePagesTitle": "Ausgewählte Seiten löschen?",
+    "deletePagesBody": "Dies kann nicht rückgängig gemacht werden.",
+    "savedToFiles": "In Dateien gespeichert",
     "typeDocument": "Dokument",
     "metaDocument": "Dokumentenscan"
   },

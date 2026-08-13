@@ -24,7 +24,11 @@
     "stopReading": "Arrêter la lecture",
     "scanAnother": "Numériser un autre document",
     "delete": "Supprimer",
-    "pageOf": "{{current}} / {{total}}",
+    "backToGallery": "Retour à la galerie",
+    "galleryTitle": "{{count}} page(s)",
+    "deletePagesTitle": "Supprimer les pages sélectionnées ?",
+    "deletePagesBody": "Cette action est irréversible.",
+    "savedToFiles": "Enregistré dans Fichiers",
     "typeDocument": "Document",
     "metaDocument": "Scan de document"
   },

@@ -24,7 +24,11 @@
     "stopReading": "Detener lectura",
     "scanAnother": "Escanear otro documento",
     "delete": "Eliminar",
-    "pageOf": "{{current}} / {{total}}",
+    "backToGallery": "Volver a la galería",
+    "galleryTitle": "{{count}} páginas",
+    "deletePagesTitle": "¿Eliminar las páginas seleccionadas?",
+    "deletePagesBody": "Esta acción no se puede deshacer.",
+    "savedToFiles": "Guardado en Archivos",
     "typeDocument": "Documento",
     "metaDocument": "Escaneo de documento"
   },

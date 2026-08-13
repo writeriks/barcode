@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { File } from 'expo-file-system';
 import { getPremiumDevOverride } from '../premium/premiumPreference';
 import { isDuplicateScansEnabled, isHistorySavingEnabled } from './historyPreference';
 import type { ScanHistoryEntry } from '../types/history';
@@ -91,4 +92,46 @@ export async function deleteHistoryEntries(keys: HistoryEntryKey[]): Promise<voi
 
 export async function deleteHistoryEntry(kind: ScanHistoryEntry['kind'], timestamp: number): Promise<void> {
   return deleteHistoryEntries([{ kind, timestamp }]);
+}
+
+/** Removes specific pages (by index) from a saved document entry, deleting
+ * their image files from disk too — used by the document gallery's bulk
+ * delete. Deletes the whole entry once no pages are left. Returns the
+ * entry's remaining page count so the caller can decide how to navigate
+ * (collapse to the single-page Detail view, or close out entirely). */
+export async function removeDocumentPages(timestamp: number, pageIndexes: number[]): Promise<number> {
+  const existing = await getHistory();
+  const entry = existing.find((e) => e.kind === 'document' && e.timestamp === timestamp) as
+    | Extract<ScanHistoryEntry, { kind: 'document' }>
+    | undefined;
+  if (!entry) return 0;
+
+  const removeSet = new Set(pageIndexes);
+  const keptImageUris: string[] = [];
+  const keptPageTexts: string[] = [];
+  entry.imageUris.forEach((uri, index) => {
+    if (removeSet.has(index)) {
+      try {
+        new File(uri).delete();
+      } catch {
+        // Best-effort — a file that's already missing shouldn't block removing the page's record.
+      }
+      return;
+    }
+    keptImageUris.push(uri);
+    keptPageTexts.push(entry.pageTexts[index] ?? '');
+  });
+
+  if (keptImageUris.length === 0) {
+    await deleteHistoryEntry('document', timestamp);
+    return 0;
+  }
+
+  const next = existing.map((e) =>
+    e.kind === 'document' && e.timestamp === timestamp
+      ? { ...e, imageUris: keptImageUris, pageTexts: keptPageTexts }
+      : e
+  );
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  return keptImageUris.length;
 }

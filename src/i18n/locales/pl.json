@@ -24,7 +24,11 @@
     "stopReading": "Zatrzymaj czytanie",
     "scanAnother": "Skanuj kolejny dokument",
     "delete": "Usuń",
-    "pageOf": "{{current}} / {{total}}",
+    "backToGallery": "Powrót do galerii",
+    "galleryTitle": "Strony: {{count}}",
+    "deletePagesTitle": "Usunąć zaznaczone strony?",
+    "deletePagesBody": "Tej operacji nie można cofnąć.",
+    "savedToFiles": "Zapisano w Plikach",
     "typeDocument": "Dokument",
     "metaDocument": "Skan dokumentu"
   },

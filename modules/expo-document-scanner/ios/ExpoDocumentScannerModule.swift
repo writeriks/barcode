@@ -129,10 +129,15 @@ private final class DocumentScanDelegate: NSObject, VNDocumentCameraViewControll
     onFinished()
 
     do {
+      // Shared per scan session so a multi-page scan's files sort/group
+      // together (Blippo-<session>-p1.jpg, -p2.jpg, ...) instead of each
+      // page getting its own unrelated UUID — matters once these are
+      // browsable in the Files app.
+      let sessionId = "\(DocumentScanDelegate.dateFormatter.string(from: Date()))-\(DocumentScanDelegate.shortId())"
       var uris: [String] = []
       for pageIndex in 0..<scan.pageCount {
         let image = scan.imageOfPage(at: pageIndex)
-        uris.append(try DocumentScanDelegate.savePage(image, index: pageIndex).absoluteString)
+        uris.append(try DocumentScanDelegate.savePage(image, index: pageIndex, sessionId: sessionId).absoluteString)
       }
       promise.resolve(uris)
     } catch {
@@ -152,10 +157,22 @@ private final class DocumentScanDelegate: NSObject, VNDocumentCameraViewControll
     promise.reject(DocumentScanFailed())
   }
 
+  private static let dateFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyyMMdd-HHmmss"
+    return formatter
+  }()
+
+  private static func shortId() -> String {
+    String(UUID().uuidString.prefix(6))
+  }
+
   /// Documents directory (not a cache/temp one) — a scanned page becomes
   /// part of a saved History entry, so it needs to survive as long as
   /// that entry does, not get purged the next time iOS wants cache space.
-  private static func savePage(_ image: UIImage, index: Int) throws -> URL {
+  /// Named `Blippo-<date-time>-<shortId>-p<page>.jpg` instead of a bare
+  /// UUID so the file makes sense to a user browsing it in the Files app.
+  private static func savePage(_ image: UIImage, index: Int, sessionId: String) throws -> URL {
     guard let data = image.jpegData(compressionQuality: 0.85) else {
       throw PageEncodingFailed()
     }
@@ -163,7 +180,7 @@ private final class DocumentScanDelegate: NSObject, VNDocumentCameraViewControll
       .urls(for: .documentDirectory, in: .userDomainMask)[0]
       .appendingPathComponent("DocumentScans", isDirectory: true)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let url = directory.appendingPathComponent("\(UUID().uuidString)-\(index).jpg")
+    let url = directory.appendingPathComponent("Blippo-\(sessionId)-p\(index + 1).jpg")
     try data.write(to: url)
     return url
   }

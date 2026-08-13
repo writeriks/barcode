@@ -7,7 +7,7 @@ import { FadeSwitcher } from '../components/FadeSwitcher';
 import { useScanInterstitial } from '../hooks/useScanInterstitial';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { lookupProduct } from '../services/lookupProduct';
-import { addHistoryEntry, deleteHistoryEntry } from '../services/scanHistory';
+import { addHistoryEntry } from '../services/scanHistory';
 import { isBatchScanEnabled } from '../services/scannerPreference';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -15,7 +15,7 @@ import { classifyQrContent } from '../utils/classifyQrContent';
 import type { RootTabParamList } from '../navigation/types';
 import type { ScanKind, ScanMethod } from '../types/scan';
 import type { LookupResult } from '../types/product';
-import { DocumentResultScreen } from './DocumentResultScreen';
+import { DocumentEntryScreen } from './DocumentEntryScreen';
 import { FoundProductScreen } from './FoundProductScreen';
 import { LookupErrorScreen } from './LookupErrorScreen';
 import { MissingProductScreen } from './MissingProductScreen';
@@ -191,14 +191,12 @@ export function ScannerFlowScreen({ navigation }: Props) {
 
       case 'document-result':
         return withTopSafeArea(
-          <DocumentResultScreen
+          <DocumentEntryScreen
+            timestamp={screen.timestamp}
             pageTexts={screen.pageTexts}
             imageUris={screen.imageUris}
-            onScanAgain={goToScanner}
-            onDelete={async () => {
-              await deleteHistoryEntry('document', screen.timestamp);
-              goToScanner();
-            }}
+            isFreshScan
+            onClose={goToScanner}
           />
         );
 

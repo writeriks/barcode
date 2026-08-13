@@ -26,6 +26,14 @@ const config: ExpoConfig = {
     // TODO: confirm/change before a real App Store submission — this must
     // match the bundle ID registered in your Apple Developer account.
     bundleIdentifier: 'com.writeriks.beep',
+    infoPlist: {
+      // Makes the app's Documents folder (where Scan Document saves its
+      // pages — see modules/expo-document-scanner) browsable from the
+      // Files app under "On My iPhone", so a scanned document is already
+      // reachable there without an explicit "save" step.
+      UIFileSharingEnabled: true,
+      LSSupportsOpeningDocumentsInPlace: true,
+    },
   },
   android: {
     // TODO: confirm/change before a real Play Store submission — this must

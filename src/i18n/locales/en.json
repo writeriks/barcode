@@ -24,7 +24,11 @@
     "stopReading": "Stop reading",
     "scanAnother": "Scan another document",
     "delete": "Delete",
-    "pageOf": "{{current}} / {{total}}",
+    "backToGallery": "Back to gallery",
+    "galleryTitle": "{{count}} pages",
+    "deletePagesTitle": "Delete selected pages?",
+    "deletePagesBody": "This can't be undone.",
+    "savedToFiles": "Saved to Files",
     "typeDocument": "Document",
     "metaDocument": "Document scan"
   },

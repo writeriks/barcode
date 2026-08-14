@@ -1,7 +1,7 @@
 {
   "scanner": {
     "cameraPermissionMessage": "Wir benötigen Kamerazugriff, um Barcodes zu scannen.",
-    "grantPermission": "Kamerazugriff erlauben",
+    "grantPermission": "Weiter",
     "title": "Barcode finden",
     "waitingToScan": "Warte auf Scan",
     "uploadPhoto": "Foto hochladen",

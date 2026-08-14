@@ -1,7 +1,7 @@
 {
   "scanner": {
     "cameraPermissionMessage": "Nous avons besoin d'accéder à l'appareil photo pour scanner les codes-barres.",
-    "grantPermission": "Autoriser l'appareil photo",
+    "grantPermission": "Continuer",
     "title": "Trouver un code-barres",
     "waitingToScan": "En attente de scan",
     "uploadPhoto": "Importer une photo",

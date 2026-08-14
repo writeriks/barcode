@@ -1,7 +1,7 @@
 {
   "scanner": {
     "cameraPermissionMessage": "Potrzebujemy dostępu do aparatu, aby skanować kody kreskowe.",
-    "grantPermission": "Zezwól na dostęp do aparatu",
+    "grantPermission": "Kontynuuj",
     "title": "Znajdź kod kreskowy",
     "waitingToScan": "Oczekiwanie na skan",
     "uploadPhoto": "Prześlij zdjęcie",

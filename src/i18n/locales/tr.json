@@ -1,7 +1,7 @@
 {
   "scanner": {
     "cameraPermissionMessage": "Barkod taramak için kameraya erişmemiz gerekiyor.",
-    "grantPermission": "Kamera iznini ver",
+    "grantPermission": "Devam et",
     "title": "Bir barkod bul",
     "waitingToScan": "Taramaya hazır",
     "uploadPhoto": "Fotoğraf yükle",

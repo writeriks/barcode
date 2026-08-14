@@ -1,7 +1,7 @@
 {
   "scanner": {
     "cameraPermissionMessage": "Ci serve accedere alla fotocamera per scansionare i codici a barre.",
-    "grantPermission": "Consenti l'accesso alla fotocamera",
+    "grantPermission": "Continua",
     "title": "Trova un codice a barre",
     "waitingToScan": "In attesa di scansione",
     "uploadPhoto": "Carica foto",

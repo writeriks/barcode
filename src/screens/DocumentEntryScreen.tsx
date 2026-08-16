@@ -104,14 +104,16 @@ export function DocumentEntryScreen({ timestamp, imageUris: initialImageUris, pa
           imageUris={imageUris}
           onOpenPage={handleOpenPage}
           onDeletePages={handleBulkDeletePages}
-          onScanAgain={onClose}
+          // Only offered right after a scan, where it really does return to
+          // the camera. Reopened from History the same button would have
+          // gone back to the list — a camera icon that scans nothing.
+          onScanAgain={isFreshScan ? onClose : undefined}
         />
       ) : (
         <DocumentResultScreen
           imageUri={imageUris[view.index] ?? null}
           text={pageTexts[view.index] ?? ''}
           onDelete={() => handleDeleteSinglePage(view.index)}
-          onScanAgain={view.from === 'standalone' ? onClose : undefined}
           onBack={view.from === 'gallery' ? handleBackToGallery : undefined}
           onCopied={() => showToast(t('qr.copied'))}
         />

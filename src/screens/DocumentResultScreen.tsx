@@ -17,13 +17,9 @@ interface Props {
   imageUri: string | null;
   text: string;
   onDelete: () => void;
-  /** Exactly one of these is passed by the caller (DocumentEntryScreen):
-   * `onScanAgain` for a standalone single-page document (fresh scan or a
-   * one-page History entry) — shows "Scan Another" as the 4th action.
-   * `onBack` for a page opened from the multi-page Gallery — shows a back
-   * chevron to that gallery instead, and drops "Scan Another" since
-   * re-scanning isn't this nested screen's job. */
-  onScanAgain?: () => void;
+  /** Set only for a page opened from the multi-page Gallery — shows a
+   * back chevron to it. A standalone page has nothing above it here, so
+   * it leaves via the navigator or the tab bar. */
   onBack?: () => void;
   onCopied?: () => void;
 }
@@ -35,7 +31,7 @@ const SHARE_DISMISS_GRACE_MS = 500;
 /** A single scanned page: its image and the text Vision's OCR recognized
  * in it. Used both as the sole screen for a one-page document and, nested
  * under DocumentGalleryScreen, for one page of a multi-page document. */
-export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, onBack, onCopied }: Props) {
+export function DocumentResultScreen({ imageUri, text, onDelete, onBack, onCopied }: Props) {
   const { t, i18n } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
@@ -217,16 +213,6 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, on
             accessibilityLabel={t('document.delete')}
             colors={colors}
           />
-          {onScanAgain ? (
-            <IconActionButton
-              icon="camera-outline"
-              tint={colors.punch}
-              filled
-              onPress={onScanAgain}
-              accessibilityLabel={t('document.scanAnother')}
-              colors={colors}
-            />
-          ) : null}
         </View>
       </ScrollView>
       <BottomBannerAd />

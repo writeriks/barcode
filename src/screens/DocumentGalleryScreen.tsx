@@ -24,7 +24,9 @@ interface Props {
   imageUris: string[];
   onOpenPage: (index: number) => void;
   onDeletePages: (indexes: number[]) => void;
-  onScanAgain: () => void;
+  /** Omitted when this document is being reopened from History, where
+   * "scan another" has no camera to return to. */
+  onScanAgain?: () => void;
 }
 
 const NUM_COLUMNS = 2;
@@ -142,8 +144,8 @@ export function DocumentGalleryScreen({ imageUris, onOpenPage, onDeletePages, on
           AdMob counts as obscuring an impression. In normal flow the two
           can't collide however tall the banner turns out to be — or
           whether it renders at all (premium, no fill, Expo Go). */}
-      <View style={styles.actionBar}>
-        {isEditMode ? (
+      {isEditMode ? (
+        <View style={styles.actionBar}>
           <View style={styles.editActions}>
             <PillButton
               title={t('history.share')}
@@ -160,10 +162,12 @@ export function DocumentGalleryScreen({ imageUris, onOpenPage, onDeletePages, on
               style={selectedIndexes.size === 0 && styles.disabledButton}
             />
           </View>
-        ) : (
+        </View>
+      ) : onScanAgain ? (
+        <View style={styles.actionBar}>
           <PillButton title={t('document.scanAnother')} onPress={onScanAgain} variant="punch" />
-        )}
-      </View>
+        </View>
+      ) : null}
 
       {!isEditMode ? <BottomBannerAd /> : null}
     </View>

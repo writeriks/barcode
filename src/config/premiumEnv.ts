@@ -10,13 +10,24 @@ import Constants from 'expo-constants';
  * ships, and it's exactly where premium behaviour most wants checking —
  * but `__DEV__` is false there, so the rows would be invisible.
  *
- * Read from the resolved app config rather than the environment directly,
- * because app.config.ts is where EAS_BUILD can be seen: anything built on
- * EAS gets this forced to false there, whatever the environment says. So
- * a build that leaves the developer's machine can't carry the override,
- * even if a stray .env or a dashboard secret sets the variable.
+ * Two independent things have to agree, and each covers the other:
+ *
+ *  - The environment variable, which Metro inlines straight into the
+ *    bundle. This is the one that actually turns the rows on, and it works
+ *    the same in Debug, Release, bare — it doesn't depend on a manifest
+ *    being readable at runtime.
+ *  - A veto from the resolved app config, which app.config.ts sets to
+ *    false whenever EAS_BUILD is present.
+ *
+ * An EAS build is blocked by eas.json pinning the variable to "false" on
+ * the preview and production profiles, *and* by the veto. If the manifest
+ * isn't readable the veto simply doesn't apply — it can only ever turn
+ * this off, never on, so a missing config can't hand out the override.
  */
-export const PREMIUM_TESTING_ENABLED = Constants.expoConfig?.extra?.premiumTestingEnabled === true;
+const envEnabled = process.env.EXPO_PUBLIC_PREMIUM_TESTING === 'true';
+const configVetoes = Constants.expoConfig?.extra?.premiumTestingEnabled === false;
+
+export const PREMIUM_TESTING_ENABLED = envEnabled && !configVetoes;
 
 /** Whether to offer the manual premium override at all. */
 export const IS_PREMIUM_OVERRIDE_AVAILABLE = __DEV__ || PREMIUM_TESTING_ENABLED;

@@ -2,8 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { useQrShare } from '../hooks/useQrShare';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -85,6 +86,7 @@ export function QrContentView({ data, onCopied }: Props) {
   const openUri = resolveQrOpenUri(data, type);
   const otpInfo = type === 'otp' ? parseOtpAuth(data) : null;
   const [isSecretRevealed, setIsSecretRevealed] = useState(false);
+  const { shareQr, qrRenderer } = useQrShare();
 
   const handleOpen = async () => {
     if (!openUri) return;
@@ -103,7 +105,9 @@ export function QrContentView({ data, onCopied }: Props) {
 
   const handleShare = () => {
     captureAnalyticsEvent('qr_action', { action: 'share', contentType: type });
-    Share.share({ message: data });
+    // Same as My Codes: send the scannable image along with the value, so
+    // whoever receives it can point a camera at it instead of retyping.
+    shareQr(data);
   };
 
   return (
@@ -163,6 +167,7 @@ export function QrContentView({ data, onCopied }: Props) {
           <PillButton title={t('qr.share')} onPress={handleShare} variant="ghost" style={styles.flexButton} />
         </View>
       </View>
+      {qrRenderer}
     </View>
   );
 }

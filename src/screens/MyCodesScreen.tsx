@@ -10,7 +10,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -38,6 +37,7 @@ import { UpiForm, defaultUpiFields, type UpiFields } from '../components/qrForms
 import { VCardForm, defaultVCardFields, type VCardFields } from '../components/qrForms/VCardForm';
 import { WifiForm, defaultWifiFields, type WifiFields } from '../components/qrForms/WifiForm';
 import { ZoomForm, defaultZoomFields, type ZoomFields } from '../components/qrForms/ZoomForm';
+import { useQrShare } from '../hooks/useQrShare';
 import { useToast } from '../hooks/useToast';
 import type { RootTabParamList } from '../navigation/types';
 import { captureAnalyticsEvent } from '../services/analytics';
@@ -340,6 +340,7 @@ export function MyCodesScreen({ navigation }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTypes, setActiveTypes] = useState<Set<QrContentType>>(new Set());
   const { message: toastMessage, showToast } = useToast();
+  const { shareQr, qrRenderer } = useQrShare();
 
   const defaultCountry = useMemo(() => findCountryByRegionCode(getDeviceRegionCode()) ?? null, []);
   const [type, setType] = useState<QrContentType>('link');
@@ -454,7 +455,9 @@ export function MyCodesScreen({ navigation }: Props) {
 
   const handleShare = (code: MyCode) => {
     captureAnalyticsEvent('my_code_shared', { type: codeTypeOf(code) });
-    Share.share({ message: code.content });
+    // Sends the code as a scannable image alongside its text — sharing a
+    // QR as bare text makes the recipient rebuild it to actually use it.
+    shareQr(code.content);
   };
 
   const handleCopyContent = async (code: MyCode) => {
@@ -766,6 +769,7 @@ export function MyCodesScreen({ navigation }: Props) {
       </BottomSheet>
 
       <Toast message={toastMessage} bottom={tabBarHeight + 20} />
+      {qrRenderer}
     </SafeAreaView>
   );
 }

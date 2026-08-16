@@ -76,6 +76,18 @@ export async function setEntryFolder(
   return setEntriesFolder([{ kind, timestamp }], folderId);
 }
 
+/** Gives an entry a user-chosen display name, replacing the one the list
+ * otherwise derives from the scan itself. An empty/whitespace label clears
+ * it again, falling back to that derived name. */
+export async function renameHistoryEntry(key: HistoryEntryKey, label: string): Promise<void> {
+  const trimmed = label.trim();
+  const existing = await getHistory();
+  const next = existing.map((entry) =>
+    entryMatchesKey(entry, key) ? { ...entry, label: trimmed || undefined } : entry
+  );
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+}
+
 /** Unfiles every entry in a folder that's about to be deleted — the
  * entries themselves stay, only the folder reference is cleared. */
 export async function clearFolderFromEntries(folderId: string): Promise<void> {

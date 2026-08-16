@@ -178,7 +178,10 @@
     "metaQrUpi": "QR UPI payment",
     "metaQrPaypal": "QR PayPal",
     "metaQrLinkedin": "QR LinkedIn",
-    "entryOptionsTitle": "Entry Options"
+    "entryOptionsTitle": "Entry Options",
+    "rename": "Rename",
+    "renamePlaceholder": "Entry name",
+    "renameSave": "Save"
   },
   "myCodes": {
     "title": "My Codes",

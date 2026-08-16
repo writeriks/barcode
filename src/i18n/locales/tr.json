@@ -178,7 +178,10 @@
     "metaQrUpi": "QR UPI ödemesi",
     "metaQrPaypal": "QR PayPal",
     "metaQrLinkedin": "QR LinkedIn",
-    "entryOptionsTitle": "Kayıt Seçenekleri"
+    "entryOptionsTitle": "Kayıt Seçenekleri",
+    "rename": "Yeniden adlandır",
+    "renamePlaceholder": "Kayıt adı",
+    "renameSave": "Kaydet"
   },
   "myCodes": {
     "title": "Kodlarım",

@@ -21,6 +21,7 @@ import {
   deleteHistoryEntries,
   FREE_MAX_ENTRIES,
   getHistory,
+  renameHistoryEntry,
   setEntriesFolder,
   type HistoryEntryKey,
 } from '../services/scanHistory';
@@ -100,7 +101,21 @@ function entryTypeValue(entry: ScanHistoryEntry): TypeFilterValue {
   return entry.contentType;
 }
 
+/** What the list calls this entry: whatever the user renamed it to, or
+ * else a name derived from the scan itself. */
+function entryDisplayName(entry: ScanHistoryEntry, t: (key: string) => string): string {
+  if (entry.label) return entry.label;
+  if (entry.kind === 'qr') return entry.data;
+  if (entry.kind === 'document') {
+    return entry.pageTexts.find((text) => text.trim().length > 0) || t('document.noTextFound');
+  }
+  return entry.product?.productName ?? entry.barcode;
+}
+
 function matchesSearch(entry: ScanHistoryEntry, query: string): boolean {
+  // A renamed entry has to stay findable by the name the user gave it,
+  // not only by whatever it was scanned as.
+  if (entry.label?.toLowerCase().includes(query)) return true;
   if (entry.kind === 'qr') return entry.data.toLowerCase().includes(query);
   if (entry.kind === 'document') return entry.pageTexts.some((text) => text.toLowerCase().includes(query));
   const haystack = [entry.barcode, entry.product?.productName, entry.product?.brands]
@@ -131,6 +146,8 @@ export function HistoryScreen({ navigation }: Props) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
   const [menuEntry, setMenuEntry] = useState<ScanHistoryEntry | null>(null);
+  const [renamingEntry, setRenamingEntry] = useState<ScanHistoryEntry | null>(null);
+  const [renameValue, setRenameValue] = useState('');
 
   const reload = useCallback(() => {
     getHistory().then(setEntries);
@@ -275,6 +292,28 @@ export function HistoryScreen({ navigation }: Props) {
         },
       },
     ]);
+  };
+
+  const handleRenameMenuEntry = () => {
+    if (!menuEntry) return;
+    const entry = menuEntry;
+    setMenuEntry(null);
+    // Seeded with the current custom name only — an entry that's never
+    // been renamed opens empty rather than pre-filling a whole QR URL or
+    // a paragraph of OCR text for the user to delete first.
+    setRenameValue(entry.label ?? '');
+    setRenamingEntry(entry);
+  };
+
+  const handleSubmitRename = async () => {
+    const name = renameValue.trim();
+    // The submit button is already disabled while empty, but the input's
+    // return key isn't — same guard as handleCreateFolder.
+    if (!renamingEntry || !name) return;
+    await renameHistoryEntry({ kind: renamingEntry.kind, timestamp: renamingEntry.timestamp }, name);
+    setRenamingEntry(null);
+    setRenameValue('');
+    reload();
   };
 
   const handleMoveMenuEntry = () => {
@@ -441,12 +480,7 @@ export function HistoryScreen({ navigation }: Props) {
               style={styles.flex}
               contentContainerStyle={[styles.list, { paddingBottom: isEditMode ? 90 : 20 }]}
               renderItem={({ item }) => {
-                const name =
-                  item.kind === 'qr'
-                    ? item.data
-                    : item.kind === 'document'
-                      ? item.pageTexts.find((text) => text.trim().length > 0) || t('document.noTextFound')
-                      : (item.product?.productName ?? item.barcode);
+                const name = entryDisplayName(item, t);
                 const metaKey =
                   item.kind === 'qr'
                     ? QR_META_KEY[item.contentType]
@@ -478,7 +512,7 @@ export function HistoryScreen({ navigation }: Props) {
                       pressed && styles.rowPressed,
                     ]}
                     onPress={handlePress}
-                    onLongPress={() => !isEditMode && setAssigningKeys([{ kind: item.kind, timestamp: item.timestamp }])}
+                    onLongPress={() => !isEditMode && setMenuEntry(item)}
                   >
                     {isEditMode ? (
                       <Ionicons
@@ -602,6 +636,10 @@ export function HistoryScreen({ navigation }: Props) {
 
       <BottomSheet visible={menuEntry !== null} onClose={() => setMenuEntry(null)} title={t('history.entryOptionsTitle')}>
         <View style={styles.sheetList}>
+          <Pressable onPress={handleRenameMenuEntry} style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}>
+            <Ionicons name="create-outline" size={18} color={colors.punch} />
+            <Text style={styles.menuRowText}>{t('history.rename')}</Text>
+          </Pressable>
           <Pressable onPress={handleMoveMenuEntry} style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}>
             <Ionicons name="folder-outline" size={18} color={colors.mint} />
             <Text style={styles.menuRowText}>{t('history.move')}</Text>
@@ -629,6 +667,18 @@ export function HistoryScreen({ navigation }: Props) {
         onChangeText={setNewFolderName}
         onSubmit={handleCreateFolder}
         submitLabel={t('history.createFolder')}
+        cancelLabel={t('history.cancel')}
+      />
+
+      <PromptModal
+        visible={renamingEntry !== null}
+        onClose={() => setRenamingEntry(null)}
+        title={t('history.rename')}
+        placeholder={t('history.renamePlaceholder')}
+        value={renameValue}
+        onChangeText={setRenameValue}
+        onSubmit={handleSubmitRename}
+        submitLabel={t('history.renameSave')}
         cancelLabel={t('history.cancel')}
       />
     </SafeAreaView>

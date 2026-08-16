@@ -6,7 +6,10 @@ export type ScanHistoryStatus = 'found' | 'incomplete' | 'not-found';
 /** A snapshot of one resolved scan. Stores the product data as it looked
  * at scan time — this is a historical record, not a live re-fetch.
  * `folderId` is absent/undefined for unfiled entries, including every
- * entry saved before folders existed. */
+ * entry saved before folders existed. `label` likewise is only set once a
+ * user renames an entry; without it the list falls back to a name derived
+ * from the scan itself (the QR's data, the product's name, the document's
+ * first line of OCR text). */
 export type ScanHistoryEntry =
   | {
       kind: 'product';
@@ -15,9 +18,24 @@ export type ScanHistoryEntry =
       status: ScanHistoryStatus;
       product?: Product;
       folderId?: string;
+      label?: string;
     }
-  | { kind: 'qr'; timestamp: number; data: string; contentType: QrContentType; folderId?: string }
+  | {
+      kind: 'qr';
+      timestamp: number;
+      data: string;
+      contentType: QrContentType;
+      folderId?: string;
+      label?: string;
+    }
   // pageTexts[i] is the OCR text for imageUris[i] — kept per-page (not
   // joined into one string) so reopening the document and swiping to a
   // different page shows that page's own extracted text.
-  | { kind: 'document'; timestamp: number; pageTexts: string[]; imageUris: string[]; folderId?: string };
+  | {
+      kind: 'document';
+      timestamp: number;
+      pageTexts: string[];
+      imageUris: string[];
+      folderId?: string;
+      label?: string;
+    };

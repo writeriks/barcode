@@ -178,7 +178,10 @@
     "metaQrUpi": "QR płatność UPI",
     "metaQrPaypal": "QR PayPal",
     "metaQrLinkedin": "QR LinkedIn",
-    "entryOptionsTitle": "Opcje wpisu"
+    "entryOptionsTitle": "Opcje wpisu",
+    "rename": "Zmień nazwę",
+    "renamePlaceholder": "Nazwa wpisu",
+    "renameSave": "Zapisz"
   },
   "myCodes": {
     "title": "Moje kody",

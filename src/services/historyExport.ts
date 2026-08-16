@@ -10,7 +10,7 @@ function entryToRow(entry: ScanHistoryEntry, id: number): string[] {
   const type = entry.kind === 'product' ? 'PRODUCT' : entry.kind === 'qr' ? 'QR' : 'DOCUMENT';
   const date = new Date(entry.timestamp).toISOString();
   const data = entry.kind === 'product' ? entry.barcode : entry.kind === 'qr' ? entry.data : entry.pageTexts.join(' | ');
-  const name = entry.kind === 'product' ? (entry.product?.productName ?? '') : '';
+  const name = entry.label ?? (entry.kind === 'product' ? (entry.product?.productName ?? '') : '');
   return [String(id), type, date, data, name];
 }
 

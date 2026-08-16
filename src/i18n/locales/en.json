@@ -29,6 +29,7 @@
     "deletePagesTitle": "Delete selected pages?",
     "deletePagesBody": "This can't be undone.",
     "freeScansLeft": "{{count}} free scans left",
+    "shareFailed": "Couldn't share this scan",
     "typeDocument": "Document",
     "metaDocument": "Document scan"
   },

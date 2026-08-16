@@ -339,8 +339,13 @@ export function HistoryScreen({ navigation }: Props) {
       // native module isn't there to take an array of files.
       if (entry.kind === 'document') {
         if (Platform.OS !== 'ios' || isExpoGo()) return;
-        const { shareFilesAsync } = await import('expo-document-scanner');
-        await shareFilesAsync(entry.imageUris);
+        try {
+          const { shareFilesAsync } = await import('expo-document-scanner');
+          await shareFilesAsync(entry.imageUris);
+        } catch {
+          // Without this a failure looks exactly like a dead menu row.
+          Alert.alert(t('document.shareFailed'));
+        }
         return;
       }
       Share.share({ message: entry.kind === 'qr' ? entry.data : entry.barcode });

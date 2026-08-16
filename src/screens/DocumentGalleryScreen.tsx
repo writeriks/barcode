@@ -68,8 +68,13 @@ export function DocumentGalleryScreen({ imageUris, onOpenPage, onDeletePages, on
       .map((index) => imageUris[index])
       .filter(Boolean);
     if (uris.length === 0) return;
-    const { shareFilesAsync } = await import('expo-document-scanner');
-    await shareFilesAsync(uris);
+    try {
+      const { shareFilesAsync } = await import('expo-document-scanner');
+      await shareFilesAsync(uris);
+    } catch {
+      // Without this a failure looks exactly like a dead button.
+      Alert.alert(t('document.shareFailed'));
+    }
   };
 
   const handleDeleteSelected = () => {

@@ -29,6 +29,7 @@
     "deletePagesTitle": "¿Eliminar las páginas seleccionadas?",
     "deletePagesBody": "Esta acción no se puede deshacer.",
     "freeScansLeft": "Te quedan {{count}} escaneos gratis",
+    "shareFailed": "No se pudo compartir este escaneo",
     "typeDocument": "Documento",
     "metaDocument": "Escaneo de documento"
   },

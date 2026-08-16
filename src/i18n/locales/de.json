@@ -29,6 +29,7 @@
     "deletePagesTitle": "Ausgewählte Seiten löschen?",
     "deletePagesBody": "Dies kann nicht rückgängig gemacht werden.",
     "freeScansLeft": "Noch {{count}} kostenlose Scans",
+    "shareFailed": "Scan konnte nicht geteilt werden",
     "typeDocument": "Dokument",
     "metaDocument": "Dokumentenscan"
   },

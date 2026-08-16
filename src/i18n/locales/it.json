@@ -29,6 +29,7 @@
     "deletePagesTitle": "Eliminare le pagine selezionate?",
     "deletePagesBody": "Questa azione non può essere annullata.",
     "freeScansLeft": "Ti restano {{count}} scansioni gratuite",
+    "shareFailed": "Impossibile condividere questa scansione",
     "typeDocument": "Documento",
     "metaDocument": "Scansione documento"
   },

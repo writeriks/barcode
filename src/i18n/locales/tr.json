@@ -29,6 +29,7 @@
     "deletePagesTitle": "Seçili sayfalar silinsin mi?",
     "deletePagesBody": "Bu işlem geri alınamaz.",
     "freeScansLeft": "{{count}} ücretsiz tarama hakkın kaldı",
+    "shareFailed": "Bu tarama paylaşılamadı",
     "typeDocument": "Doküman",
     "metaDocument": "Doküman taraması"
   },

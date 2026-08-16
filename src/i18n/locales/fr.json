@@ -29,6 +29,7 @@
     "deletePagesTitle": "Supprimer les pages sélectionnées ?",
     "deletePagesBody": "Cette action est irréversible.",
     "freeScansLeft": "Il vous reste {{count}} scans gratuits",
+    "shareFailed": "Impossible de partager ce scan",
     "typeDocument": "Document",
     "metaDocument": "Scan de document"
   },

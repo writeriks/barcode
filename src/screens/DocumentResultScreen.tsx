@@ -1,13 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import * as Clipboard from 'expo-clipboard';
-import * as Sharing from 'expo-sharing';
 import * as Speech from 'expo-speech';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomBannerAd } from '../components/BottomBannerAd';
+import { isExpoGo } from '../services/ads/environment';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -72,24 +72,38 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, on
     onCopied?.();
   };
 
-  // Shares the page itself, never its OCR text: this is a document, and
-  // sending someone a wall of recognized characters isn't what "share a
-  // scan" means. The text has its own affordance — the copy button above.
-  const handleShare = async () => {
+  /**
+   * Opens the share sheet on a scanned page. Goes through the app's own
+   * native module, the same one the gallery's multi-page share uses,
+   * rather than expo-sharing: one path for every document share instead
+   * of two that can drift apart, and no permission gate of its own to
+   * disagree with where the pages are stored.
+   *
+   * Shares the page itself, never its OCR text — this is a document, and
+   * sending someone a wall of recognized characters isn't what "share a
+   * scan" means. The text has its own affordance, the copy button above.
+   *
+   * The share sheet is also how iOS offers to save: "Save Image" and
+   * "Save to Files" both appear on it for an image, which is why the
+   * fullscreen viewer's save button lands here too.
+   */
+  const shareImage = async (action: 'share' | 'save') => {
     if (!imageUri) return;
-    captureAnalyticsEvent('document_action', { action: 'share' });
-    if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(imageUri);
+    captureAnalyticsEvent('document_action', { action });
+    if (Platform.OS !== 'ios' || isExpoGo()) return;
+    try {
+      const { shareFilesAsync } = await import('expo-document-scanner');
+      await shareFilesAsync([imageUri]);
+    } catch {
+      // Anything that goes wrong here used to surface as the button
+      // simply not reacting, which reads as a broken app rather than a
+      // failure. Say so instead.
+      Alert.alert(t('document.shareFailed'));
+    }
   };
 
-  // The native share sheet is also how iOS lets a photo be saved — "Save
-  // Image" (Photos) and "Save to Files" both show up on it for free for
-  // an image attachment, so this reuses the same expo-sharing call rather
-  // than needing a separate media-library permission/module.
-  const handleSaveToDevice = async () => {
-    if (!imageUri) return;
-    captureAnalyticsEvent('document_action', { action: 'save' });
-    if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(imageUri);
-  };
+  const handleShare = () => shareImage('share');
+  const handleSaveToDevice = () => shareImage('save');
 
   const handleDeletePress = () => {
     Alert.alert(t('history.deleteEntryTitle'), t('history.deleteEntryBody'), [

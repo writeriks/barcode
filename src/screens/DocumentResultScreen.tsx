@@ -39,7 +39,22 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, on
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
+  const [didImageFail, setDidImageFail] = useState(false);
   const hasText = text.trim().length > 0;
+
+  // A page whose file can't be read used to render as an empty box here
+  // and a black rectangle in the viewer, which says nothing about what
+  // went wrong — and the share button silently had nothing to send. Say
+  // it on screen, and put the path in the log so it can be checked.
+  const handleImageError = (message: string) => {
+    console.warn(`[Blippo] scanned page failed to load: ${imageUri} — ${message}`);
+    setDidImageFail(true);
+  };
+
+  // A new page replaces a failed one when the gallery moves between pages.
+  useEffect(() => {
+    setDidImageFail(false);
+  }, [imageUri]);
 
   // Reading aloud shouldn't keep going once this screen isn't visible anymore.
   useEffect(() => {
@@ -122,11 +137,27 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, on
       ) : null}
       <ScrollView contentContainerStyle={styles.content}>
         {imageUri ? (
-          <Pressable style={styles.pageBox} onPress={() => setIsFullscreenOpen(true)}>
-            <Image source={{ uri: imageUri }} style={styles.pageImage} resizeMode="contain" />
-            <View style={styles.expandHint}>
-              <Ionicons name="expand-outline" size={14} color={colors.cream} />
-            </View>
+          <Pressable
+            style={styles.pageBox}
+            onPress={() => !didImageFail && setIsFullscreenOpen(true)}
+            disabled={didImageFail}
+          >
+            <Image
+              source={{ uri: imageUri }}
+              style={styles.pageImage}
+              resizeMode="contain"
+              onError={(event) => handleImageError(event.nativeEvent.error)}
+            />
+            {didImageFail ? (
+              <View style={styles.pageErrorOverlay}>
+                <Ionicons name="alert-circle-outline" size={26} color={colors.coralText} />
+                <Text style={styles.pageErrorText}>{t('document.pageMissing')}</Text>
+              </View>
+            ) : (
+              <View style={styles.expandHint}>
+                <Ionicons name="expand-outline" size={14} color={colors.cream} />
+              </View>
+            )}
           </Pressable>
         ) : null}
 
@@ -301,6 +332,19 @@ function createStyles(colors: ColorTheme) {
       backgroundColor: 'rgba(0,0,0,0.45)',
       borderRadius: 999,
       padding: 6,
+    },
+    pageErrorOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      padding: 20,
+    },
+    pageErrorText: {
+      fontSize: 13,
+      lineHeight: 19,
+      textAlign: 'center',
+      color: colors.inkOnCream,
     },
     card: {
       backgroundColor: colors.panel,

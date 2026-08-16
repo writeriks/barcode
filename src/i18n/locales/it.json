@@ -30,6 +30,7 @@
     "deletePagesBody": "Questa azione non può essere annullata.",
     "freeScansLeft": "Ti restano {{count}} scansioni gratuite",
     "shareFailed": "Impossibile condividere questa scansione",
+    "pageMissing": "Il file di questa pagina non è stato trovato",
     "typeDocument": "Documento",
     "metaDocument": "Scansione documento"
   },

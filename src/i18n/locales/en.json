@@ -30,6 +30,7 @@
     "deletePagesBody": "This can't be undone.",
     "freeScansLeft": "{{count}} free scans left",
     "shareFailed": "Couldn't share this scan",
+    "pageMissing": "This page's file is missing",
     "typeDocument": "Document",
     "metaDocument": "Document scan"
   },

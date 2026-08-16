@@ -30,6 +30,7 @@
     "deletePagesBody": "Tej operacji nie można cofnąć.",
     "freeScansLeft": "Pozostało darmowych skanów: {{count}}",
     "shareFailed": "Nie udało się udostępnić tego skanu",
+    "pageMissing": "Brak pliku tej strony",
     "typeDocument": "Dokument",
     "metaDocument": "Skan dokumentu"
   },

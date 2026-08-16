@@ -30,6 +30,7 @@
     "deletePagesBody": "Dies kann nicht rückgängig gemacht werden.",
     "freeScansLeft": "Noch {{count}} kostenlose Scans",
     "shareFailed": "Scan konnte nicht geteilt werden",
+    "pageMissing": "Die Datei dieser Seite fehlt",
     "typeDocument": "Dokument",
     "metaDocument": "Dokumentenscan"
   },

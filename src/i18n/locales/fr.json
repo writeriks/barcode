@@ -30,6 +30,7 @@
     "deletePagesBody": "Cette action est irréversible.",
     "freeScansLeft": "Il vous reste {{count}} scans gratuits",
     "shareFailed": "Impossible de partager ce scan",
+    "pageMissing": "Le fichier de cette page est introuvable",
     "typeDocument": "Document",
     "metaDocument": "Scan de document"
   },

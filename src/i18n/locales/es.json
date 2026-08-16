@@ -30,6 +30,7 @@
     "deletePagesBody": "Esta acción no se puede deshacer.",
     "freeScansLeft": "Te quedan {{count}} escaneos gratis",
     "shareFailed": "No se pudo compartir este escaneo",
+    "pageMissing": "Falta el archivo de esta página",
     "typeDocument": "Documento",
     "metaDocument": "Escaneo de documento"
   },

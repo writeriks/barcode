@@ -30,6 +30,7 @@
     "deletePagesBody": "Bu işlem geri alınamaz.",
     "freeScansLeft": "{{count}} ücretsiz tarama hakkın kaldı",
     "shareFailed": "Bu tarama paylaşılamadı",
+    "pageMissing": "Bu sayfanın dosyası bulunamadı",
     "typeDocument": "Doküman",
     "metaDocument": "Doküman taraması"
   },

@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { File } from 'expo-file-system';
 import { isPremium, isPremiumResolved } from '../premium/premiumState';
+import { resolveDocumentScanUri } from '../utils/documentScanPaths';
 import { isDuplicateScansEnabled, isHistorySavingEnabled } from './historyPreference';
 import type { ScanHistoryEntry } from '../types/history';
 
@@ -33,7 +34,17 @@ export async function getHistory(): Promise<ScanHistoryEntry[]> {
   try {
     const parsed = JSON.parse(raw) as Record<string, unknown>[];
     // Entries saved before the product/qr split have no `kind` — treat them as product entries.
-    return parsed.map((entry) => (entry.kind ? entry : { ...entry, kind: 'product' })) as ScanHistoryEntry[];
+    const entries = parsed.map((entry) =>
+      entry.kind ? entry : { ...entry, kind: 'product' }
+    ) as ScanHistoryEntry[];
+    // A document's page URIs are re-pointed at the current app container
+    // here, in the one place every reader goes through — the paths stored
+    // with the entry were only ever valid for the install that wrote them.
+    return entries.map((entry) =>
+      entry.kind === 'document'
+        ? { ...entry, imageUris: entry.imageUris.map(resolveDocumentScanUri) }
+        : entry
+    );
   } catch {
     return [];
   }

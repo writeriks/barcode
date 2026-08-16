@@ -219,24 +219,26 @@ private final class DocumentScanDelegate: NSObject, VNDocumentCameraViewControll
     String(UUID().uuidString.prefix(6))
   }
 
-  /// Application Support, deliberately, rather than Documents. Both
-  /// persist for the life of the install (unlike Caches/tmp, which iOS
-  /// purges when it wants space — no good for pages backing a saved
-  /// History entry), but Documents is the directory `UIFileSharingEnabled`
-  /// exposes to the Files app and to Finder, and that exposure is
-  /// all-or-nothing per app. Keeping scans out of it means the only way a
-  /// page leaves the app is through a share the app initiated.
+  /// Documents, not a cache/temp directory — a page backs a saved History
+  /// entry, so it has to outlive the next time iOS wants disk space back.
+  ///
+  /// This lived in Application Support for a while, to keep it out of the
+  /// directory `UIFileSharingEnabled` opens up to the Files app. That flag
+  /// is gone from the Info.plist now, which makes Documents private
+  /// anyway, and Application Support turned out to cost real things:
+  /// expo-file-system's `Paths` can't name it, so JS had no way to rebuild
+  /// these paths, and expo-sharing refuses files outside the directories
+  /// it scopes to.
   ///
   /// Named `Blippo-<date-time>-<shortId>-p<page>.jpg` rather than a bare
-  /// UUID so a page still arrives somewhere legible once it *is* shared.
+  /// UUID so a page still arrives somewhere legible once it's shared.
   private static func savePage(_ image: UIImage, index: Int, sessionId: String) throws -> URL {
     guard let data = image.jpegData(compressionQuality: 0.85) else {
       throw PageEncodingFailed()
     }
     let directory = FileManager.default
-      .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+      .urls(for: .documentDirectory, in: .userDomainMask)[0]
       .appendingPathComponent("DocumentScans", isDirectory: true)
-    // Application Support isn't created for us the way Documents is.
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     let url = directory.appendingPathComponent("Blippo-\(sessionId)-p\(index + 1).jpg")
     try data.write(to: url)

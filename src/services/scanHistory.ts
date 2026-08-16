@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { File } from 'expo-file-system';
-import { getPremiumDevOverride } from '../premium/premiumPreference';
+import { isPremium, isPremiumResolved } from '../premium/premiumState';
 import { isDuplicateScansEnabled, isHistorySavingEnabled } from './historyPreference';
 import type { ScanHistoryEntry } from '../types/history';
 
@@ -50,9 +50,11 @@ export async function addHistoryEntry(entry: ScanHistoryEntry): Promise<void> {
   const existing = await getHistory();
   if (!(await isDuplicateScansEnabled()) && existing.some((e) => isSameScan(e, entry))) return;
 
-  const isPremium = await getPremiumDevOverride();
-  const maxEntries = isPremium ? PREMIUM_MAX_ENTRIES : FREE_MAX_ENTRIES;
-  const next = [entry, ...existing].slice(0, maxEntries);
+  // Trimming is destructive, so an unresolved premium state gets the
+  // benefit of the doubt: scanning in the second before RevenueCat
+  // answers must never cut a paying user's log down to the free cap.
+  const useFreeCap = isPremiumResolved() && !isPremium();
+  const next = [entry, ...existing].slice(0, useFreeCap ? FREE_MAX_ENTRIES : PREMIUM_MAX_ENTRIES);
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
 }
 

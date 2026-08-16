@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { PaywallScreen } from '../screens/PaywallScreen';
 import { setAdsEnabled } from '../services/ads/adsEnabled';
 import { getPremiumDevOverride, setPremiumDevOverride } from './premiumPreference';
+import { setPremiumActive } from './premiumState';
 import { configurePurchases, fetchIsPremium, subscribeToPremiumChanges } from './revenueCat';
 
 interface PremiumContextValue {
@@ -53,10 +54,13 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Ads check this flag directly (see services/ads/adsEnabled.ts) rather
-  // than depending on this context, so keep it in sync here.
+  // Ads and the history cap both run outside React and read their own
+  // module-level flags rather than this context, so keep those in sync
+  // here (see services/ads/adsEnabled.ts and premium/premiumState.ts).
   useEffect(() => {
-    if (isReady) setAdsEnabled(!isPremium);
+    if (!isReady) return;
+    setAdsEnabled(!isPremium);
+    setPremiumActive(isPremium);
   }, [isPremium, isReady]);
 
   const setPremium = useCallback((enabled: boolean) => {

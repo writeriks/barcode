@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomSheet } from '../components/BottomSheet';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { APP_NAME, FAQ_URL, PRIVACY_POLICY_URL, SUPPORT_EMAIL, TERMS_OF_USE_URL, WEBSITE_URL } from '../config/appInfo';
+import { IS_PREMIUM_OVERRIDE_AVAILABLE } from '../config/premiumEnv';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { LANGUAGE_NATIVE_NAMES } from '../i18n/languageNames';
 import { usePremium } from '../premium/PremiumContext';
@@ -16,6 +17,7 @@ import { showManageSubscriptions } from '../premium/revenueCat';
 import { isPrivacyOptionsRequired, showPrivacyOptionsForm } from '../services/ads/consent';
 import { authenticateAppUnlock, isDeviceLockSupported, setAppLockEnabled } from '../services/appLock';
 import { captureAnalyticsEvent } from '../services/analytics';
+import { resetFreeScans } from '../services/documentScanQuota';
 import {
   isDuplicateScansEnabled,
   isHistorySavingEnabled,
@@ -166,6 +168,11 @@ export function SettingsScreen({
     ]);
   };
 
+  const handleResetFreeScans = async () => {
+    await resetFreeScans();
+    Alert.alert('Free document scans reset');
+  };
+
   // All of the toggles below are premium-only — a free user tapping one
   // opens the paywall instead of changing anything.
   const withPremiumGate =
@@ -214,15 +221,33 @@ export function SettingsScreen({
             <Ionicons name="chevron-forward" size={18} color={colors.text} style={styles.dropdownChevron} />
           )}
         </Pressable>
-        {__DEV__ ? (
-          <ToggleRow
-            label={t('settings.premiumDevToggle')}
-            description={t('settings.premiumDevToggleDescription')}
-            value={isPremium}
-            onValueChange={setPremium}
-            colors={colors}
-            styles={styles}
-          />
+        {IS_PREMIUM_OVERRIDE_AVAILABLE ? (
+          <>
+            <ToggleRow
+              label={t('settings.premiumDevToggle')}
+              description={t('settings.premiumDevToggleDescription')}
+              value={isPremium}
+              onValueChange={setPremium}
+              colors={colors}
+              styles={styles}
+            />
+            {/* Deliberately untranslated: these two rows only exist in a
+                build made with EXPO_PUBLIC_PREMIUM_TESTING, so no user
+                ever sees them and translating them would just add seven
+                strings nobody reads. */}
+            <Pressable
+              onPress={handleResetFreeScans}
+              style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+            >
+              <View style={styles.toggleText}>
+                <Text style={styles.rowLabel}>Reset free document scans</Text>
+                <Text style={styles.toggleDescription}>
+                  Hands back the free scan allowance so the free flow can be tested again.
+                </Text>
+              </View>
+              <Ionicons name="refresh" size={18} color={colors.text} style={styles.dropdownChevron} />
+            </Pressable>
+          </>
         ) : null}
 
         <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.appSettingsSection')}</Text>

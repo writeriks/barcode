@@ -29,6 +29,19 @@ export async function getRemainingFreeScans(): Promise<number> {
   return Math.max(0, FREE_SCAN_LIMIT - (await getUsedCount()));
 }
 
+/** Hands the free allowance back, for testing. Surviving a reinstall is
+ * the whole point of keeping this in the keychain, which also means a
+ * test device that has spent its three scans can't get back to the free
+ * flow on its own — hence this, behind the same flag as the premium
+ * override (see config/premiumEnv.ts). */
+export async function resetFreeScans(): Promise<void> {
+  try {
+    await SecureStore.deleteItemAsync(USED_COUNT_KEY);
+  } catch {
+    // Nothing stored to clear is the state we wanted anyway.
+  }
+}
+
 /** Records one used scan and returns what's left. Call this only after a
  * scan actually produced pages — cancelling out of the camera shouldn't
  * cost anything. Premium callers should skip it entirely. */

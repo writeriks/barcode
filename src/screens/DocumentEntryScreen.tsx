@@ -2,6 +2,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { BANNER_AD_RESERVED_HEIGHT } from '../components/BottomBannerAd';
 import { Toast } from '../components/Toast';
 import { useToast } from '../hooks/useToast';
 import { usePremium } from '../premium/PremiumContext';
@@ -115,7 +116,7 @@ export function DocumentEntryScreen({ timestamp, imageUris: initialImageUris, pa
           onCopied={() => showToast(t('qr.copied'))}
         />
       )}
-      <Toast message={toastMessage} bottom={tabBarHeight + 80} />
+      <Toast message={toastMessage} bottom={tabBarHeight + BANNER_AD_RESERVED_HEIGHT + 16} />
     </View>
   );
 }

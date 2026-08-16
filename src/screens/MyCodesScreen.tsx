@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BottomBannerAd } from '../components/BottomBannerAd';
+import { BANNER_AD_RESERVED_HEIGHT, BottomBannerAd } from '../components/BottomBannerAd';
 import { BottomSheet } from '../components/BottomSheet';
 import { FadeSwitcher } from '../components/FadeSwitcher';
 import { FilterPillRow, type PillOption } from '../components/FilterPillRow';
@@ -768,7 +768,7 @@ export function MyCodesScreen({ navigation }: Props) {
         </View>
       </BottomSheet>
 
-      <Toast message={toastMessage} bottom={tabBarHeight + 20} />
+      <Toast message={toastMessage} bottom={tabBarHeight + BANNER_AD_RESERVED_HEIGHT + 16} />
       {qrRenderer}
     </SafeAreaView>
   );

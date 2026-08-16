@@ -2,7 +2,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { BottomBannerAd } from '../components/BottomBannerAd';
+import { BANNER_AD_RESERVED_HEIGHT, BottomBannerAd } from '../components/BottomBannerAd';
 import { CopyableBarcode } from '../components/CopyableBarcode';
 import { PillButton } from '../components/PillButton';
 import { ScoreReveal } from '../components/ScoreReveal';
@@ -110,7 +110,7 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
         <PillButton title={t('result.scanAnother')} onPress={onScanAgain} variant="punch" />
       </ScrollView>
       <BottomBannerAd />
-      <Toast message={toastMessage} bottom={tabBarHeight + 80} />
+      <Toast message={toastMessage} bottom={tabBarHeight + BANNER_AD_RESERVED_HEIGHT + 16} />
     </View>
   );
 }

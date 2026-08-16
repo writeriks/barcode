@@ -2,7 +2,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { BottomBannerAd } from '../components/BottomBannerAd';
+import { BANNER_AD_RESERVED_HEIGHT, BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
 import { QrContentView } from '../components/QrContentView';
 import { Toast } from '../components/Toast';
@@ -29,7 +29,7 @@ export function QrResultScreen({ data, onScanAgain }: Props) {
         <PillButton title={t('qr.scanAgain')} onPress={onScanAgain} variant="ghost" />
       </ScrollView>
       <BottomBannerAd />
-      <Toast message={toastMessage} bottom={tabBarHeight + 80} />
+      <Toast message={toastMessage} bottom={tabBarHeight + BANNER_AD_RESERVED_HEIGHT + 16} />
     </View>
   );
 }

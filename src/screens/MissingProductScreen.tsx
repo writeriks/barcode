@@ -2,7 +2,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, Easing, Linking, StyleSheet, Text, View } from 'react-native';
-import { BottomBannerAd } from '../components/BottomBannerAd';
+import { BANNER_AD_RESERVED_HEIGHT, BottomBannerAd } from '../components/BottomBannerAd';
 import { CopyableBarcode } from '../components/CopyableBarcode';
 import { PillButton } from '../components/PillButton';
 import { Toast } from '../components/Toast';
@@ -85,7 +85,7 @@ export function MissingProductScreen({ barcode, onScanAgain }: Props) {
         <CopyableBarcode barcode={barcode} onCopied={() => showToast(t('qr.copied'))} />
       </View>
       <BottomBannerAd />
-      <Toast message={toastMessage} bottom={tabBarHeight + 80} />
+      <Toast message={toastMessage} bottom={tabBarHeight + BANNER_AD_RESERVED_HEIGHT + 16} />
     </View>
   );
 }

@@ -12,6 +12,18 @@ import type { BannerAdProps } from 'react-native-google-mobile-ads';
 // the anchored adaptive size itself already adapts to the device width.
 const PLACEHOLDER_HEIGHT = 50;
 
+/**
+ * How much vertical space this banner occupies, near enough: the reserved
+ * ad height plus its own top padding and hairline border.
+ *
+ * Anything floating above the banner has to clear this. AdMob treats an
+ * obscured ad as an invalid impression — overlapping one risks the
+ * account, not just the layout — so absolutely-positioned UI at the
+ * bottom of an ad-bearing screen should offset by this rather than a
+ * hand-picked number that happens to look right on one device.
+ */
+export const BANNER_AD_RESERVED_HEIGHT = PLACEHOLDER_HEIGHT + 7;
+
 interface ResolvedBanner {
   Component: ComponentType<BannerAdProps>;
   unitId: string;

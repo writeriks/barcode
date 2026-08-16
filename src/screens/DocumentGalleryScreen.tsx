@@ -102,7 +102,7 @@ export function DocumentGalleryScreen({ imageUris, onOpenPage, onDeletePages, on
         keyExtractor={(uri, index) => `${uri}-${index}`}
         numColumns={NUM_COLUMNS}
         style={styles.flex}
-        contentContainerStyle={[styles.grid, { paddingBottom: isEditMode ? 90 : 30 }]}
+        contentContainerStyle={styles.grid}
         columnWrapperStyle={styles.gridRow}
         renderItem={({ item, index }) => {
           const selected = selectedIndexes.has(index);
@@ -132,9 +132,12 @@ export function DocumentGalleryScreen({ imageUris, onOpenPage, onDeletePages, on
         }}
       />
 
-      {!isEditMode ? <BottomBannerAd /> : null}
-
-      <View style={[styles.floatingActionWrap, { bottom: tabBarHeight + 16 }]} pointerEvents="box-none">
+      {/* Laid out above the banner rather than floated over the grid: an
+          absolutely-positioned button here landed on top of the ad, which
+          AdMob counts as obscuring an impression. In normal flow the two
+          can't collide however tall the banner turns out to be — or
+          whether it renders at all (premium, no fill, Expo Go). */}
+      <View style={styles.actionBar}>
         {isEditMode ? (
           <View style={styles.editActions}>
             <PillButton
@@ -156,6 +159,8 @@ export function DocumentGalleryScreen({ imageUris, onOpenPage, onDeletePages, on
           <PillButton title={t('document.scanAnother')} onPress={onScanAgain} variant="punch" />
         )}
       </View>
+
+      {!isEditMode ? <BottomBannerAd /> : null}
     </View>
   );
 }
@@ -218,11 +223,11 @@ function createStyles(colors: ColorTheme, itemWidth: number) {
     gridCheckboxDim: {
       opacity: 0.7,
     },
-    floatingActionWrap: {
-      position: 'absolute',
-      left: 24,
-      right: 24,
+    actionBar: {
       alignItems: 'center',
+      paddingHorizontal: 24,
+      paddingTop: 12,
+      paddingBottom: 14,
     },
     editActions: {
       flexDirection: 'row',

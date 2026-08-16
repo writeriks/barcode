@@ -10,6 +10,19 @@ const TEST_ADMOB_IOS_APP_ID = 'ca-app-pub-3940256099942544~1458002511';
 const androidAppId = process.env.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID || TEST_ADMOB_ANDROID_APP_ID;
 const iosAppId = process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID || TEST_ADMOB_IOS_APP_ID;
 
+// Reveals the Settings rows that switch premium on for free and reset the
+// document-scan allowance (see src/config/premiumEnv.ts). Resolved here,
+// once, rather than read from the environment at runtime — because here is
+// where EAS_BUILD is visible.
+//
+// EAS sets EAS_BUILD=true on its builders, and an EAS build is one that
+// leaves this machine, so the override is forced off for those no matter
+// what the environment says. eas.json pins the variable to "false" for the
+// preview and production profiles as well; this is the backstop for a
+// dashboard secret or a stray .env that gets past that.
+const isEasBuild = process.env.EAS_BUILD === 'true';
+const premiumTestingEnabled = !isEasBuild && process.env.EXPO_PUBLIC_PREMIUM_TESTING === 'true';
+
 const config: ExpoConfig = {
   name: 'Blippo',
   slug: 'barcode',
@@ -50,6 +63,7 @@ const config: ExpoConfig = {
     favicon: './assets/favicon.png',
   },
   extra: {
+    premiumTestingEnabled,
     eas: {
       projectId: '0fcdbd1d-a033-4e16-9d2e-2cfaf89c0b3e',
     },

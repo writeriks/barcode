@@ -3,6 +3,7 @@ import { requireNativeModule } from 'expo-modules-core';
 interface ExpoDocumentScannerModuleType {
   scanDocumentAsync(): Promise<string[]>;
   recognizeTextAsync(uri: string): Promise<string>;
+  shareFilesAsync(uris: string[]): Promise<void>;
 }
 
 /**
@@ -39,4 +40,18 @@ export async function scanDocumentAsync(): Promise<string[] | null> {
  */
 export function recognizeTextAsync(uri: string): Promise<string> {
   return ExpoDocumentScannerModule.recognizeTextAsync(uri);
+}
+
+/**
+ * Opens the system share sheet with several local files attached at once.
+ * This exists because neither of the JS-level sharing APIs can do it:
+ * `expo-sharing`'s `shareAsync(url)` and React Native's
+ * `Share.share({ url })` each take a single file. UIActivityViewController
+ * accepts an array, so sharing every page of a multi-page scan in one
+ * action only needs this thin wrapper over it.
+ *
+ * Resolves once the sheet closes, whether the user shared or dismissed it.
+ */
+export function shareFilesAsync(uris: string[]): Promise<void> {
+  return ExpoDocumentScannerModule.shareFilesAsync(uris);
 }

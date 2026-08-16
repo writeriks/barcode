@@ -7,6 +7,7 @@ import {
   Alert,
   FlatList,
   Image,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -15,6 +16,7 @@ import {
 } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
+import { isExpoGo } from '../services/ads/environment';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -55,6 +57,11 @@ export function DocumentGalleryScreen({
 
   const isLocked = (index: number) => !isPremium && index > 0;
 
+  // Locked pages stay selectable so they can still be deleted, but sharing
+  // one would hand a free user the full-resolution page the paywall is
+  // meant to gate — so the whole selection has to be unlocked to share.
+  const canShareSelection = selectedIndexes.size > 0 && ![...selectedIndexes].some(isLocked);
+
   const handleToggleEditMode = () => {
     setIsEditMode((prev) => !prev);
     setSelectedIndexes(new Set());
@@ -67,6 +74,23 @@ export function DocumentGalleryScreen({
       else next.add(index);
       return next;
     });
+  };
+
+  // Both JS sharing APIs (expo-sharing, RN's Share) take a single file, so
+  // sharing several pages at once goes through the local native module's
+  // UIActivityViewController wrapper instead. Same dynamic-import guard as
+  // every other call into it — see ScannerScreen's handleScanDocument.
+  const handleShareSelected = async () => {
+    if (!canShareSelection) return;
+    if (Platform.OS !== 'ios' || isExpoGo()) return;
+    // Page order, not the order the user happened to tap them in.
+    const uris = [...selectedIndexes]
+      .sort((a, b) => a - b)
+      .map((index) => imageUris[index])
+      .filter(Boolean);
+    if (uris.length === 0) return;
+    const { shareFilesAsync } = await import('expo-document-scanner');
+    await shareFilesAsync(uris);
   };
 
   const handleDeleteSelected = () => {
@@ -148,13 +172,22 @@ export function DocumentGalleryScreen({
 
       <View style={[styles.floatingActionWrap, { bottom: tabBarHeight + 16 }]} pointerEvents="box-none">
         {isEditMode ? (
-          <PillButton
-            title={t('history.delete')}
-            onPress={handleDeleteSelected}
-            variant="ghost"
-            icon="trash-outline"
-            style={selectedIndexes.size === 0 && styles.disabledButton}
-          />
+          <View style={styles.editActions}>
+            <PillButton
+              title={t('history.share')}
+              onPress={handleShareSelected}
+              variant="ghost"
+              icon="share-outline"
+              style={!canShareSelection && styles.disabledButton}
+            />
+            <PillButton
+              title={t('history.delete')}
+              onPress={handleDeleteSelected}
+              variant="ghost"
+              icon="trash-outline"
+              style={selectedIndexes.size === 0 && styles.disabledButton}
+            />
+          </View>
         ) : (
           <PillButton title={t('document.scanAnother')} onPress={onScanAgain} variant="punch" />
         )}
@@ -246,6 +279,10 @@ function createStyles(colors: ColorTheme, itemWidth: number) {
       left: 24,
       right: 24,
       alignItems: 'center',
+    },
+    editActions: {
+      flexDirection: 'row',
+      gap: 10,
     },
     disabledButton: {
       opacity: 0.4,

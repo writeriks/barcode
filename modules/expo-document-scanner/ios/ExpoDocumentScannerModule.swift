@@ -40,7 +40,7 @@ internal final class TextRecognitionFailed: Exception {
   override var reason: String { "Vision framework failed to run text recognition" }
 }
 
-/// Two on-device capabilities, both backed by Apple frameworks — no
+/// Three on-device capabilities, all backed by Apple frameworks — no
 /// network call, no third-party service:
 ///  - `scanDocumentAsync`: presents VisionKit's document camera (the same
 ///    auto-edge-detection/perspective-correction UI as Notes/Files) and
@@ -48,6 +48,11 @@ internal final class TextRecognitionFailed: Exception {
 ///    directory, returning their file:// URIs.
 ///  - `recognizeTextAsync`: runs Vision's VNRecognizeTextRequest OCR on a
 ///    single image and returns the recognized lines joined with `\n`.
+///  - `shareFilesAsync`: presents the system share sheet for *several*
+///    files at once. Neither expo-sharing's `shareAsync(url:)` nor React
+///    Native's `Share.share({url})` accepts more than one file, but
+///    UIActivityViewController takes an array natively — this exposes
+///    that so a multi-page scan can be shared in one go.
 public class ExpoDocumentScannerModule: Module {
   // Keeps the delegate alive for the duration of the scan — VisionKit
   // only holds a weak reference to `documentCameraViewController.delegate`.
@@ -107,6 +112,43 @@ public class ExpoDocumentScannerModule: Module {
         } catch {
           promise.reject(TextRecognitionFailed())
         }
+      }
+    }
+
+    AsyncFunction("shareFilesAsync") { (urls: [URL], promise: Promise) in
+      DispatchQueue.main.async {
+        // Nothing selected is a no-op, not an error — the caller guards
+        // this too, but an empty share sheet would be nonsense either way.
+        guard !urls.isEmpty else {
+          promise.resolve()
+          return
+        }
+        guard let currentViewController = self.appContext?.utilities?.currentViewController() else {
+          promise.reject(NoCurrentViewController())
+          return
+        }
+
+        let controller = UIActivityViewController(activityItems: urls, applicationActivities: nil)
+
+        // On iPad UIKit *raises* if a popover-presented sheet has no anchor,
+        // and this app still runs there in iPhone compatibility mode (it's
+        // `supportsTablet: false`, not iPad-blocked) — Apple even reviews it
+        // on an iPad. Anchor to the bottom-center, near the share button
+        // that triggered this, with no arrow.
+        if let popover = controller.popoverPresentationController {
+          let bounds = currentViewController.view.bounds
+          popover.sourceView = currentViewController.view
+          popover.sourceRect = CGRect(x: bounds.midX, y: bounds.maxY, width: 0, height: 0)
+          popover.permittedArrowDirections = []
+        }
+
+        // Resolves once the sheet is done — shared, or dismissed without
+        // sharing. Both are ordinary outcomes, so neither is an error.
+        controller.completionWithItemsHandler = { _, _, _, _ in
+          promise.resolve()
+        }
+
+        currentViewController.present(controller, animated: true)
       }
     }
   }

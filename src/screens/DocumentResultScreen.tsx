@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import * as Clipboard from 'expo-clipboard';
 import * as Speech from 'expo-speech';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Image, Modal, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,6 +28,10 @@ interface Props {
   onCopied?: () => void;
 }
 
+// How long after the share sheet resolves to keep ignoring taps on the
+// page. Covers the dismissal animation, which outlives the promise.
+const SHARE_DISMISS_GRACE_MS = 500;
+
 /** A single scanned page: its image and the text Vision's OCR recognized
  * in it. Used both as the sole screen for a one-page document and, nested
  * under DocumentGalleryScreen, for one page of a multi-page document. */
@@ -40,6 +44,9 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, on
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const [didImageFail, setDidImageFail] = useState(false);
+  // True from opening the share sheet until well past its dismissal — see
+  // shareImage for why the gap after matters.
+  const isSharePendingRef = useRef(false);
   const hasText = text.trim().length > 0;
 
   // A page whose file can't be read used to render as an empty box here
@@ -87,14 +94,7 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, on
   };
 
   /**
-   * Opens the share sheet on a scanned page, via React Native's own
-   * Share. Two other routes were tried here and both misbehaved:
-   * expo-sharing never reacted at all, and presenting a
-   * UIActivityViewController from this app's native module left the
-   * screen swallowing taps once the sheet closed. RN presents this from
-   * inside its own view hierarchy, which is the one thing here that has
-   * always worked. The gallery's multi-page share still needs the native
-   * module, since no JS API takes more than one file.
+   * Opens the share sheet on a scanned page.
    *
    * Shares the page itself, never its OCR text — this is a document, and
    * sending someone a wall of recognized characters isn't what "share a
@@ -105,8 +105,9 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, on
    * fullscreen viewer's save button lands here too.
    */
   const shareImage = async (action: 'share' | 'save') => {
-    if (!imageUri) return;
+    if (!imageUri || isSharePendingRef.current) return;
     captureAnalyticsEvent('document_action', { action });
+    isSharePendingRef.current = true;
     try {
       await Share.share({ url: imageUri });
     } catch {
@@ -114,7 +115,23 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, on
       // simply not reacting, which reads as a broken app rather than a
       // failure. Say so instead.
       Alert.alert(t('document.shareFailed'));
+    } finally {
+      // The sheet's dismissal animation outlives the promise, and the tap
+      // that dismissed it lands on the page underneath — which sits on a
+      // Pressable that opens the fullscreen viewer. Presenting that while
+      // the sheet is still going away wedges both, and the screen stops
+      // responding entirely. Hold the guard past the animation. Same race
+      // as the deferred Share.share calls in HistoryScreen and
+      // MyCodesScreen, in the other direction.
+      setTimeout(() => {
+        isSharePendingRef.current = false;
+      }, SHARE_DISMISS_GRACE_MS);
     }
+  };
+
+  const handleOpenFullscreen = () => {
+    if (didImageFail || isSharePendingRef.current) return;
+    setIsFullscreenOpen(true);
   };
 
   const handleShare = () => shareImage('share');
@@ -139,7 +156,7 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, on
         {imageUri ? (
           <Pressable
             style={styles.pageBox}
-            onPress={() => !didImageFail && setIsFullscreenOpen(true)}
+            onPress={handleOpenFullscreen}
             disabled={didImageFail}
           >
             <Image

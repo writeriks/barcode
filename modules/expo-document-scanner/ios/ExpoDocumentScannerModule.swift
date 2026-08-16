@@ -130,16 +130,26 @@ public class ExpoDocumentScannerModule: Module {
 
         let controller = UIActivityViewController(activityItems: urls, applicationActivities: nil)
 
-        // On iPad UIKit *raises* if a popover-presented sheet has no anchor,
-        // and this app still runs there in iPhone compatibility mode (it's
-        // `supportsTablet: false`, not iPad-blocked) — Apple even reviews it
-        // on an iPad. Anchor to the bottom-center, near the share button
-        // that triggered this, with no arrow.
-        if let popover = controller.popoverPresentationController {
-          let bounds = currentViewController.view.bounds
-          popover.sourceView = currentViewController.view
-          popover.sourceRect = CGRect(x: bounds.midX, y: bounds.maxY, width: 0, height: 0)
-          popover.permittedArrowDirections = []
+        // iPad only, deliberately. Apple requires this sheet to be anchored
+        // in a popover there and UIKit raises without one — and the app does
+        // run on iPad, in iPhone compatibility mode, which is where Apple
+        // reviews it.
+        //
+        // On iPhone the default presentation is already right, and touching
+        // popoverPresentationController anyway left the presentation in a
+        // state its dismissal didn't fully unwind: the sheet closed but
+        // something kept swallowing taps, so the screen behind it looked
+        // frozen. Mirrors what expo-sharing does.
+        if UIDevice.current.userInterfaceIdiom == .pad {
+          let viewFrame = currentViewController.view.frame
+          controller.popoverPresentationController?.sourceView = currentViewController.view
+          controller.popoverPresentationController?.sourceRect = CGRect(
+            x: viewFrame.midX,
+            y: viewFrame.maxY,
+            width: 0,
+            height: 0
+          )
+          controller.modalPresentationStyle = .pageSheet
         }
 
         // Resolves once the sheet is done — shared, or dismissed without

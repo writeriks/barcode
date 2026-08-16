@@ -28,7 +28,7 @@
     "galleryTitle": "{{count}} Seiten",
     "deletePagesTitle": "Ausgewählte Seiten löschen?",
     "deletePagesBody": "Dies kann nicht rückgängig gemacht werden.",
-    "savedToFiles": "In Dateien gespeichert",
+    "freeScansLeft": "Noch {{count}} kostenlose Scans",
     "typeDocument": "Dokument",
     "metaDocument": "Dokumentenscan"
   },
@@ -325,6 +325,7 @@
   "paywall": {
     "title": "Blippo Premium freischalten",
     "subtitle": "Werbung entfernen, jede Einstellung anpassen und mehr Verlauf speichern.",
+    "benefitScans": "Unbegrenzte Dokumentenscans",
     "benefitNoAds": "Keine Werbung, nirgendwo in der App",
     "benefitHistory": "Bis zu 100 Scans im Verlauf statt 30",
     "benefitSettings": "Passe Serienscan, Vibration, Signalton, Verlauf und App-Sperre an",

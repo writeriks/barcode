@@ -28,7 +28,7 @@
     "galleryTitle": "{{count}} page(s)",
     "deletePagesTitle": "Supprimer les pages sélectionnées ?",
     "deletePagesBody": "Cette action est irréversible.",
-    "savedToFiles": "Enregistré dans Fichiers",
+    "freeScansLeft": "Il vous reste {{count}} scans gratuits",
     "typeDocument": "Document",
     "metaDocument": "Scan de document"
   },
@@ -325,6 +325,7 @@
   "paywall": {
     "title": "Débloquez Blippo Premium",
     "subtitle": "Supprimez les publicités, personnalisez tous les réglages et conservez plus d'historique.",
+    "benefitScans": "Scans de documents illimités",
     "benefitNoAds": "Aucune publicité, nulle part dans l'app",
     "benefitHistory": "Jusqu’à 100 scans dans votre historique au lieu de 30",
     "benefitSettings": "Personnalisez le scan en rafale, les vibrations, le bip, l'historique et le Verrouillage de l'app",

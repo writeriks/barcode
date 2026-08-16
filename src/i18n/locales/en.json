@@ -28,7 +28,7 @@
     "galleryTitle": "{{count}} pages",
     "deletePagesTitle": "Delete selected pages?",
     "deletePagesBody": "This can't be undone.",
-    "savedToFiles": "Saved to Files",
+    "freeScansLeft": "{{count}} free scans left",
     "typeDocument": "Document",
     "metaDocument": "Document scan"
   },
@@ -325,6 +325,7 @@
   "paywall": {
     "title": "Unlock Blippo Premium",
     "subtitle": "Remove ads, customize every setting, and keep more history.",
+    "benefitScans": "Unlimited document scans",
     "benefitNoAds": "No ads, anywhere in the app",
     "benefitHistory": "Keep up to 100 scans in your history instead of 30",
     "benefitSettings": "Customize batch scan, vibration, beep, history, and App Lock",

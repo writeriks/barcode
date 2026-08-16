@@ -209,18 +209,24 @@ private final class DocumentScanDelegate: NSObject, VNDocumentCameraViewControll
     String(UUID().uuidString.prefix(6))
   }
 
-  /// Documents directory (not a cache/temp one) — a scanned page becomes
-  /// part of a saved History entry, so it needs to survive as long as
-  /// that entry does, not get purged the next time iOS wants cache space.
-  /// Named `Blippo-<date-time>-<shortId>-p<page>.jpg` instead of a bare
-  /// UUID so the file makes sense to a user browsing it in the Files app.
+  /// Application Support, deliberately, rather than Documents. Both
+  /// persist for the life of the install (unlike Caches/tmp, which iOS
+  /// purges when it wants space — no good for pages backing a saved
+  /// History entry), but Documents is the directory `UIFileSharingEnabled`
+  /// exposes to the Files app and to Finder, and that exposure is
+  /// all-or-nothing per app. Keeping scans out of it means the only way a
+  /// page leaves the app is through a share the app initiated.
+  ///
+  /// Named `Blippo-<date-time>-<shortId>-p<page>.jpg` rather than a bare
+  /// UUID so a page still arrives somewhere legible once it *is* shared.
   private static func savePage(_ image: UIImage, index: Int, sessionId: String) throws -> URL {
     guard let data = image.jpegData(compressionQuality: 0.85) else {
       throw PageEncodingFailed()
     }
     let directory = FileManager.default
-      .urls(for: .documentDirectory, in: .userDomainMask)[0]
+      .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
       .appendingPathComponent("DocumentScans", isDirectory: true)
+    // Application Support isn't created for us the way Documents is.
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     let url = directory.appendingPathComponent("Blippo-\(sessionId)-p\(index + 1).jpg")
     try data.write(to: url)

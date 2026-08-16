@@ -28,7 +28,7 @@
     "galleryTitle": "{{count}} páginas",
     "deletePagesTitle": "¿Eliminar las páginas seleccionadas?",
     "deletePagesBody": "Esta acción no se puede deshacer.",
-    "savedToFiles": "Guardado en Archivos",
+    "freeScansLeft": "Te quedan {{count}} escaneos gratis",
     "typeDocument": "Documento",
     "metaDocument": "Escaneo de documento"
   },
@@ -325,6 +325,7 @@
   "paywall": {
     "title": "Desbloquea Blippo Premium",
     "subtitle": "Elimina los anuncios, personaliza todos los ajustes y guarda más historial.",
+    "benefitScans": "Escaneos de documentos ilimitados",
     "benefitNoAds": "Sin anuncios en ninguna parte de la app",
     "benefitHistory": "Hasta 100 escaneos en tu historial en lugar de 30",
     "benefitSettings": "Personaliza el escaneo por lotes, la vibración, el sonido, el historial y el Bloqueo de la app",

@@ -26,14 +26,13 @@ const config: ExpoConfig = {
     // TODO: confirm/change before a real App Store submission — this must
     // match the bundle ID registered in your Apple Developer account.
     bundleIdentifier: 'com.writeriks.beep',
-    infoPlist: {
-      // Makes the app's Documents folder (where Scan Document saves its
-      // pages — see modules/expo-document-scanner) browsable from the
-      // Files app under "On My iPhone", so a scanned document is already
-      // reachable there without an explicit "save" step.
-      UIFileSharingEnabled: true,
-      LSSupportsOpeningDocumentsInPlace: true,
-    },
+    // Deliberately no UIFileSharingEnabled/LSSupportsOpeningDocumentsInPlace:
+    // those expose the whole Documents directory to the Files app and to
+    // Finder, which would put every scanned page a tap away regardless of
+    // what the app is willing to hand out. Scans live in Application
+    // Support instead (see modules/expo-document-scanner), and leave only
+    // through a share the app initiated — where "Save to Files" is still
+    // one of the destinations offered.
   },
   android: {
     // TODO: confirm/change before a real Play Store submission — this must

@@ -17,7 +17,10 @@ interface Props {
   onPurchased: () => void;
 }
 
+// Document scanning leads: running out of free scans is the most common
+// way to arrive here, so the reason has to be the first thing listed.
 const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; labelKey: string }[] = [
+  { icon: 'document-text-outline', labelKey: 'paywall.benefitScans' },
   { icon: 'ban-outline', labelKey: 'paywall.benefitNoAds' },
   { icon: 'infinite-outline', labelKey: 'paywall.benefitHistory' },
   { icon: 'options-outline', labelKey: 'paywall.benefitSettings' },

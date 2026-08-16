@@ -28,7 +28,7 @@
     "galleryTitle": "{{count}} pagine",
     "deletePagesTitle": "Eliminare le pagine selezionate?",
     "deletePagesBody": "Questa azione non può essere annullata.",
-    "savedToFiles": "Salvato in File",
+    "freeScansLeft": "Ti restano {{count}} scansioni gratuite",
     "typeDocument": "Documento",
     "metaDocument": "Scansione documento"
   },
@@ -325,6 +325,7 @@
   "paywall": {
     "title": "Sblocca Blippo Premium",
     "subtitle": "Rimuovi gli annunci, personalizza ogni impostazione e conserva più cronologia.",
+    "benefitScans": "Scansioni di documenti illimitate",
     "benefitNoAds": "Nessun annuncio in nessuna parte dell'app",
     "benefitHistory": "Fino a 100 scansioni nella cronologia invece di 30",
     "benefitSettings": "Personalizza scansione a raffica, vibrazione, beep, cronologia e Blocco app",

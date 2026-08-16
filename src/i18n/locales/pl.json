@@ -28,7 +28,7 @@
     "galleryTitle": "Strony: {{count}}",
     "deletePagesTitle": "Usunąć zaznaczone strony?",
     "deletePagesBody": "Tej operacji nie można cofnąć.",
-    "savedToFiles": "Zapisano w Plikach",
+    "freeScansLeft": "Pozostało darmowych skanów: {{count}}",
     "typeDocument": "Dokument",
     "metaDocument": "Skan dokumentu"
   },
@@ -325,6 +325,7 @@
   "paywall": {
     "title": "Odblokuj Blippo Premium",
     "subtitle": "Usuń reklamy, dostosuj każde ustawienie i przechowuj więcej historii.",
+    "benefitScans": "Nieograniczone skanowanie dokumentów",
     "benefitNoAds": "Brak reklam w całej aplikacji",
     "benefitHistory": "Do 100 skanów w historii zamiast 30",
     "benefitSettings": "Dostosuj skanowanie seryjne, wibracje, dźwięk, historię i Blokadę aplikacji",

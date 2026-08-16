@@ -5,7 +5,7 @@ import * as Sharing from 'expo-sharing';
 import * as Speech from 'expo-speech';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Image, Modal, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { captureAnalyticsEvent } from '../services/analytics';
@@ -72,23 +72,13 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, on
     onCopied?.();
   };
 
-  // Only one page and one text on this screen — nothing to pick between,
-  // so Share is a direct action instead of arming a selection UI.
+  // Shares the page itself, never its OCR text: this is a document, and
+  // sending someone a wall of recognized characters isn't what "share a
+  // scan" means. The text has its own affordance — the copy button above.
   const handleShare = async () => {
+    if (!imageUri) return;
     captureAnalyticsEvent('document_action', { action: 'share' });
-    if (imageUri && hasText) {
-      // Combining an attached file with a text message in one native share
-      // sheet is an iOS-only capability of Share.share's {message, url} —
-      // the app's other native work (barcode/document scanning) is
-      // already iOS-only for the same reason, so this matches.
-      await Share.share({ message: text, url: imageUri });
-      return;
-    }
-    if (imageUri) {
-      if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(imageUri);
-      return;
-    }
-    if (hasText) await Share.share({ message: text });
+    if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(imageUri);
   };
 
   // The native share sheet is also how iOS lets a photo be saved — "Save

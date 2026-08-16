@@ -23,7 +23,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PillButton } from '../components/PillButton';
+import { usePremium } from '../premium/PremiumContext';
 import { isExpoGo } from '../services/ads/environment';
+import { consumeFreeScan, getRemainingFreeScans } from '../services/documentScanQuota';
 import { playScanFeedback } from '../services/scanFeedback';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -133,6 +135,17 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
   const [manualValue, setManualValue] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [isScanningDocument, setIsScanningDocument] = useState(false);
+  const { isPremium, openPaywall } = usePremium();
+  // null until the keychain has been read — the badge stays hidden rather
+  // than flashing a wrong number on the first frame.
+  const [remainingFreeScans, setRemainingFreeScans] = useState<number | null>(null);
+
+  // Re-read on focus so the badge is right after upgrading to premium in
+  // Settings, or after a scan taken from somewhere else in the app.
+  useEffect(() => {
+    if (!isFocused || isPremium) return;
+    getRemainingFreeScans().then(setRemainingFreeScans);
+  }, [isFocused, isPremium]);
 
   const pulse = useRef(new Animated.Value(0)).current;
   const sweep = useRef(new Animated.Value(0)).current;
@@ -211,12 +224,24 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
       Alert.alert(t('scanner.documentScanUnavailable'));
       return;
     }
+    // Checked before the camera opens, not after: VisionKit's camera can't
+    // be capped at N pages (its only delegate callback fires once the user
+    // has already captured everything), so the free plan gates whole scans
+    // instead — and a gate you hit *before* doing the work beats one that
+    // takes your pages away afterwards.
+    if (!isPremium && (await getRemainingFreeScans()) === 0) {
+      openPaywall();
+      return;
+    }
     setIsScanningDocument(true);
     try {
       const { scanDocumentAsync, recognizeTextAsync } = await import('expo-document-scanner');
       const pageUris = await scanDocumentAsync();
+      // Backing out of the camera costs nothing — only a scan that actually
+      // produced pages counts against the allowance.
       if (!pageUris || pageUris.length === 0) return;
       const pageTexts = await Promise.all(pageUris.map((uri) => recognizeTextAsync(uri)));
+      if (!isPremium) setRemainingFreeScans(await consumeFreeScan());
       playScanFeedback();
       onDocumentScanned(pageTexts, pageUris);
     } catch {
@@ -224,7 +249,7 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
     } finally {
       setIsScanningDocument(false);
     }
-  }, [onDocumentScanned, t]);
+  }, [onDocumentScanned, t, isPremium, openPaywall]);
 
   const handleManualSubmit = useCallback(() => {
     const trimmed = manualValue.trim();
@@ -308,6 +333,7 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
             onPress={handleScanDocument}
             disabled={isScanningDocument}
             loading={isScanningDocument}
+            badge={isPremium || remainingFreeScans === null ? undefined : remainingFreeScans}
             colors={colors}
           />
           <View style={styles.toolbarDivider} />
@@ -359,6 +385,7 @@ function ToolbarButton({
   active,
   disabled,
   loading,
+  badge,
   colors,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
@@ -366,6 +393,9 @@ function ToolbarButton({
   active?: boolean;
   disabled?: boolean;
   loading?: boolean;
+  /** Small count in the corner — how many free document scans are left.
+   * Turns amber on the last one so running out isn't a surprise. */
+  badge?: number;
   colors: ColorTheme;
 }) {
   return (
@@ -375,6 +405,11 @@ function ToolbarButton({
       ) : (
         <Ionicons name={icon} size={17} color={active ? colors.mint : colors.text} />
       )}
+      {badge !== undefined && !loading ? (
+        <View style={[toolbarButtonStyle.badge, { backgroundColor: badge <= 1 ? colors.citrus : colors.mint }]}>
+          <Text style={[toolbarButtonStyle.badgeText, { color: colors.inkOnCream }]}>{badge}</Text>
+        </View>
+      ) : null}
     </Pressable>
   );
 }
@@ -385,6 +420,23 @@ const toolbarButtonStyle = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 9,
+  },
+  badge: {
+    position: 'absolute',
+    top: 2,
+    right: '50%',
+    marginRight: -20,
+    minWidth: 14,
+    height: 14,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    fontFamily: fonts.displayBold,
+    fontSize: 9,
+    lineHeight: 12,
   },
 });
 

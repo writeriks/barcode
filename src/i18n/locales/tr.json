@@ -28,7 +28,7 @@
     "galleryTitle": "{{count}} sayfa",
     "deletePagesTitle": "Seçili sayfalar silinsin mi?",
     "deletePagesBody": "Bu işlem geri alınamaz.",
-    "savedToFiles": "Dosyalar'a kaydedildi",
+    "freeScansLeft": "{{count}} ücretsiz tarama hakkın kaldı",
     "typeDocument": "Doküman",
     "metaDocument": "Doküman taraması"
   },
@@ -325,6 +325,7 @@
   "paywall": {
     "title": "Blippo Premium'un Kilidini Aç",
     "subtitle": "Reklamları kaldır, tüm ayarları özelleştir, daha fazla geçmiş sakla.",
+    "benefitScans": "Sınırsız döküman tarama",
     "benefitNoAds": "Uygulamanın hiçbir yerinde reklam yok",
     "benefitHistory": "Geçmişinde 30 yerine 100 taramaya kadar yer",
     "benefitSettings": "Batch tarama, titreşim, bip sesi, geçmiş ve Uygulama Kilidi'ni özelleştir",

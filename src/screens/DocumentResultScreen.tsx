@@ -4,10 +4,9 @@ import * as Clipboard from 'expo-clipboard';
 import * as Speech from 'expo-speech';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Image, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Modal, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomBannerAd } from '../components/BottomBannerAd';
-import { isExpoGo } from '../services/ads/environment';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -73,11 +72,14 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, on
   };
 
   /**
-   * Opens the share sheet on a scanned page. Goes through the app's own
-   * native module, the same one the gallery's multi-page share uses,
-   * rather than expo-sharing: one path for every document share instead
-   * of two that can drift apart, and no permission gate of its own to
-   * disagree with where the pages are stored.
+   * Opens the share sheet on a scanned page, via React Native's own
+   * Share. Two other routes were tried here and both misbehaved:
+   * expo-sharing never reacted at all, and presenting a
+   * UIActivityViewController from this app's native module left the
+   * screen swallowing taps once the sheet closed. RN presents this from
+   * inside its own view hierarchy, which is the one thing here that has
+   * always worked. The gallery's multi-page share still needs the native
+   * module, since no JS API takes more than one file.
    *
    * Shares the page itself, never its OCR text — this is a document, and
    * sending someone a wall of recognized characters isn't what "share a
@@ -90,10 +92,8 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onScanAgain, on
   const shareImage = async (action: 'share' | 'save') => {
     if (!imageUri) return;
     captureAnalyticsEvent('document_action', { action });
-    if (Platform.OS !== 'ios' || isExpoGo()) return;
     try {
-      const { shareFilesAsync } = await import('expo-document-scanner');
-      await shareFilesAsync([imageUri]);
+      await Share.share({ url: imageUri });
     } catch {
       // Anything that goes wrong here used to surface as the button
       // simply not reacting, which reads as a broken app rather than a

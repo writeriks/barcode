@@ -10,21 +10,25 @@ import Constants from 'expo-constants';
  * ships, and it's exactly where premium behaviour most wants checking —
  * but `__DEV__` is false there, so the rows would be invisible.
  *
+ * On by default, off for EAS builds. A local Release build has no
+ * RevenueCat key configured, so this override is the only way to reach a
+ * premium feature there — requiring an opt-in .env to see it would defeat
+ * the point of having it. Everything that reaches a user is built by EAS,
+ * and those builds identify themselves.
+ *
  * Two independent things have to agree, and each covers the other:
  *
  *  - The environment variable, which Metro inlines straight into the
- *    bundle. This is the one that actually turns the rows on, and it works
- *    the same in Debug, Release, bare — it doesn't depend on a manifest
- *    being readable at runtime.
+ *    bundle. eas.json pins it to "false" on every profile. This works the
+ *    same in Debug, Release and bare — no manifest needed at runtime.
  *  - A veto from the resolved app config, which app.config.ts sets to
- *    false whenever EAS_BUILD is present.
+ *    false whenever EAS_BUILD is present. This is the backstop for a
+ *    profile someone adds later and forgets to pin.
  *
- * An EAS build is blocked by eas.json pinning the variable to "false" on
- * the preview and production profiles, *and* by the veto. If the manifest
- * isn't readable the veto simply doesn't apply — it can only ever turn
- * this off, never on, so a missing config can't hand out the override.
+ * The veto can only ever turn this off, never on, so an unreadable
+ * manifest costs nothing.
  */
-const envEnabled = process.env.EXPO_PUBLIC_PREMIUM_TESTING === 'true';
+const envEnabled = process.env.EXPO_PUBLIC_PREMIUM_TESTING !== 'false';
 const configVetoes = Constants.expoConfig?.extra?.premiumTestingEnabled === false;
 
 export const PREMIUM_TESTING_ENABLED = envEnabled && !configVetoes;

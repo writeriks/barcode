@@ -11,17 +11,19 @@ const androidAppId = process.env.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID || TEST_ADMOB_
 const iosAppId = process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID || TEST_ADMOB_IOS_APP_ID;
 
 // Reveals the Settings rows that switch premium on for free and reset the
-// document-scan allowance (see src/config/premiumEnv.ts). Resolved here,
-// once, rather than read from the environment at runtime — because here is
-// where EAS_BUILD is visible.
+// document-scan allowance (see src/config/premiumEnv.ts).
 //
-// EAS sets EAS_BUILD=true on its builders, and an EAS build is one that
-// leaves this machine, so the override is forced off for those no matter
-// what the environment says. eas.json pins the variable to "false" for the
-// preview and production profiles as well; this is the backstop for a
-// dashboard secret or a stray .env that gets past that.
+// On by default, off for EAS. That direction is deliberate: a local
+// `expo run:ios --configuration Release` has no RevenueCat key, so the
+// override is the *only* way to reach a premium feature there, and making
+// that require an opt-in file would defeat the point. Meanwhile everything
+// that reaches a user is built by EAS, which sets EAS_BUILD on its
+// builders — so the builds that must not carry this are exactly the ones
+// that identify themselves.
+//
+// Setting EXPO_PUBLIC_PREMIUM_TESTING=false turns it off locally too.
 const isEasBuild = process.env.EAS_BUILD === 'true';
-const premiumTestingEnabled = !isEasBuild && process.env.EXPO_PUBLIC_PREMIUM_TESTING === 'true';
+const premiumTestingEnabled = !isEasBuild && process.env.EXPO_PUBLIC_PREMIUM_TESTING !== 'false';
 
 const config: ExpoConfig = {
   name: 'Blippo',

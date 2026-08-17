@@ -83,7 +83,8 @@ const config: ExpoConfig = {
     [
       'expo-camera',
       {
-        cameraPermission: 'Allow $(PRODUCT_NAME) to use the camera to scan barcodes and QR codes.',
+        cameraPermission:
+          '$(PRODUCT_NAME) uses the camera to scan product barcodes and QR codes so you can look up product details and save scans. For example, point the camera at a grocery barcode to see the product name and information.',
       },
     ],
     ['expo-asset', { assets: [] }],

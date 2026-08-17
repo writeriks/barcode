@@ -1,7 +1,7 @@
 {
   "ios": {
     "CFBundleDisplayName": "Blippo",
-    "NSCameraUsageDescription": "Zezwól aplikacji $(PRODUCT_NAME) na używanie aparatu do skanowania kodów kreskowych i kodów QR.",
+    "NSCameraUsageDescription": "$(PRODUCT_NAME) używa aparatu do skanowania kodów kreskowych i kodów QR produktów, abyś mógł sprawdzić szczegóły produktu i zapisać skany. Na przykład skieruj aparat na kod kreskowy produktu spożywczego, aby zobaczyć jego nazwę i informacje.",
     "NSUserTrackingUsageDescription": "Ten identyfikator będzie używany do wyświetlania reklam bardziej dopasowanych do Ciebie."
   },
   "android": {

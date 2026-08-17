@@ -17,6 +17,7 @@ import { usePremium } from '../premium/PremiumContext';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { canShareSeveralFiles, shareFiles, sharePdf } from '../services/documentShare';
 import { createFolder, deleteFolder, getFolders } from '../services/historyFolders';
+import { maybeRequestReview } from '../services/reviewPrompt';
 import { shareHistoryEntries } from '../services/historyExport';
 import {
   clearFolderFromEntries,
@@ -168,6 +169,11 @@ export function HistoryScreen({ navigation }: Props) {
   const reload = useCallback(() => {
     getHistory().then(setEntries);
     getFolders().then(setFolders);
+    // Asked from here rather than off the back of a scan: this screen is
+    // somewhere the user navigated to deliberately, with no result to read
+    // and no native modal in flight. The service decides whether it's
+    // earned yet, and iOS decides whether the dialog appears at all.
+    maybeRequestReview();
   }, []);
 
   useFocusEffect(reload);

@@ -7,6 +7,7 @@ import { FadeSwitcher } from '../components/FadeSwitcher';
 import { useScanInterstitial } from '../hooks/useScanInterstitial';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { lookupProduct } from '../services/lookupProduct';
+import { recordSuccessfulScan } from '../services/reviewPrompt';
 import { addHistoryEntry } from '../services/scanHistory';
 import { isBatchScanEnabled } from '../services/scannerPreference';
 import { useThemeColors } from '../theme/ThemeContext';
@@ -81,6 +82,7 @@ export function ScannerFlowScreen({ navigation }: Props) {
       captureAnalyticsEvent('scan_completed', { kind: 'barcode', method, result: analyticsResultValue(result.status) });
 
       if (result.status === 'found' || result.status === 'incomplete') {
+        recordSuccessfulScan();
         addHistoryEntry({
           kind: 'product',
           barcode,
@@ -146,6 +148,7 @@ export function ScannerFlowScreen({ navigation }: Props) {
 
       setScreen({ name: 'qr-result', data });
       maybeShowForScan();
+      recordSuccessfulScan();
       captureAnalyticsEvent('scan_completed', { kind: 'qr', method, result: 'found' });
       addHistoryEntry({ kind: 'qr', data, timestamp: Date.now(), contentType: classifyQrContent(data) });
     },
@@ -155,6 +158,7 @@ export function ScannerFlowScreen({ navigation }: Props) {
   const handleDocumentScanned = useCallback((pageTexts: string[], imageUris: string[]) => {
     const timestamp = Date.now();
     setScreen({ name: 'document-result', pageTexts, imageUris, timestamp });
+    recordSuccessfulScan();
     const hasAnyText = pageTexts.some((text) => text.trim().length > 0);
     captureAnalyticsEvent('scan_completed', {
       kind: 'document',

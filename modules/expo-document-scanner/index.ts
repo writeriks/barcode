@@ -3,6 +3,7 @@ import { requireNativeModule } from 'expo-modules-core';
 interface ExpoDocumentScannerModuleType {
   scanDocumentAsync(): Promise<string[]>;
   recognizeTextAsync(uri: string): Promise<string>;
+  createPdfAsync(uris: string[], fileName: string): Promise<string>;
   shareFilesAsync(uris: string[]): Promise<void>;
 }
 
@@ -40,6 +41,23 @@ export async function scanDocumentAsync(): Promise<string[] | null> {
  */
 export function recognizeTextAsync(uri: string): Promise<string> {
   return ExpoDocumentScannerModule.recognizeTextAsync(uri);
+}
+
+/**
+ * Draws the given pages into one PDF and resolves with its file:// URI.
+ *
+ * Written natively rather than through expo-print because the HTML route
+ * would need every page base64-encoded into a single string first — tens
+ * of megabytes of JavaScript string for a long scan, before a byte is
+ * written. This reads one page at a time straight off disk.
+ *
+ * The file lands in the temporary directory: it's a derived artifact the
+ * user is about to share or save somewhere real, not something the app
+ * needs to keep. Pages whose file has gone missing are skipped; it only
+ * rejects when none of them can be read.
+ */
+export function createPdfAsync(uris: string[], fileName: string): Promise<string> {
+  return ExpoDocumentScannerModule.createPdfAsync(uris, fileName);
 }
 
 /**

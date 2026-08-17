@@ -15,7 +15,7 @@ import { PillButton } from '../components/PillButton';
 import { PromptModal } from '../components/PromptModal';
 import { usePremium } from '../premium/PremiumContext';
 import { captureAnalyticsEvent } from '../services/analytics';
-import { canShareSeveralFiles, shareFiles } from '../services/documentShare';
+import { canShareSeveralFiles, shareFiles, sharePdf } from '../services/documentShare';
 import { createFolder, deleteFolder, getFolders } from '../services/historyFolders';
 import { shareHistoryEntries } from '../services/historyExport';
 import {
@@ -365,6 +365,22 @@ export function HistoryScreen({ navigation }: Props) {
     }, 300);
   };
 
+  const handlePdfMenuEntry = () => {
+    if (menuEntry?.kind !== 'document') return;
+    const entry = menuEntry;
+    setMenuEntry(null);
+    // Same native-presentation race as the share row: the share sheet the
+    // PDF ends up in can't be presented while the sheet is dismissing.
+    setTimeout(async () => {
+      try {
+        if (!canShareSeveralFiles()) throw new Error('PDF export unavailable');
+        await sharePdf(entry.imageUris, entry.label ?? t('document.typeDocument'));
+      } catch {
+        Alert.alert(t('document.pdfFailed'));
+      }
+    }, 300);
+  };
+
   const handleDeleteMenuEntry = () => {
     if (!menuEntry) return;
     const key = { kind: menuEntry.kind, timestamp: menuEntry.timestamp };
@@ -690,6 +706,12 @@ export function HistoryScreen({ navigation }: Props) {
             <Ionicons name="share-outline" size={18} color={colors.citrusText} />
             <Text style={styles.menuRowText}>{t('history.share')}</Text>
           </Pressable>
+          {menuEntry?.kind === 'document' ? (
+            <Pressable onPress={handlePdfMenuEntry} style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}>
+              <Ionicons name="document-outline" size={18} color={colors.mintText} />
+              <Text style={styles.menuRowText}>{t('document.exportPdf')}</Text>
+            </Pressable>
+          ) : null}
           <Pressable
             onPress={handleDeleteMenuEntry}
             style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}

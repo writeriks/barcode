@@ -40,7 +40,15 @@ internal final class TextRecognitionFailed: Exception {
   override var reason: String { "Vision framework failed to run text recognition" }
 }
 
-/// Three on-device capabilities, all backed by Apple frameworks — no
+internal final class NoPagesToWrite: Exception {
+  override var reason: String { "A PDF needs at least one page that can be read" }
+}
+
+internal final class PdfWriteFailed: Exception {
+  override var reason: String { "Could not write the PDF" }
+}
+
+/// Four on-device capabilities, all backed by Apple frameworks — no
 /// network call, no third-party service:
 ///  - `scanDocumentAsync`: presents VisionKit's document camera (the same
 ///    auto-edge-detection/perspective-correction UI as Notes/Files) and
@@ -48,6 +56,8 @@ internal final class TextRecognitionFailed: Exception {
 ///    directory, returning their file:// URIs.
 ///  - `recognizeTextAsync`: runs Vision's VNRecognizeTextRequest OCR on a
 ///    single image and returns the recognized lines joined with `\n`.
+///  - `createPdfAsync`: draws a scan's pages into a single PDF with
+///    UIGraphicsPDFRenderer, one page at a time off disk.
 ///  - `shareFilesAsync`: presents the system share sheet for *several*
 ///    files at once. Neither expo-sharing's `shareAsync(url:)` nor React
 ///    Native's `Share.share({url})` accepts more than one file, but
@@ -111,6 +121,21 @@ public class ExpoDocumentScannerModule: Module {
           promise.resolve(lines.joined(separator: "\n"))
         } catch {
           promise.reject(TextRecognitionFailed())
+        }
+      }
+    }
+
+    AsyncFunction("createPdfAsync") { (urls: [URL], fileName: String, promise: Promise) in
+      // Off the main thread: this reads and re-encodes every page, and a
+      // long scan would otherwise hold up the UI for the whole render.
+      DispatchQueue.global(qos: .userInitiated).async {
+        do {
+          let url = try PdfWriter.write(pageUrls: urls, fileName: fileName)
+          promise.resolve(url.absoluteString)
+        } catch let exception as Exception {
+          promise.reject(exception)
+        } catch {
+          promise.reject(PdfWriteFailed())
         }
       }
     }
@@ -243,5 +268,59 @@ private final class DocumentScanDelegate: NSObject, VNDocumentCameraViewControll
     let url = directory.appendingPathComponent("Blippo-\(sessionId)-p\(index + 1).jpg")
     try data.write(to: url)
     return url
+  }
+}
+
+/// Turns a scan's pages into one PDF.
+///
+/// Deliberately native rather than expo-print: the HTML route needs every
+/// page base64-encoded into one string first, and a ten-page scan turns
+/// into tens of megabytes of JavaScript string before a single byte is
+/// written. `UIGraphicsPDFRenderer` reads one page at a time from disk,
+/// so memory stays flat however long the document is.
+private enum PdfWriter {
+  /// A4 at 72dpi, the size a PDF page is measured in. Every page is drawn
+  /// onto one of these rather than sized to its own image: a document that
+  /// prints as a stack of same-sized sheets is the point of exporting one.
+  private static let pageSize = CGSize(width: 595.2, height: 841.8)
+
+  static func write(pageUrls: [URL], fileName: String) throws -> URL {
+    // A page whose file has gone missing is skipped rather than fatal —
+    // the rest of the document is still worth having.
+    let images = pageUrls.compactMap { UIImage(contentsOfFile: $0.path) }
+    guard !images.isEmpty else { throw NoPagesToWrite() }
+
+    let directory = FileManager.default.temporaryDirectory
+    let url = directory.appendingPathComponent(fileName)
+
+    let renderer = UIGraphicsPDFRenderer(bounds: CGRect(origin: .zero, size: pageSize))
+    do {
+      try renderer.writePDF(to: url) { context in
+        for image in images {
+          context.beginPage()
+          image.draw(in: fittedRect(for: image.size))
+        }
+      }
+    } catch {
+      throw PdfWriteFailed()
+    }
+    return url
+  }
+
+  /// The image centred on the page at its own aspect ratio. Scanned pages
+  /// are already close to A4, so this is normally a small adjustment —
+  /// but a photo of a receipt shouldn't be stretched to fill a sheet.
+  private static func fittedRect(for imageSize: CGSize) -> CGRect {
+    guard imageSize.width > 0, imageSize.height > 0 else {
+      return CGRect(origin: .zero, size: pageSize)
+    }
+    let scale = min(pageSize.width / imageSize.width, pageSize.height / imageSize.height)
+    let size = CGSize(width: imageSize.width * scale, height: imageSize.height * scale)
+    return CGRect(
+      x: (pageSize.width - size.width) / 2,
+      y: (pageSize.height - size.height) / 2,
+      width: size.width,
+      height: size.height
+    )
   }
 }

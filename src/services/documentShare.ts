@@ -33,3 +33,24 @@ export async function shareFiles(uris: string[]): Promise<void> {
   const { shareFilesAsync } = await import('expo-document-scanner');
   await shareFilesAsync(files);
 }
+
+/** A filename the OS and every destination will accept: no separators, no
+ * characters that need escaping somewhere down the line, and never empty. */
+function toFileName(name: string): string {
+  const cleaned = name
+    .replace(/[^\p{L}\p{N} _-]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 60);
+  return `${cleaned || 'Blippo'}.pdf`;
+}
+
+/** Renders the given pages into one PDF and opens the share sheet on it,
+ * which is where "Save to Files" lives. */
+export async function sharePdf(uris: string[], name: string): Promise<void> {
+  const files = existingPages(uris);
+  if (files.length === 0) return;
+  const { createPdfAsync, shareFilesAsync } = await import('expo-document-scanner');
+  const pdfUri = await createPdfAsync(files, toFileName(name));
+  await shareFilesAsync([pdfUri]);
+}

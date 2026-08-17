@@ -35,7 +35,9 @@
     "tabText": "Metin",
     "pagePosition": "Sayfa {{page}} / {{total}}",
     "typeDocument": "Doküman",
-    "metaDocument": "Doküman taraması"
+    "metaDocument": "Doküman taraması",
+    "exportPdf": "PDF",
+    "pdfFailed": "PDF oluşturulamadı."
   },
   "result": {
     "unnamedProduct": "İsimsiz ürün",

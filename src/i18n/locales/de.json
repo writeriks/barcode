@@ -35,7 +35,9 @@
     "tabText": "Text",
     "pagePosition": "Seite {{page}} von {{total}}",
     "typeDocument": "Dokument",
-    "metaDocument": "Dokumentenscan"
+    "metaDocument": "Dokumentenscan",
+    "exportPdf": "PDF",
+    "pdfFailed": "PDF konnte nicht erstellt werden."
   },
   "result": {
     "unnamedProduct": "Unbenanntes Produkt",

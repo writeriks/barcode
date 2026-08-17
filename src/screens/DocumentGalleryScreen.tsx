@@ -14,13 +14,15 @@ import {
 } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
-import { canShareSeveralFiles, shareFiles } from '../services/documentShare';
+import { canShareSeveralFiles, shareFiles, sharePdf } from '../services/documentShare';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 
 interface Props {
   imageUris: string[];
+  /** Whatever the user renamed this document to, used to name its PDF. */
+  label?: string;
   onOpenPage: (index: number) => void;
   onDeletePages: (indexes: number[]) => void;
   /** Omitted when this document is being reopened from History, where
@@ -32,7 +34,7 @@ const NUM_COLUMNS = 2;
 const GRID_GAP = 12;
 const SCREEN_PADDING = 20;
 
-export function DocumentGalleryScreen({ imageUris, onOpenPage, onDeletePages, onScanAgain }: Props) {
+export function DocumentGalleryScreen({ imageUris, label, onOpenPage, onDeletePages, onScanAgain }: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
   const { width: windowWidth } = useWindowDimensions();
@@ -41,6 +43,7 @@ export function DocumentGalleryScreen({ imageUris, onOpenPage, onDeletePages, on
   const styles = useMemo(() => createStyles(colors, itemWidth), [colors, itemWidth]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(new Set());
+  const [isBuildingPdf, setIsBuildingPdf] = useState(false);
 
   const handleToggleEditMode = () => {
     setIsEditMode((prev) => !prev);
@@ -56,13 +59,15 @@ export function DocumentGalleryScreen({ imageUris, onOpenPage, onDeletePages, on
     });
   };
 
-  const handleShareSelected = async () => {
-    if (selectedIndexes.size === 0) return;
-    // Page order, not the order the user happened to tap them in.
-    const uris = [...selectedIndexes]
+  // Page order, not the order the user happened to tap them in.
+  const selectedUris = () =>
+    [...selectedIndexes]
       .sort((a, b) => a - b)
       .map((index) => imageUris[index])
       .filter(Boolean);
+
+  const handleShareSelected = async () => {
+    const uris = selectedUris();
     if (uris.length === 0) return;
     try {
       if (!canShareSeveralFiles()) throw new Error('multi-file sharing unavailable');
@@ -70,6 +75,20 @@ export function DocumentGalleryScreen({ imageUris, onOpenPage, onDeletePages, on
     } catch {
       // Without this a failure looks exactly like a dead button.
       Alert.alert(t('document.shareFailed'));
+    }
+  };
+
+  const handlePdfSelected = async () => {
+    const uris = selectedUris();
+    if (uris.length === 0 || isBuildingPdf) return;
+    setIsBuildingPdf(true);
+    try {
+      if (!canShareSeveralFiles()) throw new Error('multi-file sharing unavailable');
+      await sharePdf(uris, label ?? t('document.typeDocument'));
+    } catch {
+      Alert.alert(t('document.pdfFailed'));
+    } finally {
+      setIsBuildingPdf(false);
     }
   };
 
@@ -147,6 +166,13 @@ export function DocumentGalleryScreen({ imageUris, onOpenPage, onDeletePages, on
               variant="ghost"
               icon="share-outline"
               style={selectedIndexes.size === 0 && styles.disabledButton}
+            />
+            <PillButton
+              title={t('document.exportPdf')}
+              onPress={handlePdfSelected}
+              variant="ghost"
+              icon="document-outline"
+              style={(selectedIndexes.size === 0 || isBuildingPdf) && styles.disabledButton}
             />
             <PillButton
               title={t('history.delete')}
@@ -234,6 +260,8 @@ function createStyles(colors: ColorTheme, itemWidth: number) {
     },
     editActions: {
       flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
       gap: 10,
     },
     disabledButton: {

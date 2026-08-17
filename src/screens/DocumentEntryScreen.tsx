@@ -112,6 +112,7 @@ export function DocumentEntryScreen({
       {view.mode === 'gallery' ? (
         <DocumentGalleryScreen
           imageUris={imageUris}
+          label={label}
           onOpenPage={handleOpenPage}
           onDeletePages={handleBulkDeletePages}
           // Only offered right after a scan, where it really does return to

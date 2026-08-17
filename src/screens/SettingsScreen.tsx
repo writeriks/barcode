@@ -202,25 +202,17 @@ export function SettingsScreen({
         />
 
         <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.premiumSection')}</Text>
-        <Pressable
+        <PremiumPromoCard
+          isPremium={isPremium}
+          title={isPremium ? t('settings.premiumActive') : t('settings.premiumUpgrade')}
+          description={
+            isPremium ? t('settings.premiumActiveDescription') : t('settings.premiumUpgradeDescription')
+          }
+          cta={t('settings.premiumUpgrade')}
           onPress={isPremium ? handleManageSubscription : () => openPaywall('general')}
-          style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-        >
-          <View style={styles.toggleText}>
-            <Text style={styles.rowLabel}>{isPremium ? t('settings.premiumActive') : t('settings.premiumUpgrade')}</Text>
-            <Text style={styles.toggleDescription}>
-              {isPremium ? t('settings.premiumActiveDescription') : t('settings.premiumUpgradeDescription')}
-            </Text>
-          </View>
-          {isPremium ? (
-            <View style={styles.premiumActiveIcons}>
-              <Ionicons name="checkmark-circle" size={20} color={colors.mint} />
-              <Ionicons name="chevron-forward" size={16} color={colors.text} style={styles.dropdownChevron} />
-            </View>
-          ) : (
-            <Ionicons name="chevron-forward" size={18} color={colors.text} style={styles.dropdownChevron} />
-          )}
-        </Pressable>
+          colors={colors}
+          styles={styles}
+        />
         {IS_PREMIUM_OVERRIDE_AVAILABLE ? (
           <>
             <ToggleRow
@@ -376,6 +368,56 @@ export function SettingsScreen({
 
 type Styles = ReturnType<typeof createStyles>;
 
+function PremiumPromoCard({
+  isPremium,
+  title,
+  description,
+  cta,
+  onPress,
+  colors,
+  styles,
+}: {
+  isPremium: boolean;
+  title: string;
+  description: string;
+  cta: string;
+  onPress: () => void;
+  colors: ColorTheme;
+  styles: Styles;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      style={({ pressed }) => [
+        styles.premiumCard,
+        isPremium && styles.premiumCardActive,
+        pressed && styles.rowPressed,
+      ]}
+    >
+      <View style={styles.premiumCardHeader}>
+        <View style={[styles.premiumBadge, isPremium && styles.premiumBadgeActive]}>
+          <Ionicons
+            name={isPremium ? 'checkmark-circle' : 'sparkles'}
+            size={22}
+            color={isPremium ? colors.mint : colors.citrus}
+          />
+        </View>
+        <View style={styles.premiumCardText}>
+          <Text style={styles.premiumCardTitle}>{title}</Text>
+          <Text style={styles.premiumCardDescription}>{description}</Text>
+        </View>
+      </View>
+      {isPremium ? null : (
+        <View style={styles.premiumCta} pointerEvents="none">
+          <Text style={styles.premiumCtaText}>{cta}</Text>
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
 function Row({
   label,
   selected,
@@ -517,10 +559,67 @@ function createStyles(colors: ColorTheme) {
     dropdownChevron: {
       opacity: 0.55,
     },
-    premiumActiveIcons: {
+    premiumCard: {
+      backgroundColor: colors.panel,
+      borderWidth: 1.5,
+      borderColor: colors.citrus,
+      borderRadius: 20,
+      padding: 16,
+      gap: 14,
+      shadowColor: colors.citrus,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.28,
+      shadowRadius: 10,
+    },
+    premiumCardActive: {
+      borderColor: colors.mint,
+      shadowColor: colors.mint,
+      shadowOpacity: 0.16,
+    },
+    premiumCardHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 4,
+      gap: 12,
+    },
+    premiumBadge: {
+      width: 44,
+      height: 44,
+      borderRadius: 14,
+      backgroundColor: colors.cabinet,
+      borderWidth: 1.5,
+      borderColor: colors.citrus,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    premiumBadgeActive: {
+      borderColor: colors.mint,
+    },
+    premiumCardText: {
+      flex: 1,
+      gap: 3,
+    },
+    premiumCardTitle: {
+      fontFamily: fonts.displayBold,
+      fontSize: 16,
+      color: colors.text,
+    },
+    premiumCardDescription: {
+      fontSize: 12,
+      lineHeight: 17,
+      color: colors.text,
+      opacity: 0.6,
+    },
+    premiumCta: {
+      backgroundColor: colors.punch,
+      borderRadius: 999,
+      paddingVertical: 13,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    premiumCtaText: {
+      fontFamily: fonts.displayBold,
+      fontSize: 13.5,
+      color: colors.cream,
     },
     sheetList: {
       gap: 10,

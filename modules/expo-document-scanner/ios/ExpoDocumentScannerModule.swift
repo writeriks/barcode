@@ -48,7 +48,7 @@ internal final class PdfWriteFailed: Exception {
   override var reason: String { "Could not write the PDF" }
 }
 
-/// Four on-device capabilities, all backed by Apple frameworks — no
+/// Five on-device capabilities, all backed by Apple frameworks — no
 /// network call, no third-party service:
 ///  - `scanDocumentAsync`: presents VisionKit's document camera (the same
 ///    auto-edge-detection/perspective-correction UI as Notes/Files) and
@@ -56,6 +56,9 @@ internal final class PdfWriteFailed: Exception {
 ///    directory, returning their file:// URIs.
 ///  - `recognizeTextAsync`: runs Vision's VNRecognizeTextRequest OCR on a
 ///    single image and returns the recognized lines joined with `\n`.
+///  - `detectKeyInformationAsync`: runs NSDataDetector over a page's
+///    recognized text and returns the phone numbers, links, email
+///    addresses, dates and postal addresses in it.
 ///  - `createPdfAsync`: draws a scan's pages into a single PDF with
 ///    UIGraphicsPDFRenderer, one page at a time off disk.
 ///  - `shareFilesAsync`: presents the system share sheet for *several*
@@ -122,6 +125,12 @@ public class ExpoDocumentScannerModule: Module {
         } catch {
           promise.reject(TextRecognitionFailed())
         }
+      }
+    }
+
+    AsyncFunction("detectKeyInformationAsync") { (text: String, promise: Promise) in
+      DispatchQueue.global(qos: .userInitiated).async {
+        promise.resolve(KeyInformationDetector.detect(in: text))
       }
     }
 
@@ -322,5 +331,58 @@ private enum PdfWriter {
       width: size.width,
       height: size.height
     )
+  }
+}
+
+/// Pulls the actionable bits out of a page of OCR'd text — phone numbers,
+/// links, email addresses, dates, postal addresses.
+///
+/// `NSDataDetector` is the same detector that makes phone numbers tappable
+/// in Mail and Messages, so this needs no model, no network call and no
+/// API key: it is the "AI-looking" part of a document scanner that is
+/// really just a system framework doing what it has always done.
+private enum KeyInformationDetector {
+  /// A link that is really an email address is reported as one — the
+  /// detector folds both into `.link` with a `mailto:` scheme, and a
+  /// "send an email" action is a different thing from "open a page".
+  private static let mailtoScheme = "mailto"
+
+  static func detect(in text: String) -> [[String: String]] {
+    let types: NSTextCheckingResult.CheckingType = [.phoneNumber, .link, .date, .address]
+    guard let detector = try? NSDataDetector(types: types.rawValue), !text.isEmpty else {
+      return []
+    }
+
+    let range = NSRange(text.startIndex..<text.endIndex, in: text)
+    var found: [[String: String]] = []
+    // The detector can report the same number twice when it appears twice
+    // in the page; a list of duplicates helps nobody.
+    var seen = Set<String>()
+
+    detector.enumerateMatches(in: text, range: range) { match, _, _ in
+      guard let match, let matchRange = Range(match.range, in: text) else { return }
+      let value = String(text[matchRange])
+      guard let kind = kind(of: match) else { return }
+      let key = "\(kind)|\(value.lowercased())"
+      guard seen.insert(key).inserted else { return }
+      found.append(["type": kind, "value": value])
+    }
+
+    return found
+  }
+
+  private static func kind(of match: NSTextCheckingResult) -> String? {
+    switch match.resultType {
+    case .phoneNumber:
+      return "phone"
+    case .link:
+      return match.url?.scheme == mailtoScheme ? "email" : "link"
+    case .date:
+      return "date"
+    case .address:
+      return "address"
+    default:
+      return nil
+    }
   }
 }

@@ -1,8 +1,18 @@
 import { requireNativeModule } from 'expo-modules-core';
 
+/** The kinds of thing NSDataDetector can find in a page of text. */
+export type KeyInformationType = 'phone' | 'email' | 'link' | 'date' | 'address';
+
+export interface KeyInformation {
+  type: KeyInformationType;
+  /** Exactly as it appears in the text, not normalized. */
+  value: string;
+}
+
 interface ExpoDocumentScannerModuleType {
   scanDocumentAsync(): Promise<string[]>;
   recognizeTextAsync(uri: string): Promise<string>;
+  detectKeyInformationAsync(text: string): Promise<KeyInformation[]>;
   createPdfAsync(uris: string[], fileName: string): Promise<string>;
   shareFilesAsync(uris: string[]): Promise<void>;
 }
@@ -41,6 +51,18 @@ export async function scanDocumentAsync(): Promise<string[] | null> {
  */
 export function recognizeTextAsync(uri: string): Promise<string> {
   return ExpoDocumentScannerModule.recognizeTextAsync(uri);
+}
+
+/**
+ * Finds the actionable details in a page of recognized text — phone
+ * numbers, links, email addresses, dates and postal addresses.
+ *
+ * Backed by `NSDataDetector`, the same detector that makes a phone number
+ * tappable in Mail: no model, no network call, no API key. Duplicates are
+ * collapsed, and values come back exactly as they appear in the text.
+ */
+export function detectKeyInformationAsync(text: string): Promise<KeyInformation[]> {
+  return ExpoDocumentScannerModule.detectKeyInformationAsync(text);
 }
 
 /**

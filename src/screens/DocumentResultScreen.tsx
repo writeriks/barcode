@@ -7,7 +7,9 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Image, Modal, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomBannerAd } from '../components/BottomBannerAd';
+import { KeyInformationRow } from '../components/KeyInformationRow';
 import { captureAnalyticsEvent } from '../services/analytics';
+import { useKeyInformation } from '../hooks/useKeyInformation';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -70,6 +72,7 @@ export function DocumentResultScreen({
   // shareImage for why the gap after matters.
   const isSharePendingRef = useRef(false);
   const hasText = text.trim().length > 0;
+  const keyInformation = useKeyInformation(text);
 
   const scannedAt = new Date(timestamp).toLocaleString(i18n.language, {
     dateStyle: 'medium',
@@ -236,32 +239,38 @@ export function DocumentResultScreen({
             </View>
           )
         ) : (
-          <View style={styles.textStage}>
-            {hasText ? (
-              <>
-                <Pressable
-                  onPress={handleCopy}
-                  hitSlop={8}
-                  accessibilityLabel={t('a11y.copyText')}
-                  style={styles.copyButton}
-                >
-                  <Ionicons name="copy-outline" size={16} color={colors.text} style={styles.copyIcon} />
-                </Pressable>
-                <ScrollView
-                  style={styles.textScroll}
-                  contentContainerStyle={styles.textContent}
-                  showsVerticalScrollIndicator
-                >
-                  <Text style={styles.bodyText} selectable>
-                    {text}
-                  </Text>
-                </ScrollView>
-              </>
-            ) : (
-              <View style={styles.emptyStage}>
-                <Text style={styles.emptyText}>{t('document.noTextFound')}</Text>
-              </View>
-            )}
+          <View style={styles.textColumn}>
+            {/* Above the text box rather than inside it: the copy button
+                floats over that box's top-right corner, and a scrolling
+                row of chips would slide underneath it. */}
+            {hasText ? <KeyInformationRow items={keyInformation} onCopied={onCopied} /> : null}
+            <View style={styles.textStage}>
+              {hasText ? (
+                <>
+                  <Pressable
+                    onPress={handleCopy}
+                    hitSlop={8}
+                    accessibilityLabel={t('a11y.copyText')}
+                    style={styles.copyButton}
+                  >
+                    <Ionicons name="copy-outline" size={16} color={colors.text} style={styles.copyIcon} />
+                  </Pressable>
+                  <ScrollView
+                    style={styles.textScroll}
+                    contentContainerStyle={styles.textContent}
+                    showsVerticalScrollIndicator
+                  >
+                    <Text style={styles.bodyText} selectable>
+                      {text}
+                    </Text>
+                  </ScrollView>
+                </>
+              ) : (
+                <View style={styles.emptyStage}>
+                  <Text style={styles.emptyText}>{t('document.noTextFound')}</Text>
+                </View>
+              )}
+            </View>
           </View>
         )}
 
@@ -503,6 +512,9 @@ function createStyles(colors: ColorTheme) {
       lineHeight: 19,
       textAlign: 'center',
       color: colors.inkOnCream,
+    },
+    textColumn: {
+      flex: 1,
     },
     textStage: {
       flex: 1,

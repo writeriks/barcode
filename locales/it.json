@@ -1,7 +1,7 @@
 {
   "ios": {
     "CFBundleDisplayName": "Blippo",
-    "NSCameraUsageDescription": "Consenti a $(PRODUCT_NAME) di usare la fotocamera per scansionare codici a barre e codici QR.",
+    "NSCameraUsageDescription": "$(PRODUCT_NAME) usa la fotocamera per scansionare i codici a barre e i QR code dei prodotti, così puoi consultare i dettagli e salvare le scansioni. Ad esempio, inquadra il codice a barre di un prodotto per vederne il nome e le informazioni.",
     "NSUserTrackingUsageDescription": "Questo identificativo verrà utilizzato per mostrarti annunci più pertinenti."
   },
   "android": {

@@ -364,7 +364,16 @@
     "categoryBusiness": "Negocios y pagos",
     "categorySocial": "Redes sociales",
     "categoryUtility": "Utilidades y nube",
-    "tooLongToRender": "Demasiado largo para un código QR"
+    "tooLongToRender": "Demasiado largo para un código QR",
+    "linkCheckTitle": "Comprueba este enlace antes de abrirlo",
+    "linkWarning": {
+      "notEncrypted": "Sin cifrar (http): lo que escribas podría leerse por el camino.",
+      "punycode": "El dominio usa caracteres no latinos, que pueden imitar un nombre conocido.",
+      "ipAddress": "Va a una dirección IP en lugar de a un nombre de dominio.",
+      "embeddedCredentials": "Hay un usuario antes de la @: el destino real es lo que viene después.",
+      "shortener": "Enlace acortado. El destino real está oculto hasta que lo abras.",
+      "manySubdomains": "Demasiados subdominios: el dominio real es la parte final, no la inicial."
+    }
   },
   "paywall": {
     "title": "Desbloquea Blippo Premium",

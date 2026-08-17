@@ -364,7 +364,16 @@
     "categoryBusiness": "Beruf & Zahlungen",
     "categorySocial": "Social Media",
     "categoryUtility": "Werkzeuge & Cloud",
-    "tooLongToRender": "Zu lang für einen QR-Code"
+    "tooLongToRender": "Zu lang für einen QR-Code",
+    "linkCheckTitle": "Prüfe diesen Link, bevor du ihn öffnest",
+    "linkWarning": {
+      "notEncrypted": "Unverschlüsselt (http) — was du eingibst, kann unterwegs mitgelesen werden.",
+      "punycode": "Die Domain nutzt nichtlateinische Zeichen, die einem bekannten Namen nachempfunden sein können.",
+      "ipAddress": "Führt zu einer IP-Adresse statt zu einem Domainnamen.",
+      "embeddedCredentials": "Vor dem @ steht ein Benutzername — das eigentliche Ziel ist der Teil dahinter.",
+      "shortener": "Gekürzter Link. Das eigentliche Ziel bleibt bis zum Öffnen verborgen.",
+      "manySubdomains": "Ungewöhnlich viele Subdomains — die echte Domain steht am Ende, nicht am Anfang."
+    }
   },
   "paywall": {
     "title": "Blippo Premium freischalten",

@@ -364,7 +364,16 @@
     "categoryBusiness": "Pro et paiements",
     "categorySocial": "Réseaux sociaux",
     "categoryUtility": "Outils et cloud",
-    "tooLongToRender": "Trop long pour un code QR"
+    "tooLongToRender": "Trop long pour un code QR",
+    "linkCheckTitle": "Vérifiez ce lien avant de l’ouvrir",
+    "linkWarning": {
+      "notEncrypted": "Non chiffré (http) — ce que vous saisissez pourrait être lu en chemin.",
+      "punycode": "Le domaine utilise des caractères non latins, qui peuvent imiter un nom connu.",
+      "ipAddress": "Il pointe vers une adresse IP plutôt que vers un nom de domaine.",
+      "embeddedCredentials": "Un nom d’utilisateur précède le @ — la vraie destination est ce qui suit.",
+      "shortener": "Lien raccourci. La vraie destination reste cachée jusqu’à l’ouverture.",
+      "manySubdomains": "Beaucoup de sous-domaines — le vrai domaine est la fin, pas le début."
+    }
   },
   "paywall": {
     "title": "Débloquez Blippo Premium",

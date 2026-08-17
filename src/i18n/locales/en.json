@@ -364,7 +364,16 @@
     "categoryBusiness": "Business & payments",
     "categorySocial": "Social",
     "categoryUtility": "Utility & cloud",
-    "tooLongToRender": "Too long for a QR code"
+    "tooLongToRender": "Too long for a QR code",
+    "linkCheckTitle": "Check this link before opening",
+    "linkWarning": {
+      "notEncrypted": "Not encrypted (http) — anything you type could be read in transit.",
+      "punycode": "The domain uses non-Latin characters, which can be made to look like a familiar name.",
+      "ipAddress": "It goes to a raw IP address rather than a domain name.",
+      "embeddedCredentials": "There is a username before the @ — the real destination is whatever comes after it.",
+      "shortener": "A shortened link. The real destination is hidden until you open it.",
+      "manySubdomains": "Unusually many subdomains — the real domain is the part at the end, not the start."
+    }
   },
   "paywall": {
     "title": "Unlock Blippo Premium",

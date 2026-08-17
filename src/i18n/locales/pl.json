@@ -364,7 +364,16 @@
     "categoryBusiness": "Firma i płatności",
     "categorySocial": "Społecznościowe",
     "categoryUtility": "Narzędzia i chmura",
-    "tooLongToRender": "Za długie na kod QR"
+    "tooLongToRender": "Za długie na kod QR",
+    "linkCheckTitle": "Sprawdź ten link przed otwarciem",
+    "linkWarning": {
+      "notEncrypted": "Bez szyfrowania (http) — wszystko, co wpiszesz, może zostać odczytane.",
+      "punycode": "Domena zawiera znaki spoza alfabetu łacińskiego, co pozwala podszyć się pod znaną nazwę.",
+      "ipAddress": "Prowadzi do adresu IP zamiast do nazwy domeny.",
+      "embeddedCredentials": "Przed znakiem @ jest nazwa użytkownika — prawdziwy cel to część po nim.",
+      "shortener": "Skrócony link. Prawdziwy cel jest ukryty do momentu otwarcia.",
+      "manySubdomains": "Nietypowo dużo subdomen — prawdziwa domena jest na końcu, nie na początku."
+    }
   },
   "paywall": {
     "title": "Odblokuj Blippo Premium",

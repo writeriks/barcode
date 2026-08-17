@@ -364,7 +364,16 @@
     "categoryBusiness": "İş ve ödeme",
     "categorySocial": "Sosyal",
     "categoryUtility": "Araçlar ve bulut",
-    "tooLongToRender": "QR kod için çok uzun"
+    "tooLongToRender": "QR kod için çok uzun",
+    "linkCheckTitle": "Açmadan önce bu bağlantıyı kontrol et",
+    "linkWarning": {
+      "notEncrypted": "Şifrelenmemiş (http) — yazdığın her şey yolda okunabilir.",
+      "punycode": "Alan adı Latin olmayan karakterler içeriyor; tanıdık bir isme benzetilmiş olabilir.",
+      "ipAddress": "Alan adı yerine doğrudan bir IP adresine gidiyor.",
+      "embeddedCredentials": "@ işaretinden önce bir kullanıcı adı var — gerçek adres sonrasında gelen kısım.",
+      "shortener": "Kısaltılmış bağlantı. Gerçek adres açana kadar gizli.",
+      "manySubdomains": "Alışılmadık sayıda alt alan adı — gerçek alan adı sondaki kısım, baştaki değil."
+    }
   },
   "paywall": {
     "title": "Blippo Premium'un Kilidini Aç",

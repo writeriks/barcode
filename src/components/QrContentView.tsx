@@ -9,6 +9,7 @@ import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { classifyQrContent, parseOtpAuth, resolveQrOpenUri, type QrContentType } from '../utils/classifyQrContent';
 import { QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
+import { inspectUrl } from '../utils/urlSafety';
 import { fonts } from '../theme/fonts';
 import { PillButton } from './PillButton';
 import { QrCode } from './QrCode';
@@ -100,6 +101,9 @@ export function QrContentView({ data, onCopied }: Props) {
   const openUri = resolveQrOpenUri(data, type);
   const otpInfo = type === 'otp' ? parseOtpAuth(data) : null;
   const [isSecretRevealed, setIsSecretRevealed] = useState(false);
+  // Worked out from the address itself — no lookup, nothing leaves the
+  // device. See utils/urlSafety.ts for why it never says "safe".
+  const urlWarnings = useMemo(() => inspectUrl(data), [data]);
   const { shareQr, qrRenderer } = useQrShare();
 
   const handleOpen = async () => {
@@ -169,6 +173,20 @@ export function QrContentView({ data, onCopied }: Props) {
         </Pressable>
       )}
 
+      {urlWarnings.length > 0 ? (
+        <View style={styles.warningCard}>
+          <View style={styles.warningHeader}>
+            <Ionicons name="alert-circle-outline" size={15} color={colors.citrusText} />
+            <Text style={styles.warningTitle}>{t('qr.linkCheckTitle')}</Text>
+          </View>
+          {urlWarnings.map((warning) => (
+            <Text key={warning} style={styles.warningText}>
+              {t(`qr.linkWarning.${warning}`)}
+            </Text>
+          ))}
+        </View>
+      ) : null}
+
       <View style={styles.actions}>
         {openUri ? <PillButton title={t(OPEN_LABEL_KEY[type])} onPress={handleOpen} variant="punch" /> : null}
         <View style={styles.actionRow}>
@@ -198,6 +216,30 @@ function createStyles(colors: ColorTheme) {
       borderColor: colors.mint,
       borderRadius: 14,
       padding: 8,
+    },
+    warningCard: {
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.citrusText,
+      borderRadius: 16,
+      padding: 14,
+      gap: 7,
+    },
+    warningHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 7,
+    },
+    warningTitle: {
+      fontFamily: fonts.displayBold,
+      fontSize: 13,
+      color: colors.citrusText,
+    },
+    warningText: {
+      fontSize: 12.5,
+      lineHeight: 18,
+      color: colors.text,
+      opacity: 0.75,
     },
     typeChip: {
       alignSelf: 'center',

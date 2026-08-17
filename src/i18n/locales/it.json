@@ -364,7 +364,16 @@
     "categoryBusiness": "Lavoro e pagamenti",
     "categorySocial": "Social",
     "categoryUtility": "Utilità e cloud",
-    "tooLongToRender": "Troppo lungo per un codice QR"
+    "tooLongToRender": "Troppo lungo per un codice QR",
+    "linkCheckTitle": "Controlla questo link prima di aprirlo",
+    "linkWarning": {
+      "notEncrypted": "Non cifrato (http): quello che digiti potrebbe essere letto lungo il percorso.",
+      "punycode": "Il dominio usa caratteri non latini, che possono imitare un nome noto.",
+      "ipAddress": "Punta a un indirizzo IP invece che a un nome di dominio.",
+      "embeddedCredentials": "C’è un nome utente prima della @: la destinazione reale è ciò che viene dopo.",
+      "shortener": "Link accorciato. La destinazione reale resta nascosta finché non lo apri.",
+      "manySubdomains": "Sottodomini insolitamente numerosi: il dominio reale è la parte finale, non quella iniziale."
+    }
   },
   "paywall": {
     "title": "Sblocca Blippo Premium",

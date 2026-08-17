@@ -33,12 +33,18 @@ function qrTypeColor(colors: ColorTheme, type: QrContentType): string {
     case 'twitter':
     case 'location':
     case 'paypal':
+    case 'telegram':
+    case 'appstore':
+    case 'dropbox':
       return colors.mintText;
     case 'sms':
     case 'whatsapp':
     case 'instagram':
     case 'viber':
     case 'upi':
+    case 'tiktok':
+    case 'youtube':
+    case 'pinterest':
       return colors.coralText;
     case 'otp':
       return colors.punch;
@@ -49,6 +55,7 @@ function qrTypeColor(colors: ColorTheme, type: QrContentType): string {
     case 'spotify':
     case 'mecard':
     case 'linkedin':
+    case 'drive':
       return colors.citrusText;
   }
 }

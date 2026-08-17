@@ -64,6 +64,13 @@ const QR_META_KEY: Record<QrContentType, string> = {
   upi: 'history.metaQrUpi',
   paypal: 'history.metaQrPaypal',
   linkedin: 'history.metaQrLinkedin',
+  tiktok: 'history.metaQrTiktok',
+  youtube: 'history.metaQrYoutube',
+  telegram: 'history.metaQrTelegram',
+  pinterest: 'history.metaQrPinterest',
+  appstore: 'history.metaQrAppstore',
+  drive: 'history.metaQrDrive',
+  dropbox: 'history.metaQrDropbox',
 };
 
 const TYPE_FILTER_OPTIONS: { value: TypeFilterValue; labelKey: string; accent: PillAccent }[] = [
@@ -89,6 +96,13 @@ const TYPE_FILTER_OPTIONS: { value: TypeFilterValue; labelKey: string; accent: P
   { value: 'upi', labelKey: 'qr.typeUpi', accent: 'coral' },
   { value: 'paypal', labelKey: 'qr.typePaypal', accent: 'mint' },
   { value: 'linkedin', labelKey: 'qr.typeLinkedin', accent: 'citrus' },
+  { value: 'tiktok', labelKey: 'qr.typeTiktok', accent: 'coral' },
+  { value: 'youtube', labelKey: 'qr.typeYoutube', accent: 'coral' },
+  { value: 'telegram', labelKey: 'qr.typeTelegram', accent: 'mint' },
+  { value: 'pinterest', labelKey: 'qr.typePinterest', accent: 'coral' },
+  { value: 'appstore', labelKey: 'qr.typeAppstore', accent: 'mint' },
+  { value: 'drive', labelKey: 'qr.typeDrive', accent: 'citrus' },
+  { value: 'dropbox', labelKey: 'qr.typeDropbox', accent: 'mint' },
   { value: 'document', labelKey: 'document.typeDocument', accent: 'citrus' },
 ];
 

@@ -104,6 +104,13 @@ interface FormState {
   viber: SocialFields;
   paypal: SocialFields;
   linkedin: SocialFields;
+  tiktok: SocialFields;
+  youtube: SocialFields;
+  telegram: SocialFields;
+  pinterest: SocialFields;
+  appstore: LinkFields;
+  drive: LinkFields;
+  dropbox: LinkFields;
 }
 
 function makeDefaultFormState(defaultCountry: CountryCallingCode | null): FormState {
@@ -128,6 +135,13 @@ function makeDefaultFormState(defaultCountry: CountryCallingCode | null): FormSt
     viber: defaultSocialFields,
     paypal: defaultSocialFields,
     linkedin: defaultSocialFields,
+    tiktok: defaultSocialFields,
+    youtube: defaultSocialFields,
+    telegram: defaultSocialFields,
+    pinterest: defaultSocialFields,
+    appstore: defaultLinkFields,
+    drive: defaultLinkFields,
+    dropbox: defaultLinkFields,
   };
 }
 
@@ -204,7 +218,17 @@ function buildContent(type: QrContentType, fields: FormState): string | null {
     case 'viber':
     case 'paypal':
     case 'linkedin':
+    case 'tiktok':
+    case 'youtube':
+    case 'telegram':
+    case 'pinterest':
       return buildSocialProfileContent(QR_SOCIAL_BASE_URL[type], fields[type].value);
+    // A share link is pasted whole — there's no handle to prefix, so these
+    // are the link builder wearing a brand's name and icon.
+    case 'appstore':
+    case 'drive':
+    case 'dropbox':
+      return buildLinkContent(fields[type].url);
     case 'otp':
       return null;
   }
@@ -251,7 +275,15 @@ function defaultLabelFor(type: QrContentType, content: string, fields: FormState
     case 'viber':
     case 'paypal':
     case 'linkedin':
+    case 'tiktok':
+    case 'youtube':
+    case 'telegram':
+    case 'pinterest':
       return fields[type].value || content;
+    case 'appstore':
+    case 'drive':
+    case 'dropbox':
+      return fields[type].url || content;
     default:
       return content;
   }
@@ -316,7 +348,16 @@ function fieldsFromCode(
     case 'viber':
     case 'paypal':
     case 'linkedin':
+    case 'tiktok':
+    case 'youtube':
+    case 'telegram':
+    case 'pinterest':
       fields[type] = parseSocialProfileFields(code.content);
+      break;
+    case 'appstore':
+    case 'drive':
+    case 'dropbox':
+      fields[type] = parseLinkFields(code.content);
       break;
   }
 
@@ -634,6 +675,65 @@ export function MyCodesScreen({ navigation }: Props) {
                       onChange={(linkedin) => setFields({ ...fields, linkedin })}
                       label={t('myCodes.linkedinLabel')}
                       placeholder={t('myCodes.linkedinPlaceholder')}
+                    />
+                  )}
+                  {type === 'tiktok' && (
+                    <SocialProfileForm
+                      value={fields.tiktok}
+                      onChange={(tiktok) => setFields({ ...fields, tiktok })}
+                      label={t('myCodes.tiktokLabel')}
+                      placeholder={t('myCodes.tiktokPlaceholder')}
+                    />
+                  )}
+                  {type === 'youtube' && (
+                    <SocialProfileForm
+                      value={fields.youtube}
+                      onChange={(youtube) => setFields({ ...fields, youtube })}
+                      label={t('myCodes.youtubeLabel')}
+                      placeholder={t('myCodes.youtubePlaceholder')}
+                    />
+                  )}
+                  {type === 'telegram' && (
+                    <SocialProfileForm
+                      value={fields.telegram}
+                      onChange={(telegram) => setFields({ ...fields, telegram })}
+                      label={t('myCodes.telegramLabel')}
+                      placeholder={t('myCodes.telegramPlaceholder')}
+                    />
+                  )}
+                  {type === 'pinterest' && (
+                    <SocialProfileForm
+                      value={fields.pinterest}
+                      onChange={(pinterest) => setFields({ ...fields, pinterest })}
+                      label={t('myCodes.pinterestLabel')}
+                      placeholder={t('myCodes.pinterestPlaceholder')}
+                    />
+                  )}
+                  {/* Share links are pasted whole, so these three reuse the
+                      link form with a placeholder that shows the shape of
+                      the URL they expect. */}
+                  {type === 'appstore' && (
+                    <LinkForm
+                      value={fields.appstore}
+                      onChange={(appstore) => setFields({ ...fields, appstore })}
+                      label={t('myCodes.appstoreLabel')}
+                      placeholder={t('myCodes.appstorePlaceholder')}
+                    />
+                  )}
+                  {type === 'drive' && (
+                    <LinkForm
+                      value={fields.drive}
+                      onChange={(drive) => setFields({ ...fields, drive })}
+                      label={t('myCodes.driveLabel')}
+                      placeholder={t('myCodes.drivePlaceholder')}
+                    />
+                  )}
+                  {type === 'dropbox' && (
+                    <LinkForm
+                      value={fields.dropbox}
+                      onChange={(dropbox) => setFields({ ...fields, dropbox })}
+                      label={t('myCodes.dropboxLabel')}
+                      placeholder={t('myCodes.dropboxPlaceholder')}
                     />
                   )}
 

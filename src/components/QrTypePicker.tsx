@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { usePremium } from '../premium/PremiumContext';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import type { QrContentType } from '../utils/classifyQrContent';
-import { QR_GENERATE_TYPES, QR_PREMIUM_TYPES, QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
+import { QR_PREMIUM_TYPES, QR_TYPE_CATEGORIES, QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
 import { fonts } from '../theme/fonts';
 
 interface Props {
@@ -14,77 +14,133 @@ interface Props {
   onChange: (type: QrContentType) => void;
 }
 
-/** A locked pill opens the paywall instead of switching the form to that
- * type — same pattern as Settings' premium-gated toggles. */
+/** The generator's type chooser: a labelled grid rather than the single
+ * scrolling row it used to be. Twenty-seven types in a horizontal strip
+ * showed four at a time and gave no hint the rest existed — grouped tiles
+ * make the catalogue readable at a glance, which is most of what it's
+ * for.
+ *
+ * A locked tile opens the paywall instead of switching to that type —
+ * same pattern as Settings' premium-gated toggles. */
 export function QrTypePicker({ value, onChange }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const { isPremium, openPaywall } = usePremium();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  // Measured rather than a percentage: the tiles sit inside a gap, and a
+  // percentage width can't subtract pixels, so three 33% tiles plus two
+  // gaps overflow the row and wrap to two per line.
+  const [gridWidth, setGridWidth] = useState(0);
+  const tileWidth = gridWidth > 0 ? (gridWidth - GRID_GAP * (COLUMNS - 1)) / COLUMNS : undefined;
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-      {QR_GENERATE_TYPES.map((type) => {
-        const selected = value === type;
-        const locked = QR_PREMIUM_TYPES.has(type) && !isPremium;
-        return (
-          <Pressable
-            key={type}
-            onPress={() => (locked ? openPaywall() : onChange(type))}
-            style={[styles.pill, selected && styles.pillSelected]}
-          >
-            <Ionicons name={QR_TYPE_ICON[type]} size={15} color={selected ? colors.cream : colors.text} />
-            <Text style={[styles.label, selected && styles.labelSelected]}>{t(QR_TYPE_LABEL_KEY[type])}</Text>
-            {locked ? (
-              <Ionicons
-                name="lock-closed"
-                size={11}
-                color={selected ? colors.cream : colors.text}
-                style={styles.lockIcon}
-              />
-            ) : null}
-          </Pressable>
-        );
-      })}
-    </ScrollView>
+    <View style={styles.wrap} onLayout={(event) => setGridWidth(event.nativeEvent.layout.width)}>
+      {QR_TYPE_CATEGORIES.map((category) => (
+        <View key={category.labelKey} style={styles.category}>
+          <Text style={styles.categoryLabel}>{t(category.labelKey)}</Text>
+          <View style={styles.grid}>
+            {category.types.map((type) => {
+              const selected = value === type;
+              const locked = QR_PREMIUM_TYPES.has(type) && !isPremium;
+              return (
+                <Pressable
+                  key={type}
+                  onPress={() => (locked ? openPaywall() : onChange(type))}
+                  style={({ pressed }) => [
+                    styles.tile,
+                    { width: tileWidth },
+                    selected && styles.tileSelected,
+                    pressed && styles.tilePressed,
+                  ]}
+                >
+                  <Ionicons
+                    name={QR_TYPE_ICON[type]}
+                    size={21}
+                    color={selected ? colors.cream : colors.mint}
+                  />
+                  <Text style={[styles.tileLabel, selected && styles.tileLabelSelected]} numberOfLines={2}>
+                    {t(QR_TYPE_LABEL_KEY[type])}
+                  </Text>
+                  {locked ? (
+                    <View style={styles.lockBadge}>
+                      <Ionicons name="lock-closed" size={9} color={colors.inkOnCream} />
+                    </View>
+                  ) : null}
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      ))}
+    </View>
   );
 }
 
+const COLUMNS = 3;
+const GRID_GAP = 9;
+
 function createStyles(colors: ColorTheme) {
   return StyleSheet.create({
-    row: {
-      flexDirection: 'row',
-      gap: 8,
-      paddingVertical: 2,
-      paddingRight: 4,
+    wrap: {
+      gap: 18,
     },
-    pill: {
+    category: {
+      gap: 9,
+    },
+    categoryLabel: {
+      fontFamily: fonts.displayBold,
+      fontSize: 10.5,
+      letterSpacing: 0.9,
+      textTransform: 'uppercase',
+      color: colors.text,
+      opacity: 0.5,
+    },
+    grid: {
       flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: GRID_GAP,
+    },
+    tile: {
+      // Width comes from the measured row — see tileWidth above.
       alignItems: 'center',
-      gap: 6,
+      justifyContent: 'center',
+      gap: 7,
+      minHeight: 84,
+      paddingHorizontal: 6,
+      paddingVertical: 13,
       backgroundColor: colors.panel,
       borderWidth: 1,
       borderColor: colors.panelLine,
-      borderRadius: 999,
-      paddingHorizontal: 14,
-      paddingVertical: 9,
+      borderRadius: 15,
     },
-    pillSelected: {
+    tileSelected: {
       backgroundColor: colors.punch,
       borderColor: colors.punch,
     },
-    label: {
-      fontFamily: fonts.displayBold,
-      fontSize: 13,
-      color: colors.text,
+    tilePressed: {
       opacity: 0.75,
     },
-    labelSelected: {
+    tileLabel: {
+      fontSize: 10.5,
+      lineHeight: 13.5,
+      textAlign: 'center',
+      color: colors.text,
+      opacity: 0.92,
+    },
+    tileLabelSelected: {
       color: colors.cream,
       opacity: 1,
     },
-    lockIcon: {
-      opacity: 0.7,
+    lockBadge: {
+      position: 'absolute',
+      top: 7,
+      right: 7,
+      width: 15,
+      height: 15,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.citrus,
     },
   });
 }

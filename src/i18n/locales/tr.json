@@ -183,7 +183,14 @@
     "entryOptionsTitle": "Kayıt Seçenekleri",
     "rename": "Yeniden adlandır",
     "renamePlaceholder": "Kayıt adı",
-    "renameSave": "Kaydet"
+    "renameSave": "Kaydet",
+    "metaQrTiktok": "QR TikTok",
+    "metaQrYoutube": "QR YouTube",
+    "metaQrTelegram": "QR Telegram",
+    "metaQrPinterest": "QR Pinterest",
+    "metaQrAppstore": "QR App Store",
+    "metaQrDrive": "QR Drive",
+    "metaQrDropbox": "QR Dropbox"
   },
   "myCodes": {
     "title": "Kodlarım",
@@ -282,7 +289,21 @@
     "paypalLabel": "PayPal.me",
     "paypalPlaceholder": "Kullanıcı adı veya paypal.me/...",
     "linkedinLabel": "LinkedIn profili",
-    "linkedinPlaceholder": "Kullanıcı adı veya linkedin.com/in/..."
+    "linkedinPlaceholder": "Kullanıcı adı veya linkedin.com/in/...",
+    "tiktokLabel": "TikTok kullanıcı adı",
+    "tiktokPlaceholder": "kullanıcı adı",
+    "youtubeLabel": "YouTube kullanıcı adı",
+    "youtubePlaceholder": "kullanıcı adı",
+    "telegramLabel": "Telegram kullanıcı adı",
+    "telegramPlaceholder": "kullanıcı adı",
+    "pinterestLabel": "Pinterest kullanıcı adı",
+    "pinterestPlaceholder": "kullanıcı adı",
+    "appstoreLabel": "App Store bağlantısı",
+    "appstorePlaceholder": "https://apps.apple.com/…",
+    "driveLabel": "Drive bağlantısı",
+    "drivePlaceholder": "https://drive.google.com/…",
+    "dropboxLabel": "Dropbox bağlantısı",
+    "dropboxPlaceholder": "https://www.dropbox.com/…"
   },
   "qr": {
     "typeLink": "Bağlantı",
@@ -322,7 +343,18 @@
     "typePaypal": "PayPal",
     "typeLinkedin": "LinkedIn",
     "openLocation": "Haritalarda aç",
-    "openUpi": "UPI ile öde"
+    "openUpi": "UPI ile öde",
+    "typeTiktok": "TikTok",
+    "typeYoutube": "YouTube",
+    "typeTelegram": "Telegram",
+    "typePinterest": "Pinterest",
+    "typeAppstore": "App Store",
+    "typeDrive": "Drive",
+    "typeDropbox": "Dropbox",
+    "categoryPersonal": "Kişisel",
+    "categoryBusiness": "İş ve ödeme",
+    "categorySocial": "Sosyal",
+    "categoryUtility": "Araçlar ve bulut"
   },
   "paywall": {
     "title": "Blippo Premium'un Kilidini Aç",

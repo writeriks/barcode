@@ -183,7 +183,14 @@
     "entryOptionsTitle": "Opciones de la entrada",
     "rename": "Cambiar nombre",
     "renamePlaceholder": "Nombre de la entrada",
-    "renameSave": "Guardar"
+    "renameSave": "Guardar",
+    "metaQrTiktok": "QR TikTok",
+    "metaQrYoutube": "QR YouTube",
+    "metaQrTelegram": "QR Telegram",
+    "metaQrPinterest": "QR Pinterest",
+    "metaQrAppstore": "QR App Store",
+    "metaQrDrive": "QR Drive",
+    "metaQrDropbox": "QR Dropbox"
   },
   "myCodes": {
     "title": "Mis códigos",
@@ -282,7 +289,21 @@
     "paypalLabel": "PayPal.me",
     "paypalPlaceholder": "Usuario o paypal.me/...",
     "linkedinLabel": "Perfil de LinkedIn",
-    "linkedinPlaceholder": "Usuario o linkedin.com/in/..."
+    "linkedinPlaceholder": "Usuario o linkedin.com/in/...",
+    "tiktokLabel": "Usuario de TikTok",
+    "tiktokPlaceholder": "usuario",
+    "youtubeLabel": "Identificador de YouTube",
+    "youtubePlaceholder": "identificador",
+    "telegramLabel": "Usuario de Telegram",
+    "telegramPlaceholder": "usuario",
+    "pinterestLabel": "Usuario de Pinterest",
+    "pinterestPlaceholder": "usuario",
+    "appstoreLabel": "Enlace de App Store",
+    "appstorePlaceholder": "https://apps.apple.com/…",
+    "driveLabel": "Enlace de Drive",
+    "drivePlaceholder": "https://drive.google.com/…",
+    "dropboxLabel": "Enlace de Dropbox",
+    "dropboxPlaceholder": "https://www.dropbox.com/…"
   },
   "qr": {
     "typeLink": "Enlace",
@@ -322,7 +343,18 @@
     "typePaypal": "PayPal",
     "typeLinkedin": "LinkedIn",
     "openLocation": "Abrir en Mapas",
-    "openUpi": "Pagar con UPI"
+    "openUpi": "Pagar con UPI",
+    "typeTiktok": "TikTok",
+    "typeYoutube": "YouTube",
+    "typeTelegram": "Telegram",
+    "typePinterest": "Pinterest",
+    "typeAppstore": "App Store",
+    "typeDrive": "Drive",
+    "typeDropbox": "Dropbox",
+    "categoryPersonal": "Personal",
+    "categoryBusiness": "Negocios y pagos",
+    "categorySocial": "Redes sociales",
+    "categoryUtility": "Utilidades y nube"
   },
   "paywall": {
     "title": "Desbloquea Blippo Premium",

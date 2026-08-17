@@ -19,7 +19,14 @@ export type QrContentType =
   | 'mecard'
   | 'upi'
   | 'paypal'
-  | 'linkedin';
+  | 'linkedin'
+  | 'tiktok'
+  | 'youtube'
+  | 'telegram'
+  | 'pinterest'
+  | 'appstore'
+  | 'drive'
+  | 'dropbox';
 
 const WHATSAPP_LINK_PATTERN = /^https?:\/\/(wa\.me|api\.whatsapp\.com)\//i;
 const ZOOM_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?zoom\.us\/j\//i;
@@ -30,6 +37,15 @@ const SPOTIFY_LINK_PATTERN = /^https?:\/\/(open\.)?spotify\.com\//i;
 const VIBER_LINK_PATTERN = /^https?:\/\/(vb\.me|(invite\.)?viber\.com)\//i;
 const PAYPAL_LINK_PATTERN = /^https?:\/\/(www\.)?paypal\.me\//i;
 const LINKEDIN_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?linkedin\.com\//i;
+const TIKTOK_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?tiktok\.com\//i;
+const YOUTUBE_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?(youtube\.com|youtu\.be)\//i;
+const TELEGRAM_LINK_PATTERN = /^https?:\/\/(t\.me|telegram\.me)\//i;
+const PINTEREST_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?pinterest\.[a-z.]{2,}\//i;
+const APPSTORE_LINK_PATTERN = /^https?:\/\/apps\.apple\.com\//i;
+// Docs shares the drive.google.com file model closely enough that one
+// "Drive" label covers both without lying about where the link goes.
+const DRIVE_LINK_PATTERN = /^https?:\/\/(drive|docs)\.google\.com\//i;
+const DROPBOX_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?dropbox\.com\//i;
 
 /** Local, network-free classification of a decoded QR string — enough to
  * pick the right primary action (Open link / Open email / Call number),
@@ -49,6 +65,13 @@ export function classifyQrContent(data: string): QrContentType {
   if (VIBER_LINK_PATTERN.test(trimmed)) return 'viber';
   if (PAYPAL_LINK_PATTERN.test(trimmed)) return 'paypal';
   if (LINKEDIN_LINK_PATTERN.test(trimmed)) return 'linkedin';
+  if (TIKTOK_LINK_PATTERN.test(trimmed)) return 'tiktok';
+  if (YOUTUBE_LINK_PATTERN.test(trimmed)) return 'youtube';
+  if (TELEGRAM_LINK_PATTERN.test(trimmed)) return 'telegram';
+  if (PINTEREST_LINK_PATTERN.test(trimmed)) return 'pinterest';
+  if (APPSTORE_LINK_PATTERN.test(trimmed)) return 'appstore';
+  if (DRIVE_LINK_PATTERN.test(trimmed)) return 'drive';
+  if (DROPBOX_LINK_PATTERN.test(trimmed)) return 'dropbox';
   if (/^https?:\/\//i.test(trimmed)) return 'link';
   if (/^mailto:/i.test(trimmed)) return 'email';
   // SMSTO: is the older Nokia-era scheme some generators still emit;
@@ -86,6 +109,13 @@ export function resolveQrOpenUri(data: string, type: QrContentType): string | nu
     case 'viber':
     case 'paypal':
     case 'linkedin':
+    case 'tiktok':
+    case 'youtube':
+    case 'telegram':
+    case 'pinterest':
+    case 'appstore':
+    case 'drive':
+    case 'dropbox':
     case 'upi':
       return trimmed;
     case 'email':

@@ -183,7 +183,14 @@
     "entryOptionsTitle": "Eintrag-Optionen",
     "rename": "Umbenennen",
     "renamePlaceholder": "Name des Eintrags",
-    "renameSave": "Speichern"
+    "renameSave": "Speichern",
+    "metaQrTiktok": "QR TikTok",
+    "metaQrYoutube": "QR YouTube",
+    "metaQrTelegram": "QR Telegram",
+    "metaQrPinterest": "QR Pinterest",
+    "metaQrAppstore": "QR App Store",
+    "metaQrDrive": "QR Drive",
+    "metaQrDropbox": "QR Dropbox"
   },
   "myCodes": {
     "title": "Meine Codes",
@@ -282,7 +289,21 @@
     "paypalLabel": "PayPal.me",
     "paypalPlaceholder": "Benutzername oder paypal.me/...",
     "linkedinLabel": "LinkedIn-Profil",
-    "linkedinPlaceholder": "Benutzername oder linkedin.com/in/..."
+    "linkedinPlaceholder": "Benutzername oder linkedin.com/in/...",
+    "tiktokLabel": "TikTok-Benutzername",
+    "tiktokPlaceholder": "Benutzername",
+    "youtubeLabel": "YouTube-Handle",
+    "youtubePlaceholder": "Handle",
+    "telegramLabel": "Telegram-Benutzername",
+    "telegramPlaceholder": "Benutzername",
+    "pinterestLabel": "Pinterest-Benutzername",
+    "pinterestPlaceholder": "Benutzername",
+    "appstoreLabel": "App-Store-Link",
+    "appstorePlaceholder": "https://apps.apple.com/…",
+    "driveLabel": "Drive-Link",
+    "drivePlaceholder": "https://drive.google.com/…",
+    "dropboxLabel": "Dropbox-Link",
+    "dropboxPlaceholder": "https://www.dropbox.com/…"
   },
   "qr": {
     "typeLink": "Link",
@@ -322,7 +343,18 @@
     "typePaypal": "PayPal",
     "typeLinkedin": "LinkedIn",
     "openLocation": "In Karten öffnen",
-    "openUpi": "Mit UPI bezahlen"
+    "openUpi": "Mit UPI bezahlen",
+    "typeTiktok": "TikTok",
+    "typeYoutube": "YouTube",
+    "typeTelegram": "Telegram",
+    "typePinterest": "Pinterest",
+    "typeAppstore": "App Store",
+    "typeDrive": "Drive",
+    "typeDropbox": "Dropbox",
+    "categoryPersonal": "Persönlich",
+    "categoryBusiness": "Beruf & Zahlungen",
+    "categorySocial": "Social Media",
+    "categoryUtility": "Werkzeuge & Cloud"
   },
   "paywall": {
     "title": "Blippo Premium freischalten",

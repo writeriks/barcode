@@ -183,7 +183,14 @@
     "entryOptionsTitle": "Opcje wpisu",
     "rename": "Zmień nazwę",
     "renamePlaceholder": "Nazwa wpisu",
-    "renameSave": "Zapisz"
+    "renameSave": "Zapisz",
+    "metaQrTiktok": "QR TikTok",
+    "metaQrYoutube": "QR YouTube",
+    "metaQrTelegram": "QR Telegram",
+    "metaQrPinterest": "QR Pinterest",
+    "metaQrAppstore": "QR App Store",
+    "metaQrDrive": "QR Drive",
+    "metaQrDropbox": "QR Dropbox"
   },
   "myCodes": {
     "title": "Moje kody",
@@ -282,7 +289,21 @@
     "paypalLabel": "PayPal.me",
     "paypalPlaceholder": "Nazwa użytkownika lub paypal.me/...",
     "linkedinLabel": "Profil LinkedIn",
-    "linkedinPlaceholder": "Nazwa użytkownika lub linkedin.com/in/..."
+    "linkedinPlaceholder": "Nazwa użytkownika lub linkedin.com/in/...",
+    "tiktokLabel": "Nazwa użytkownika TikTok",
+    "tiktokPlaceholder": "nazwa użytkownika",
+    "youtubeLabel": "Nazwa kanału YouTube",
+    "youtubePlaceholder": "nazwa",
+    "telegramLabel": "Nazwa użytkownika Telegram",
+    "telegramPlaceholder": "nazwa użytkownika",
+    "pinterestLabel": "Nazwa użytkownika Pinterest",
+    "pinterestPlaceholder": "nazwa użytkownika",
+    "appstoreLabel": "Link App Store",
+    "appstorePlaceholder": "https://apps.apple.com/…",
+    "driveLabel": "Link Drive",
+    "drivePlaceholder": "https://drive.google.com/…",
+    "dropboxLabel": "Link Dropbox",
+    "dropboxPlaceholder": "https://www.dropbox.com/…"
   },
   "qr": {
     "typeLink": "Link",
@@ -322,7 +343,18 @@
     "typePaypal": "PayPal",
     "typeLinkedin": "LinkedIn",
     "openLocation": "Otwórz w Mapach",
-    "openUpi": "Zapłać przez UPI"
+    "openUpi": "Zapłać przez UPI",
+    "typeTiktok": "TikTok",
+    "typeYoutube": "YouTube",
+    "typeTelegram": "Telegram",
+    "typePinterest": "Pinterest",
+    "typeAppstore": "App Store",
+    "typeDrive": "Drive",
+    "typeDropbox": "Dropbox",
+    "categoryPersonal": "Osobiste",
+    "categoryBusiness": "Firma i płatności",
+    "categorySocial": "Społecznościowe",
+    "categoryUtility": "Narzędzia i chmura"
   },
   "paywall": {
     "title": "Odblokuj Blippo Premium",

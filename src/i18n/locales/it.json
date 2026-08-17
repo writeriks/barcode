@@ -183,7 +183,14 @@
     "entryOptionsTitle": "Opzioni voce",
     "rename": "Rinomina",
     "renamePlaceholder": "Nome della voce",
-    "renameSave": "Salva"
+    "renameSave": "Salva",
+    "metaQrTiktok": "QR TikTok",
+    "metaQrYoutube": "QR YouTube",
+    "metaQrTelegram": "QR Telegram",
+    "metaQrPinterest": "QR Pinterest",
+    "metaQrAppstore": "QR App Store",
+    "metaQrDrive": "QR Drive",
+    "metaQrDropbox": "QR Dropbox"
   },
   "myCodes": {
     "title": "I miei codici",
@@ -282,7 +289,21 @@
     "paypalLabel": "PayPal.me",
     "paypalPlaceholder": "Nome utente o paypal.me/...",
     "linkedinLabel": "Profilo LinkedIn",
-    "linkedinPlaceholder": "Nome utente o linkedin.com/in/..."
+    "linkedinPlaceholder": "Nome utente o linkedin.com/in/...",
+    "tiktokLabel": "Nome utente TikTok",
+    "tiktokPlaceholder": "nome utente",
+    "youtubeLabel": "Handle YouTube",
+    "youtubePlaceholder": "handle",
+    "telegramLabel": "Nome utente Telegram",
+    "telegramPlaceholder": "nome utente",
+    "pinterestLabel": "Nome utente Pinterest",
+    "pinterestPlaceholder": "nome utente",
+    "appstoreLabel": "Link App Store",
+    "appstorePlaceholder": "https://apps.apple.com/…",
+    "driveLabel": "Link Drive",
+    "drivePlaceholder": "https://drive.google.com/…",
+    "dropboxLabel": "Link Dropbox",
+    "dropboxPlaceholder": "https://www.dropbox.com/…"
   },
   "qr": {
     "typeLink": "Link",
@@ -322,7 +343,18 @@
     "typePaypal": "PayPal",
     "typeLinkedin": "LinkedIn",
     "openLocation": "Apri in Mappe",
-    "openUpi": "Paga con UPI"
+    "openUpi": "Paga con UPI",
+    "typeTiktok": "TikTok",
+    "typeYoutube": "YouTube",
+    "typeTelegram": "Telegram",
+    "typePinterest": "Pinterest",
+    "typeAppstore": "App Store",
+    "typeDrive": "Drive",
+    "typeDropbox": "Dropbox",
+    "categoryPersonal": "Personali",
+    "categoryBusiness": "Lavoro e pagamenti",
+    "categorySocial": "Social",
+    "categoryUtility": "Utilità e cloud"
   },
   "paywall": {
     "title": "Sblocca Blippo Premium",

@@ -183,7 +183,14 @@
     "entryOptionsTitle": "Entry Options",
     "rename": "Rename",
     "renamePlaceholder": "Entry name",
-    "renameSave": "Save"
+    "renameSave": "Save",
+    "metaQrTiktok": "QR TikTok",
+    "metaQrYoutube": "QR YouTube",
+    "metaQrTelegram": "QR Telegram",
+    "metaQrPinterest": "QR Pinterest",
+    "metaQrAppstore": "QR App Store",
+    "metaQrDrive": "QR Drive",
+    "metaQrDropbox": "QR Dropbox"
   },
   "myCodes": {
     "title": "My Codes",
@@ -282,7 +289,21 @@
     "paypalLabel": "PayPal.me",
     "paypalPlaceholder": "Username or paypal.me/...",
     "linkedinLabel": "LinkedIn profile",
-    "linkedinPlaceholder": "Username or linkedin.com/in/..."
+    "linkedinPlaceholder": "Username or linkedin.com/in/...",
+    "tiktokLabel": "TikTok username",
+    "tiktokPlaceholder": "username",
+    "youtubeLabel": "YouTube handle",
+    "youtubePlaceholder": "handle",
+    "telegramLabel": "Telegram username",
+    "telegramPlaceholder": "username",
+    "pinterestLabel": "Pinterest username",
+    "pinterestPlaceholder": "username",
+    "appstoreLabel": "App Store link",
+    "appstorePlaceholder": "https://apps.apple.com/…",
+    "driveLabel": "Drive link",
+    "drivePlaceholder": "https://drive.google.com/…",
+    "dropboxLabel": "Dropbox link",
+    "dropboxPlaceholder": "https://www.dropbox.com/…"
   },
   "qr": {
     "typeLink": "Link",
@@ -322,7 +343,18 @@
     "typePaypal": "PayPal",
     "typeLinkedin": "LinkedIn",
     "openLocation": "Open in Maps",
-    "openUpi": "Pay with UPI"
+    "openUpi": "Pay with UPI",
+    "typeTiktok": "TikTok",
+    "typeYoutube": "YouTube",
+    "typeTelegram": "Telegram",
+    "typePinterest": "Pinterest",
+    "typeAppstore": "App Store",
+    "typeDrive": "Drive",
+    "typeDropbox": "Dropbox",
+    "categoryPersonal": "Personal",
+    "categoryBusiness": "Business & payments",
+    "categorySocial": "Social",
+    "categoryUtility": "Utility & cloud"
   },
   "paywall": {
     "title": "Unlock Blippo Premium",

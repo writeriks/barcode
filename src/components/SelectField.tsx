@@ -77,7 +77,7 @@ function createStyles(colors: ColorTheme) {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      backgroundColor: colors.panel,
+      backgroundColor: colors.cabinet,
       borderWidth: 1,
       borderColor: colors.panelLine,
       borderRadius: 14,

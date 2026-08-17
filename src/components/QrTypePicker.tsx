@@ -31,14 +31,23 @@ export function QrTypePicker({ value, onChange }: Props) {
   // percentage width can't subtract pixels, so three 33% tiles plus two
   // gaps overflow the row and wrap to two per line.
   const [gridWidth, setGridWidth] = useState(0);
-  const tileWidth = gridWidth > 0 ? (gridWidth - GRID_GAP * (COLUMNS - 1)) / COLUMNS : undefined;
+  // Floor so three tiles plus gaps never overflow by a subpixel and wrap
+  // the last tile onto the next line, which reads as a left-shifted grid.
+  const tileWidth =
+    gridWidth > 0 ? Math.floor((gridWidth - GRID_GAP * (COLUMNS - 1)) / COLUMNS) : undefined;
 
   return (
-    <View style={styles.wrap} onLayout={(event) => setGridWidth(event.nativeEvent.layout.width)}>
+    <View style={styles.wrap}>
       {QR_TYPE_CATEGORIES.map((category) => (
         <View key={category.labelKey} style={styles.category}>
           <Text style={styles.categoryLabel}>{t(category.labelKey)}</Text>
-          <View style={styles.grid}>
+          <View
+            style={styles.grid}
+            onLayout={(event) => {
+              const nextWidth = event.nativeEvent.layout.width;
+              setGridWidth((current) => (current === nextWidth ? current : nextWidth));
+            }}
+          >
             {category.types.map((type) => {
               const selected = value === type;
               const locked = QR_PREMIUM_TYPES.has(type) && !isPremium;
@@ -82,9 +91,11 @@ const GRID_GAP = 9;
 function createStyles(colors: ColorTheme) {
   return StyleSheet.create({
     wrap: {
+      width: '100%',
       gap: 18,
     },
     category: {
+      width: '100%',
       gap: 9,
     },
     categoryLabel: {
@@ -96,8 +107,10 @@ function createStyles(colors: ColorTheme) {
       opacity: 0.5,
     },
     grid: {
+      width: '100%',
       flexDirection: 'row',
       flexWrap: 'wrap',
+      justifyContent: 'center',
       gap: GRID_GAP,
     },
     tile: {

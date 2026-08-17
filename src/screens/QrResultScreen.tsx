@@ -41,6 +41,9 @@ function createStyles(colors: ColorTheme) {
       backgroundColor: colors.cabinet,
     },
     content: {
+      flexGrow: 1,
+      width: '100%',
+      alignItems: 'stretch',
       padding: 20,
       paddingTop: 32,
       gap: 16,

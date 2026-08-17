@@ -207,6 +207,8 @@ export function QrContentView({ data, onCopied }: Props) {
 function createStyles(colors: ColorTheme) {
   return StyleSheet.create({
     wrap: {
+      width: '100%',
+      alignItems: 'center',
       gap: 14,
     },
     qrCard: {
@@ -218,6 +220,7 @@ function createStyles(colors: ColorTheme) {
       padding: 8,
     },
     warningCard: {
+      alignSelf: 'stretch',
       backgroundColor: colors.panel,
       borderWidth: 1,
       borderColor: colors.citrusText,
@@ -259,6 +262,7 @@ function createStyles(colors: ColorTheme) {
       textTransform: 'uppercase',
     },
     contentCard: {
+      alignSelf: 'stretch',
       backgroundColor: colors.panel,
       borderWidth: 1,
       borderColor: colors.panelLine,
@@ -325,6 +329,7 @@ function createStyles(colors: ColorTheme) {
       opacity: 0.7,
     },
     actions: {
+      alignSelf: 'stretch',
       gap: 10,
     },
     actionRow: {

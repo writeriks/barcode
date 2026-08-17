@@ -28,7 +28,7 @@ export function createFieldStyles(colors: ColorTheme) {
       marginTop: -6,
     },
     input: {
-      backgroundColor: colors.panel,
+      backgroundColor: colors.cabinet,
       borderWidth: 1,
       borderColor: colors.panelLine,
       borderRadius: 14,

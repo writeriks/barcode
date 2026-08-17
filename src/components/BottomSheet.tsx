@@ -1,6 +1,17 @@
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef } from 'react';
-import { Animated, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Animated,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -11,11 +22,18 @@ interface Props {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  /** Pinned below the body — a Save button on a tall form, so it stays
+   *  reachable while the fields scroll. */
+  footer?: ReactNode;
+  /** Caps the body and scrolls it. Needed for generator forms that can
+   *  be a vCard's worth of fields; short sheets should leave this off so
+   *  a FlatList inside (country codes) isn't nested in a ScrollView. */
+  scroll?: boolean;
 }
 
 // Comfortably taller than any sheet this app renders, so the slide-in
 // always starts fully below the screen regardless of content height.
-const OFFSCREEN_Y = 600;
+const OFFSCREEN_Y = 1200;
 
 /** A generic slide-up sheet anchored to the bottom of the screen, with a
  * tap-outside-to-dismiss backdrop and a drag-handle affordance.
@@ -30,9 +48,10 @@ const OFFSCREEN_Y = 600;
  * an autoFocus'd "name this folder" field) doesn't end up hidden behind
  * the keyboard, which sits on top of the sheet by default inside a Modal.
  */
-export function BottomSheet({ visible, onClose, title, children }: Props) {
+export function BottomSheet({ visible, onClose, title, children, footer, scroll }: Props) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const sheetTranslateY = useRef(new Animated.Value(OFFSCREEN_Y)).current;
@@ -55,8 +74,28 @@ export function BottomSheet({ visible, onClose, title, children }: Props) {
     }
   }, [visible, backdropOpacity, sheetTranslateY]);
 
+  const body = scroll ? (
+    <ScrollView
+      style={{ maxHeight: windowHeight * 0.62 }}
+      contentContainerStyle={styles.scrollBody}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      showsVerticalScrollIndicator={false}
+    >
+      {children}
+    </ScrollView>
+  ) : (
+    children
+  );
+
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      presentationStyle="overFullScreen"
+      onRequestClose={onClose}
+    >
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <Pressable style={styles.backdropTouchable} onPress={onClose}>
           <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]} />
@@ -69,7 +108,8 @@ export function BottomSheet({ visible, onClose, title, children }: Props) {
         >
           <View style={styles.handle} />
           <Text style={styles.title}>{title}</Text>
-          {children}
+          {body}
+          {footer ? <View style={styles.footer}>{footer}</View> : null}
         </Animated.View>
       </KeyboardAvoidingView>
     </Modal>
@@ -111,6 +151,13 @@ function createStyles(colors: ColorTheme) {
       fontSize: 17,
       color: colors.text,
       marginBottom: 12,
+    },
+    scrollBody: {
+      gap: 14,
+      paddingBottom: 4,
+    },
+    footer: {
+      marginTop: 14,
     },
   });
 }

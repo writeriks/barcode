@@ -8,8 +8,6 @@ import {
   Alert,
   BackHandler,
   FlatList,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -379,6 +377,7 @@ export function MyCodesScreen({ navigation }: Props) {
   const placeholderColor = mode === 'light' ? 'rgba(36,25,51,0.35)' : 'rgba(255,246,233,0.4)';
   const [codes, setCodes] = useState<MyCode[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [formSheetOpen, setFormSheetOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewing, setViewing] = useState<MyCode | null>(null);
   const [menuCode, setMenuCode] = useState<MyCode | null>(null);
@@ -400,15 +399,28 @@ export function MyCodesScreen({ navigation }: Props) {
 
   useFocusEffect(reload);
 
-  // Re-tapping the already-active My Codes tab while viewing a code's
-  // detail should pop back to the list, not do nothing.
+  const resetForm = useCallback(() => {
+    setType('link');
+    setLabel('');
+    setFields(makeDefaultFormState(defaultCountry));
+  }, [defaultCountry]);
+
+  const handleCancel = useCallback(() => {
+    setIsCreating(false);
+    setFormSheetOpen(false);
+    setEditingId(null);
+    resetForm();
+  }, [resetForm]);
+
+  // Re-tapping the already-active My Codes tab while viewing a code or
+  // creating one should pop back to the list, not do nothing.
   useEffect(() => {
     return navigation.addListener('tabPress', () => {
-      if (navigation.isFocused() && viewing) {
-        setViewing(null);
-      }
+      if (!navigation.isFocused()) return;
+      if (viewing) setViewing(null);
+      else if (isCreating) handleCancel();
     });
-  }, [navigation, viewing]);
+  }, [navigation, viewing, isCreating, handleCancel]);
 
   // This tab shows three things without a navigator between them, so
   // Android's back gesture had nothing to act on and the viewer and the
@@ -418,13 +430,12 @@ export function MyCodesScreen({ navigation }: Props) {
     if (!viewing && !isCreating) return;
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
       if (viewing) setViewing(null);
+      else if (formSheetOpen) setFormSheetOpen(false);
       else handleCancel();
       return true;
     });
     return () => subscription.remove();
-    // handleCancel is redefined every render and only resets local state.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewing, isCreating]);
+  }, [viewing, isCreating, formSheetOpen, handleCancel]);
 
   const content = useMemo(() => buildContent(type, fields), [type, fields]);
 
@@ -471,12 +482,6 @@ export function MyCodesScreen({ navigation }: Props) {
     });
   }, [codes, searchQuery, activeTypes]);
 
-  const resetForm = () => {
-    setType('link');
-    setLabel('');
-    setFields(makeDefaultFormState(defaultCountry));
-  };
-
   const handleSave = async () => {
     if (!content) return;
     // A code that can't be drawn can't be saved: nothing would render it
@@ -501,15 +506,15 @@ export function MyCodesScreen({ navigation }: Props) {
       captureAnalyticsEvent('my_code_created', { type });
     }
     setIsCreating(false);
+    setFormSheetOpen(false);
     setEditingId(null);
     resetForm();
     reload();
   };
 
-  const handleCancel = () => {
-    setIsCreating(false);
-    setEditingId(null);
-    resetForm();
+  const handleSelectType = (next: QrContentType) => {
+    setType(next);
+    setFormSheetOpen(true);
   };
 
   const handleEdit = (code: MyCode) => {
@@ -520,6 +525,7 @@ export function MyCodesScreen({ navigation }: Props) {
     setFields(parsedFields);
     setViewing(null);
     setIsCreating(true);
+    setFormSheetOpen(true);
   };
 
   const handleShare = (code: MyCode) => {
@@ -606,9 +612,19 @@ export function MyCodesScreen({ navigation }: Props) {
           </View>
         ) : (
           <>
-            <View style={styles.header}>
-              <Text style={styles.title}>{t('myCodes.title')}</Text>
-              {!isCreating ? (
+            {isCreating ? (
+              <Pressable
+                onPress={handleCancel}
+                hitSlop={10}
+                style={styles.backRow}
+                accessibilityLabel={t('myCodes.title')}
+              >
+                <Ionicons name="chevron-back" size={18} color={colors.text} />
+                <Text style={styles.backLabel}>{t('myCodes.title')}</Text>
+              </Pressable>
+            ) : (
+              <View style={styles.header}>
+                <Text style={styles.title}>{t('myCodes.title')}</Text>
                 <Pressable
                   onPress={() => setIsCreating(true)}
                   style={styles.addButton}
@@ -617,184 +633,17 @@ export function MyCodesScreen({ navigation }: Props) {
                 >
                   <Text style={styles.addGlyph}>+</Text>
                 </Pressable>
-              ) : null}
-            </View>
+              </View>
+            )}
 
             {isCreating ? (
-              <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-                <ScrollView
-                  contentContainerStyle={[styles.form, { paddingBottom: tabBarHeight + 20 }]}
-                  keyboardShouldPersistTaps="handled"
-                  keyboardDismissMode="on-drag"
-                  automaticallyAdjustKeyboardInsets
-                >
-                  <QrTypePicker value={type} onChange={setType} />
-
-                  <View style={styles.field}>
-                    <Text style={styles.fieldLabel}>{t('myCodes.labelLabel')}</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder={t('myCodes.labelPlaceholder')}
-                      placeholderTextColor={placeholderColor}
-                      value={label}
-                      onChangeText={setLabel}
-                    />
-                  </View>
-
-                  {type === 'link' && <LinkForm value={fields.link} onChange={(link) => setFields({ ...fields, link })} />}
-                  {type === 'text' && <TextForm value={fields.text} onChange={(text) => setFields({ ...fields, text })} />}
-                  {type === 'email' && (
-                    <EmailForm value={fields.email} onChange={(email) => setFields({ ...fields, email })} />
-                  )}
-                  {type === 'phone' && (
-                    <PhoneForm value={fields.phone} onChange={(phone) => setFields({ ...fields, phone })} />
-                  )}
-                  {type === 'sms' && <PhoneMessageForm value={fields.sms} onChange={(sms) => setFields({ ...fields, sms })} />}
-                  {type === 'whatsapp' && (
-                    <PhoneMessageForm value={fields.whatsapp} onChange={(whatsapp) => setFields({ ...fields, whatsapp })} />
-                  )}
-                  {type === 'zoom' && <ZoomForm value={fields.zoom} onChange={(zoom) => setFields({ ...fields, zoom })} />}
-                  {type === 'wifi' && <WifiForm value={fields.wifi} onChange={(wifi) => setFields({ ...fields, wifi })} />}
-                  {type === 'vcard' && (
-                    <VCardForm value={fields.vcard} onChange={(vcard) => setFields({ ...fields, vcard })} />
-                  )}
-                  {type === 'event' && (
-                    <EventForm value={fields.event} onChange={(event) => setFields({ ...fields, event })} />
-                  )}
-                  {type === 'mecard' && (
-                    <MeCardForm value={fields.mecard} onChange={(mecard) => setFields({ ...fields, mecard })} />
-                  )}
-                  {type === 'location' && (
-                    <LocationForm value={fields.location} onChange={(location) => setFields({ ...fields, location })} />
-                  )}
-                  {type === 'upi' && <UpiForm value={fields.upi} onChange={(upi) => setFields({ ...fields, upi })} />}
-                  {type === 'facebook' && (
-                    <SocialProfileForm
-                      value={fields.facebook}
-                      onChange={(facebook) => setFields({ ...fields, facebook })}
-                      label={t('myCodes.facebookLabel')}
-                      placeholder={t('myCodes.facebookPlaceholder')}
-                    />
-                  )}
-                  {type === 'instagram' && (
-                    <SocialProfileForm
-                      value={fields.instagram}
-                      onChange={(instagram) => setFields({ ...fields, instagram })}
-                      label={t('myCodes.instagramLabel')}
-                      placeholder={t('myCodes.instagramPlaceholder')}
-                    />
-                  )}
-                  {type === 'twitter' && (
-                    <SocialProfileForm
-                      value={fields.twitter}
-                      onChange={(twitter) => setFields({ ...fields, twitter })}
-                      label={t('myCodes.twitterLabel')}
-                      placeholder={t('myCodes.twitterPlaceholder')}
-                    />
-                  )}
-                  {type === 'spotify' && (
-                    <SocialProfileForm
-                      value={fields.spotify}
-                      onChange={(spotify) => setFields({ ...fields, spotify })}
-                      label={t('myCodes.spotifyLabel')}
-                      placeholder={t('myCodes.spotifyPlaceholder')}
-                    />
-                  )}
-                  {type === 'viber' && (
-                    <SocialProfileForm
-                      value={fields.viber}
-                      onChange={(viber) => setFields({ ...fields, viber })}
-                      label={t('myCodes.viberLabel')}
-                      placeholder={t('myCodes.viberPlaceholder')}
-                    />
-                  )}
-                  {type === 'paypal' && (
-                    <SocialProfileForm
-                      value={fields.paypal}
-                      onChange={(paypal) => setFields({ ...fields, paypal })}
-                      label={t('myCodes.paypalLabel')}
-                      placeholder={t('myCodes.paypalPlaceholder')}
-                    />
-                  )}
-                  {type === 'linkedin' && (
-                    <SocialProfileForm
-                      value={fields.linkedin}
-                      onChange={(linkedin) => setFields({ ...fields, linkedin })}
-                      label={t('myCodes.linkedinLabel')}
-                      placeholder={t('myCodes.linkedinPlaceholder')}
-                    />
-                  )}
-                  {type === 'tiktok' && (
-                    <SocialProfileForm
-                      value={fields.tiktok}
-                      onChange={(tiktok) => setFields({ ...fields, tiktok })}
-                      label={t('myCodes.tiktokLabel')}
-                      placeholder={t('myCodes.tiktokPlaceholder')}
-                    />
-                  )}
-                  {type === 'youtube' && (
-                    <SocialProfileForm
-                      value={fields.youtube}
-                      onChange={(youtube) => setFields({ ...fields, youtube })}
-                      label={t('myCodes.youtubeLabel')}
-                      placeholder={t('myCodes.youtubePlaceholder')}
-                    />
-                  )}
-                  {type === 'telegram' && (
-                    <SocialProfileForm
-                      value={fields.telegram}
-                      onChange={(telegram) => setFields({ ...fields, telegram })}
-                      label={t('myCodes.telegramLabel')}
-                      placeholder={t('myCodes.telegramPlaceholder')}
-                    />
-                  )}
-                  {type === 'pinterest' && (
-                    <SocialProfileForm
-                      value={fields.pinterest}
-                      onChange={(pinterest) => setFields({ ...fields, pinterest })}
-                      label={t('myCodes.pinterestLabel')}
-                      placeholder={t('myCodes.pinterestPlaceholder')}
-                    />
-                  )}
-                  {/* Share links are pasted whole, so these three reuse the
-                      link form with a placeholder that shows the shape of
-                      the URL they expect. */}
-                  {type === 'appstore' && (
-                    <LinkForm
-                      value={fields.appstore}
-                      onChange={(appstore) => setFields({ ...fields, appstore })}
-                      label={t('myCodes.appstoreLabel')}
-                      placeholder={t('myCodes.appstorePlaceholder')}
-                    />
-                  )}
-                  {type === 'drive' && (
-                    <LinkForm
-                      value={fields.drive}
-                      onChange={(drive) => setFields({ ...fields, drive })}
-                      label={t('myCodes.driveLabel')}
-                      placeholder={t('myCodes.drivePlaceholder')}
-                    />
-                  )}
-                  {type === 'dropbox' && (
-                    <LinkForm
-                      value={fields.dropbox}
-                      onChange={(dropbox) => setFields({ ...fields, dropbox })}
-                      label={t('myCodes.dropboxLabel')}
-                      placeholder={t('myCodes.dropboxPlaceholder')}
-                    />
-                  )}
-
-                  <View style={styles.formActions}>
-                    <PillButton title={t('myCodes.cancel')} onPress={handleCancel} variant="ghost" />
-                    <PillButton
-                      title={t(editingId ? 'myCodes.update' : 'myCodes.save')}
-                      onPress={handleSave}
-                      variant="citrus"
-                      style={!content && styles.saveDisabled}
-                    />
-                  </View>
-                </ScrollView>
-              </KeyboardAvoidingView>
+              <ScrollView
+                style={styles.flex}
+                contentContainerStyle={[styles.form, { paddingBottom: tabBarHeight + 20 }]}
+                keyboardShouldPersistTaps="handled"
+              >
+                <QrTypePicker value={type} onChange={handleSelectType} />
+              </ScrollView>
             ) : (
               <View style={[styles.flex, { paddingBottom: tabBarHeight }]}>
                 {codes.length === 0 ? (
@@ -888,12 +737,174 @@ export function MyCodesScreen({ navigation }: Props) {
         )}
       </FadeSwitcher>
 
+      {/* Generator fields used to sit under the type grid and push a
+          vCard's worth of inputs onto the same screen. Tapping a type
+          now opens them here instead. */}
+      <BottomSheet
+        visible={isCreating && formSheetOpen}
+        onClose={() => setFormSheetOpen(false)}
+        title={t(QR_TYPE_LABEL_KEY[type])}
+        scroll
+        footer={
+          <PillButton
+            title={t(editingId ? 'myCodes.update' : 'myCodes.save')}
+            onPress={handleSave}
+            variant="citrus"
+            style={!content && styles.saveDisabled}
+          />
+        }
+      >
+        <View style={styles.field}>
+          <Text style={styles.fieldLabel}>{t('myCodes.labelLabel')}</Text>
+          <TextInput
+            style={styles.input}
+            placeholder={t('myCodes.labelPlaceholder')}
+            placeholderTextColor={placeholderColor}
+            value={label}
+            onChangeText={setLabel}
+          />
+        </View>
+        {type === 'link' && <LinkForm value={fields.link} onChange={(link) => setFields({ ...fields, link })} />}
+        {type === 'text' && <TextForm value={fields.text} onChange={(text) => setFields({ ...fields, text })} />}
+        {type === 'email' && <EmailForm value={fields.email} onChange={(email) => setFields({ ...fields, email })} />}
+        {type === 'phone' && <PhoneForm value={fields.phone} onChange={(phone) => setFields({ ...fields, phone })} />}
+        {type === 'sms' && <PhoneMessageForm value={fields.sms} onChange={(sms) => setFields({ ...fields, sms })} />}
+        {type === 'whatsapp' && (
+          <PhoneMessageForm value={fields.whatsapp} onChange={(whatsapp) => setFields({ ...fields, whatsapp })} />
+        )}
+        {type === 'zoom' && <ZoomForm value={fields.zoom} onChange={(zoom) => setFields({ ...fields, zoom })} />}
+        {type === 'wifi' && <WifiForm value={fields.wifi} onChange={(wifi) => setFields({ ...fields, wifi })} />}
+        {type === 'vcard' && <VCardForm value={fields.vcard} onChange={(vcard) => setFields({ ...fields, vcard })} />}
+        {type === 'event' && <EventForm value={fields.event} onChange={(event) => setFields({ ...fields, event })} />}
+        {type === 'mecard' && <MeCardForm value={fields.mecard} onChange={(mecard) => setFields({ ...fields, mecard })} />}
+        {type === 'location' && (
+          <LocationForm value={fields.location} onChange={(location) => setFields({ ...fields, location })} />
+        )}
+        {type === 'upi' && <UpiForm value={fields.upi} onChange={(upi) => setFields({ ...fields, upi })} />}
+        {type === 'facebook' && (
+          <SocialProfileForm
+            value={fields.facebook}
+            onChange={(facebook) => setFields({ ...fields, facebook })}
+            label={t('myCodes.facebookLabel')}
+            placeholder={t('myCodes.facebookPlaceholder')}
+          />
+        )}
+        {type === 'instagram' && (
+          <SocialProfileForm
+            value={fields.instagram}
+            onChange={(instagram) => setFields({ ...fields, instagram })}
+            label={t('myCodes.instagramLabel')}
+            placeholder={t('myCodes.instagramPlaceholder')}
+          />
+        )}
+        {type === 'twitter' && (
+          <SocialProfileForm
+            value={fields.twitter}
+            onChange={(twitter) => setFields({ ...fields, twitter })}
+            label={t('myCodes.twitterLabel')}
+            placeholder={t('myCodes.twitterPlaceholder')}
+          />
+        )}
+        {type === 'spotify' && (
+          <SocialProfileForm
+            value={fields.spotify}
+            onChange={(spotify) => setFields({ ...fields, spotify })}
+            label={t('myCodes.spotifyLabel')}
+            placeholder={t('myCodes.spotifyPlaceholder')}
+          />
+        )}
+        {type === 'viber' && (
+          <SocialProfileForm
+            value={fields.viber}
+            onChange={(viber) => setFields({ ...fields, viber })}
+            label={t('myCodes.viberLabel')}
+            placeholder={t('myCodes.viberPlaceholder')}
+          />
+        )}
+        {type === 'paypal' && (
+          <SocialProfileForm
+            value={fields.paypal}
+            onChange={(paypal) => setFields({ ...fields, paypal })}
+            label={t('myCodes.paypalLabel')}
+            placeholder={t('myCodes.paypalPlaceholder')}
+          />
+        )}
+        {type === 'linkedin' && (
+          <SocialProfileForm
+            value={fields.linkedin}
+            onChange={(linkedin) => setFields({ ...fields, linkedin })}
+            label={t('myCodes.linkedinLabel')}
+            placeholder={t('myCodes.linkedinPlaceholder')}
+          />
+        )}
+        {type === 'tiktok' && (
+          <SocialProfileForm
+            value={fields.tiktok}
+            onChange={(tiktok) => setFields({ ...fields, tiktok })}
+            label={t('myCodes.tiktokLabel')}
+            placeholder={t('myCodes.tiktokPlaceholder')}
+          />
+        )}
+        {type === 'youtube' && (
+          <SocialProfileForm
+            value={fields.youtube}
+            onChange={(youtube) => setFields({ ...fields, youtube })}
+            label={t('myCodes.youtubeLabel')}
+            placeholder={t('myCodes.youtubePlaceholder')}
+          />
+        )}
+        {type === 'telegram' && (
+          <SocialProfileForm
+            value={fields.telegram}
+            onChange={(telegram) => setFields({ ...fields, telegram })}
+            label={t('myCodes.telegramLabel')}
+            placeholder={t('myCodes.telegramPlaceholder')}
+          />
+        )}
+        {type === 'pinterest' && (
+          <SocialProfileForm
+            value={fields.pinterest}
+            onChange={(pinterest) => setFields({ ...fields, pinterest })}
+            label={t('myCodes.pinterestLabel')}
+            placeholder={t('myCodes.pinterestPlaceholder')}
+          />
+        )}
+        {type === 'appstore' && (
+          <LinkForm
+            value={fields.appstore}
+            onChange={(appstore) => setFields({ ...fields, appstore })}
+            label={t('myCodes.appstoreLabel')}
+            placeholder={t('myCodes.appstorePlaceholder')}
+          />
+        )}
+        {type === 'drive' && (
+          <LinkForm
+            value={fields.drive}
+            onChange={(drive) => setFields({ ...fields, drive })}
+            label={t('myCodes.driveLabel')}
+            placeholder={t('myCodes.drivePlaceholder')}
+          />
+        )}
+        {type === 'dropbox' && (
+          <LinkForm
+            value={fields.dropbox}
+            onChange={(dropbox) => setFields({ ...fields, dropbox })}
+            label={t('myCodes.dropboxLabel')}
+            placeholder={t('myCodes.dropboxPlaceholder')}
+          />
+        )}
+      </BottomSheet>
+
       <BottomSheet visible={menuCode !== null} onClose={() => setMenuCode(null)} title={t('myCodes.codeOptionsTitle')}>
         <View style={styles.sheetList}>
           <Pressable
             onPress={() => {
-              if (menuCode) handleEdit(menuCode);
+              const code = menuCode;
               setMenuCode(null);
+              // Same Modal-on-Modal race as share/delete below: the
+              // generator form is itself a BottomSheet, so opening it in
+              // the same tick as dismissing this menu would swallow it.
+              if (code) setTimeout(() => handleEdit(code), 300);
             }}
             style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}
           >
@@ -1092,6 +1103,8 @@ function createStyles(colors: ColorTheme) {
       color: colors.coralText,
     },
     form: {
+      width: '100%',
+      alignItems: 'stretch',
       padding: 20,
       gap: 14,
     },
@@ -1104,7 +1117,7 @@ function createStyles(colors: ColorTheme) {
       opacity: 0.65,
     },
     input: {
-      backgroundColor: colors.panel,
+      backgroundColor: colors.cabinet,
       borderWidth: 1,
       borderColor: colors.panelLine,
       borderRadius: 14,
@@ -1112,12 +1125,6 @@ function createStyles(colors: ColorTheme) {
       paddingVertical: 12,
       color: colors.text,
       fontSize: 14,
-    },
-    formActions: {
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      gap: 12,
-      marginTop: 4,
     },
     saveDisabled: {
       opacity: 0.4,

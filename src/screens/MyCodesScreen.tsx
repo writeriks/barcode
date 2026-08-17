@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
+  BackHandler,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -409,6 +410,22 @@ export function MyCodesScreen({ navigation }: Props) {
     });
   }, [navigation, viewing]);
 
+  // This tab shows three things without a navigator between them, so
+  // Android's back gesture had nothing to act on and the viewer and the
+  // form were both dead ends. Handled only while one of them is open, so
+  // back still leaves the app from the list itself.
+  useEffect(() => {
+    if (!viewing && !isCreating) return;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (viewing) setViewing(null);
+      else handleCancel();
+      return true;
+    });
+    return () => subscription.remove();
+    // handleCancel is redefined every render and only resets local state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewing, isCreating]);
+
   const content = useMemo(() => buildContent(type, fields), [type, fields]);
 
   // Only offer a type as a filter once you've actually saved one of that
@@ -538,7 +555,17 @@ export function MyCodesScreen({ navigation }: Props) {
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <FadeSwitcher activeKey={screenMode}>
         {viewing ? (
-          <View style={styles.viewer}>
+          <View style={styles.viewerScreen}>
+            <Pressable
+              onPress={() => setViewing(null)}
+              hitSlop={10}
+              style={styles.backRow}
+              accessibilityLabel={t('myCodes.title')}
+            >
+              <Ionicons name="chevron-back" size={18} color={colors.text} />
+              <Text style={styles.backLabel}>{t('myCodes.title')}</Text>
+            </Pressable>
+            <View style={styles.viewer}>
             <View style={styles.qrCard}>
               <QrCode value={viewing.content} size={220} color={colors.inkOnCream} backgroundColor={colors.cream} />
             </View>
@@ -553,6 +580,8 @@ export function MyCodesScreen({ navigation }: Props) {
               </Text>
               <Ionicons name="copy-outline" size={13} color={colors.text} style={styles.viewerCopyIcon} />
             </Pressable>
+            {/* Three, not four: "Close" was only there because there was
+                no way back, and the header now is that way back. */}
             <View style={styles.viewerActions}>
               <PillButton
                 title={t('myCodes.share')}
@@ -566,20 +595,13 @@ export function MyCodesScreen({ navigation }: Props) {
                 variant="ghost"
                 style={styles.flexButton}
               />
-            </View>
-            <View style={styles.viewerActions}>
               <PillButton
                 title={t('myCodes.delete')}
                 onPress={() => handleDelete(viewing.id)}
                 variant="ghost"
                 style={styles.flexButton}
               />
-              <PillButton
-                title={t('settings.close')}
-                onPress={() => setViewing(null)}
-                variant="punch"
-                style={styles.flexButton}
-              />
+            </View>
             </View>
           </View>
         ) : (
@@ -1099,6 +1121,22 @@ function createStyles(colors: ColorTheme) {
     },
     saveDisabled: {
       opacity: 0.4,
+    },
+    viewerScreen: {
+      flex: 1,
+    },
+    backRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingHorizontal: 16,
+      paddingTop: 6,
+      paddingBottom: 2,
+    },
+    backLabel: {
+      fontFamily: fonts.displayBold,
+      fontSize: 15,
+      color: colors.text,
     },
     viewer: {
       flex: 1,

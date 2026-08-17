@@ -5,11 +5,15 @@ import { getPremiumDevOverride, setPremiumDevOverride } from './premiumPreferenc
 import { setPremiumActive } from './premiumState';
 import { configurePurchases, fetchIsPremium, subscribeToPremiumChanges } from './revenueCat';
 
+/** What sent the user here, so the pitch can lead with the thing they
+ * were just stopped from doing rather than a generic headline. */
+export type PaywallReason = 'documentScans' | 'history' | 'settings' | 'qrTypes' | 'general';
+
 interface PremiumContextValue {
   isPremium: boolean;
   isReady: boolean;
   setPremium: (enabled: boolean) => void;
-  openPaywall: () => void;
+  openPaywall: (reason?: PaywallReason) => void;
 }
 
 const PremiumContext = createContext<PremiumContextValue | null>(null);
@@ -28,6 +32,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   const [devOverride, setDevOverrideState] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [isPaywallVisible, setIsPaywallVisible] = useState(false);
+  const [paywallReason, setPaywallReason] = useState<PaywallReason>('general');
 
   const isPremium = isEntitled || devOverride;
 
@@ -68,7 +73,10 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     setPremiumDevOverride(enabled);
   }, []);
 
-  const openPaywall = useCallback(() => setIsPaywallVisible(true), []);
+  const openPaywall = useCallback((reason: PaywallReason = 'general') => {
+    setPaywallReason(reason);
+    setIsPaywallVisible(true);
+  }, []);
   const closePaywall = useCallback(() => setIsPaywallVisible(false), []);
 
   // RevenueCat's listener will also fire on a real purchase/restore, but
@@ -87,7 +95,12 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   return (
     <PremiumContext.Provider value={value}>
       {children}
-      <PaywallScreen visible={isPaywallVisible} onClose={closePaywall} onPurchased={handlePurchased} />
+      <PaywallScreen
+        visible={isPaywallVisible}
+        reason={paywallReason}
+        onClose={closePaywall}
+        onPurchased={handlePurchased}
+      />
     </PremiumContext.Provider>
   );
 }

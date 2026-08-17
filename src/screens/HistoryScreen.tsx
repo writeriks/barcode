@@ -11,6 +11,7 @@ import { BottomBannerAd } from '../components/BottomBannerAd';
 import { BottomSheet } from '../components/BottomSheet';
 import { FilterPillRow, type PillAccent, type PillOption } from '../components/FilterPillRow';
 import { HistoryStatusBadge } from '../components/HistoryStatusBadge';
+import { PillButton } from '../components/PillButton';
 import { PromptModal } from '../components/PromptModal';
 import { usePremium } from '../premium/PremiumContext';
 import { captureAnalyticsEvent } from '../services/analytics';
@@ -438,7 +439,12 @@ export function HistoryScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={[styles.screen, { paddingBottom: tabBarHeight }]} edges={['top', 'left', 'right']}>
       <View style={styles.headerRow}>
-        <Pressable onPress={() => setIsAddMenuOpen(true)} style={styles.iconButton} hitSlop={8}>
+        <Pressable
+          onPress={() => setIsAddMenuOpen(true)}
+          style={styles.iconButton}
+          hitSlop={8}
+          accessibilityLabel={t('a11y.add')}
+        >
           <Ionicons name="add" size={20} color={colors.text} />
         </Pressable>
         {entries.length > 0 ? (
@@ -453,7 +459,7 @@ export function HistoryScreen({ navigation }: Props) {
       ) : null}
 
       {!isPremium && entries.length >= FREE_MAX_ENTRIES ? (
-        <Pressable onPress={openPaywall} style={styles.upgradeBanner}>
+        <Pressable onPress={() => openPaywall('history')} style={styles.upgradeBanner}>
           <Ionicons name="sparkles" size={14} color={colors.citrus} />
           <Text style={styles.upgradeBannerText}>{t('history.freeLimitReached', { count: FREE_MAX_ENTRIES })}</Text>
           <Ionicons name="chevron-forward" size={14} color={colors.text} style={styles.upgradeBannerChevron} />
@@ -464,6 +470,7 @@ export function HistoryScreen({ navigation }: Props) {
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>{t('history.empty')}</Text>
           <Text style={styles.emptyBody}>{t('history.emptyBody')}</Text>
+          <PillButton title={t('history.newScan')} onPress={handleNewScan} variant="citrus" icon="scan-outline" />
         </View>
       ) : (
         <>
@@ -478,7 +485,7 @@ export function HistoryScreen({ navigation }: Props) {
                 onChangeText={setSearchQuery}
               />
               {searchQuery.length > 0 ? (
-                <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+                <Pressable onPress={() => setSearchQuery('')} hitSlop={8} accessibilityLabel={t('a11y.clearSearch')}>
                   <Ionicons name="close-circle" size={16} color={colors.text} style={styles.searchClear} />
                 </Pressable>
               ) : null}
@@ -567,7 +574,12 @@ export function HistoryScreen({ navigation }: Props) {
                     </View>
                     <HistoryStatusBadge entry={item} />
                     {!isEditMode ? (
-                      <Pressable onPress={() => setMenuEntry(item)} hitSlop={10} style={styles.rowMenuButton}>
+                      <Pressable
+                        onPress={() => setMenuEntry(item)}
+                        hitSlop={10}
+                        style={styles.rowMenuButton}
+                        accessibilityLabel={t('a11y.moreOptions')}
+                      >
                         <Ionicons name="ellipsis-vertical" size={16} color={colors.text} style={styles.rowMenuIcon} />
                       </Pressable>
                     ) : null}
@@ -867,6 +879,7 @@ function createStyles(colors: ColorTheme) {
       opacity: 0.6,
       textAlign: 'center',
       maxWidth: 260,
+      marginBottom: 6,
     },
     filters: {
       paddingHorizontal: 20,

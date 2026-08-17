@@ -230,7 +230,7 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
     // instead — and a gate you hit *before* doing the work beats one that
     // takes your pages away afterwards.
     if (!isPremium && (await getRemainingFreeScans()) === 0) {
-      openPaywall();
+      openPaywall('documentScans');
       return;
     }
     setIsScanningDocument(true);

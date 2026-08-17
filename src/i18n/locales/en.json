@@ -388,6 +388,19 @@
     "purchaseFailedTitle": "Purchase failed",
     "purchaseFailedBody": "We couldn't complete that purchase. Please try again.",
     "loadingButton": "Loading…",
-    "planUnavailable": "Unavailable"
+    "planUnavailable": "Unavailable",
+    "titleDocumentScans": "You have used your free scans",
+    "titleHistory": "Your history is full",
+    "titleSettings": "Unlock every setting",
+    "titleQrTypes": "Unlock every QR type"
+  },
+  "a11y": {
+    "add": "Add",
+    "close": "Close",
+    "clearSearch": "Clear search",
+    "moreOptions": "More options",
+    "save": "Save to device",
+    "viewFullScreen": "View full screen",
+    "copyText": "Copy text"
   }
 }

@@ -388,6 +388,19 @@
     "purchaseFailedTitle": "Satın alma başarısız",
     "purchaseFailedBody": "Satın alma tamamlanamadı. Lütfen tekrar dene.",
     "loadingButton": "Yükleniyor…",
-    "planUnavailable": "Kullanılamıyor"
+    "planUnavailable": "Kullanılamıyor",
+    "titleDocumentScans": "Ücretsiz taramalarını kullandın",
+    "titleHistory": "Geçmişin doldu",
+    "titleSettings": "Tüm ayarların kilidini aç",
+    "titleQrTypes": "Tüm QR türlerinin kilidini aç"
+  },
+  "a11y": {
+    "add": "Ekle",
+    "close": "Kapat",
+    "clearSearch": "Aramayı temizle",
+    "moreOptions": "Diğer seçenekler",
+    "save": "Cihaza kaydet",
+    "viewFullScreen": "Tam ekran görüntüle",
+    "copyText": "Metni kopyala"
   }
 }

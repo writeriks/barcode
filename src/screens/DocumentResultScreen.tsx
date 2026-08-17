@@ -207,7 +207,12 @@ export function DocumentResultScreen({
       <View style={styles.stage}>
         {tab === 'page' ? (
           imageUri ? (
-            <Pressable style={styles.pageFill} onPress={handleOpenFullscreen} disabled={didImageFail}>
+            <Pressable
+              style={styles.pageFill}
+              onPress={handleOpenFullscreen}
+              disabled={didImageFail}
+              accessibilityLabel={t('a11y.viewFullScreen')}
+            >
               <Image
                 source={{ uri: imageUri }}
                 style={styles.pageImage}
@@ -234,7 +239,12 @@ export function DocumentResultScreen({
           <View style={styles.textStage}>
             {hasText ? (
               <>
-                <Pressable onPress={handleCopy} hitSlop={8} style={styles.copyButton}>
+                <Pressable
+                  onPress={handleCopy}
+                  hitSlop={8}
+                  accessibilityLabel={t('a11y.copyText')}
+                  style={styles.copyButton}
+                >
                   <Ionicons name="copy-outline" size={16} color={colors.text} style={styles.copyIcon} />
                 </Pressable>
                 <ScrollView
@@ -291,6 +301,7 @@ export function DocumentResultScreen({
             <Pressable
               onPress={handleSaveToDevice}
               hitSlop={10}
+              accessibilityLabel={t('a11y.save')}
               style={[styles.fullscreenSave, { top: insets.top + 12 }]}
             >
               <Ionicons name="download-outline" size={20} color={colors.cream} />
@@ -298,6 +309,7 @@ export function DocumentResultScreen({
             <Pressable
               onPress={() => setIsFullscreenOpen(false)}
               hitSlop={10}
+              accessibilityLabel={t('a11y.close')}
               style={[styles.fullscreenClose, { top: insets.top + 12 }]}
             >
               <Ionicons name="close" size={22} color={colors.cream} />

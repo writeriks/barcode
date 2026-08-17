@@ -388,6 +388,19 @@
     "purchaseFailedTitle": "Kauf fehlgeschlagen",
     "purchaseFailedBody": "Der Kauf konnte nicht abgeschlossen werden. Bitte versuche es erneut.",
     "loadingButton": "Wird geladen…",
-    "planUnavailable": "Nicht verfügbar"
+    "planUnavailable": "Nicht verfügbar",
+    "titleDocumentScans": "Du hast deine Gratis-Scans verbraucht",
+    "titleHistory": "Dein Verlauf ist voll",
+    "titleSettings": "Alle Einstellungen freischalten",
+    "titleQrTypes": "Alle QR-Typen freischalten"
+  },
+  "a11y": {
+    "add": "Hinzufügen",
+    "close": "Schließen",
+    "clearSearch": "Suche löschen",
+    "moreOptions": "Weitere Optionen",
+    "save": "Auf Gerät speichern",
+    "viewFullScreen": "Vollbild anzeigen",
+    "copyText": "Text kopieren"
   }
 }

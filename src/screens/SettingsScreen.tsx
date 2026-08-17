@@ -179,7 +179,7 @@ export function SettingsScreen({
     (handler: (value: boolean) => void) =>
     (value: boolean): void => {
       if (!isPremium) {
-        openPaywall();
+        openPaywall('settings');
         return;
       }
       handler(value);
@@ -203,7 +203,7 @@ export function SettingsScreen({
 
         <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.premiumSection')}</Text>
         <Pressable
-          onPress={isPremium ? handleManageSubscription : openPaywall}
+          onPress={isPremium ? handleManageSubscription : () => openPaywall('general')}
           style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
         >
           <View style={styles.toggleText}>

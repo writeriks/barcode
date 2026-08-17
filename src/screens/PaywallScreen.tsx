@@ -6,6 +6,7 @@ import type { PurchasesOffering, PurchasesPackage } from 'react-native-purchases
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PillButton } from '../components/PillButton';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '../config/appInfo';
+import type { PaywallReason } from '../premium/PremiumContext';
 import { fetchCurrentOffering, purchasePackage, restorePurchases } from '../premium/revenueCat';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -13,9 +14,32 @@ import { fonts } from '../theme/fonts';
 
 interface Props {
   visible: boolean;
+  reason: PaywallReason;
   onClose: () => void;
   onPurchased: () => void;
 }
+
+/** The headline and the benefit the pitch leads with, per reason for
+ * arriving. Everything else on the screen is identical — only the framing
+ * changes, so the plans, the auto-renewal notice and the legal links Apple
+ * requires are never affected by this. */
+const REASON_TITLE_KEY: Record<PaywallReason, string> = {
+  documentScans: 'paywall.titleDocumentScans',
+  history: 'paywall.titleHistory',
+  settings: 'paywall.titleSettings',
+  qrTypes: 'paywall.titleQrTypes',
+  general: 'paywall.title',
+};
+
+/** The benefit that answers the reason gets pulled to the top of the list
+ * — it's the one the user is standing in front of. */
+const REASON_LEAD_BENEFIT: Record<PaywallReason, string | null> = {
+  documentScans: 'paywall.benefitScans',
+  history: 'paywall.benefitHistory',
+  settings: 'paywall.benefitSettings',
+  qrTypes: 'paywall.benefitSettings',
+  general: null,
+};
 
 // Document scanning leads: running out of free scans is the most common
 // way to arrive here, so the reason has to be the first thing listed.
@@ -60,10 +84,15 @@ function buildPlans(offering: PurchasesOffering | null): PlanDisplay[] {
  * auto-renewable subscription review requires (Guideline 3.1.2):
  * price/length per plan, an auto-renewal notice, Restore Purchases, and
  * working Privacy Policy/Terms links. */
-export function PaywallScreen({ visible, onClose, onPurchased }: Props) {
+export function PaywallScreen({ visible, reason, onClose, onPurchased }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const benefits = useMemo(() => {
+    const lead = REASON_LEAD_BENEFIT[reason];
+    if (!lead) return BENEFITS;
+    return [...BENEFITS].sort((a, b) => Number(b.labelKey === lead) - Number(a.labelKey === lead));
+  }, [reason]);
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('monthly');
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
   const [offeringsLoaded, setOfferingsLoaded] = useState(false);
@@ -128,7 +157,7 @@ export function PaywallScreen({ visible, onClose, onPurchased }: Props) {
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <SafeAreaView style={styles.screen}>
         <View style={styles.header}>
-          <Pressable onPress={onClose} hitSlop={10} style={styles.closeButton}>
+          <Pressable onPress={onClose} hitSlop={10} style={styles.closeButton} accessibilityLabel={t('a11y.close')}>
             <Ionicons name="close" size={22} color={colors.text} />
           </Pressable>
         </View>
@@ -137,11 +166,11 @@ export function PaywallScreen({ visible, onClose, onPurchased }: Props) {
           <View style={styles.badge}>
             <Ionicons name="sparkles" size={26} color={colors.citrus} />
           </View>
-          <Text style={styles.title}>{t('paywall.title')}</Text>
+          <Text style={styles.title}>{t(REASON_TITLE_KEY[reason])}</Text>
           <Text style={styles.subtitle}>{t('paywall.subtitle')}</Text>
 
           <View style={styles.benefits}>
-            {BENEFITS.map((benefit) => (
+            {benefits.map((benefit) => (
               <View key={benefit.labelKey} style={styles.benefitRow}>
                 <View style={styles.benefitIconWrap}>
                   <Ionicons name={benefit.icon} size={18} color={colors.mint} />

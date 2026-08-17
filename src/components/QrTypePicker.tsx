@@ -45,7 +45,7 @@ export function QrTypePicker({ value, onChange }: Props) {
               return (
                 <Pressable
                   key={type}
-                  onPress={() => (locked ? openPaywall() : onChange(type))}
+                  onPress={() => (locked ? openPaywall('qrTypes') : onChange(type))}
                   style={({ pressed }) => [
                     styles.tile,
                     { width: tileWidth },

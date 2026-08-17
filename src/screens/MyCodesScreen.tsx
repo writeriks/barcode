@@ -587,7 +587,12 @@ export function MyCodesScreen({ navigation }: Props) {
             <View style={styles.header}>
               <Text style={styles.title}>{t('myCodes.title')}</Text>
               {!isCreating ? (
-                <Pressable onPress={() => setIsCreating(true)} style={styles.addButton} hitSlop={10}>
+                <Pressable
+                  onPress={() => setIsCreating(true)}
+                  style={styles.addButton}
+                  hitSlop={10}
+                  accessibilityLabel={t('a11y.add')}
+                >
                   <Text style={styles.addGlyph}>+</Text>
                 </Pressable>
               ) : null}
@@ -789,7 +794,7 @@ export function MyCodesScreen({ navigation }: Props) {
                           onChangeText={setSearchQuery}
                         />
                         {searchQuery.length > 0 ? (
-                          <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+                          <Pressable onPress={() => setSearchQuery('')} hitSlop={8} accessibilityLabel={t('a11y.clearSearch')}>
                             <Ionicons name="close-circle" size={16} color={colors.text} style={styles.searchClear} />
                           </Pressable>
                         ) : null}
@@ -838,7 +843,12 @@ export function MyCodesScreen({ navigation }: Props) {
                                   {t(QR_TYPE_LABEL_KEY[itemType])}
                                 </Text>
                               </View>
-                              <Pressable onPress={() => setMenuCode(item)} hitSlop={10} style={styles.rowMenuButton}>
+                              <Pressable
+                                onPress={() => setMenuCode(item)}
+                                hitSlop={10}
+                                style={styles.rowMenuButton}
+                                accessibilityLabel={t('a11y.moreOptions')}
+                              >
                                 <Ionicons name="ellipsis-vertical" size={16} color={colors.text} style={styles.rowMenuIcon} />
                               </Pressable>
                             </Pressable>

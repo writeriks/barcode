@@ -306,7 +306,11 @@
     "driveLabel": "Link Drive",
     "drivePlaceholder": "https://drive.google.com/…",
     "dropboxLabel": "Link Dropbox",
-    "dropboxPlaceholder": "https://www.dropbox.com/…"
+    "dropboxPlaceholder": "https://www.dropbox.com/…",
+    "deleteTitle": "Usunąć ten kod?",
+    "deleteBody": "Ten zapisany kod zostanie usunięty. Nie można tego cofnąć.",
+    "tooLongTitle": "Za długie na kod QR",
+    "tooLongBody": "Skróć treść i spróbuj ponownie — kod QR ma ograniczoną pojemność."
   },
   "qr": {
     "typeLink": "Link",
@@ -357,7 +361,8 @@
     "categoryPersonal": "Osobiste",
     "categoryBusiness": "Firma i płatności",
     "categorySocial": "Społecznościowe",
-    "categoryUtility": "Narzędzia i chmura"
+    "categoryUtility": "Narzędzia i chmura",
+    "tooLongToRender": "Za długie na kod QR"
   },
   "paywall": {
     "title": "Odblokuj Blippo Premium",

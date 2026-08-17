@@ -5,6 +5,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -15,13 +16,13 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BANNER_AD_RESERVED_HEIGHT, BottomBannerAd } from '../components/BottomBannerAd';
 import { BottomSheet } from '../components/BottomSheet';
 import { FadeSwitcher } from '../components/FadeSwitcher';
 import { FilterPillRow, type PillOption } from '../components/FilterPillRow';
 import { PillButton } from '../components/PillButton';
+import { QrCode } from '../components/QrCode';
 import { QrTypePicker } from '../components/QrTypePicker';
 import { Toast } from '../components/Toast';
 import { EmailForm, defaultEmailFields, type EmailFields } from '../components/qrForms/EmailForm';
@@ -43,10 +44,12 @@ import type { RootTabParamList } from '../navigation/types';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { deleteMyCode, getMyCodes, saveMyCode, updateMyCode } from '../services/myCodes';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
+import { accentTextColor } from '../theme/accents';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import type { MyCode } from '../types/myCode';
 import { classifyQrContent, type QrContentType } from '../utils/classifyQrContent';
+import { isQrEncodable } from '../utils/qrCapacity';
 import { findCountryByRegionCode, type CountryCallingCode } from '../utils/countryCallingCodes';
 import { getDeviceRegionCode } from '../utils/locale';
 import {
@@ -381,7 +384,9 @@ export function MyCodesScreen({ navigation }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTypes, setActiveTypes] = useState<Set<QrContentType>>(new Set());
   const { message: toastMessage, showToast } = useToast();
-  const { shareQr, qrRenderer } = useQrShare();
+  // Saving now rejects unencodable content, but codes saved before that
+  // guard existed are still in the list and can't be drawn to share.
+  const { shareQr, qrRenderer } = useQrShare(() => showToast(t('myCodes.tooLongTitle')));
 
   const defaultCountry = useMemo(() => findCountryByRegionCode(getDeviceRegionCode()) ?? null, []);
   const [type, setType] = useState<QrContentType>('link');
@@ -457,6 +462,12 @@ export function MyCodesScreen({ navigation }: Props) {
 
   const handleSave = async () => {
     if (!content) return;
+    // A code that can't be drawn can't be saved: nothing would render it
+    // later, and the list would be carrying an entry that does nothing.
+    if (!isQrEncodable(content)) {
+      Alert.alert(t('myCodes.tooLongTitle'), t('myCodes.tooLongBody'));
+      return;
+    }
     const resolvedLabel = label.trim() || defaultLabelFor(type, content, fields);
     if (editingId) {
       const original = codes.find((c) => c.id === editingId);
@@ -506,10 +517,19 @@ export function MyCodesScreen({ navigation }: Props) {
     showToast(t('qr.copied'));
   };
 
-  const handleDelete = async (id: string) => {
-    await deleteMyCode(id);
-    setViewing(null);
-    reload();
+  const handleDelete = (id: string) => {
+    Alert.alert(t('myCodes.deleteTitle'), t('myCodes.deleteBody'), [
+      { text: t('myCodes.cancel'), style: 'cancel' },
+      {
+        text: t('myCodes.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          await deleteMyCode(id);
+          setViewing(null);
+          reload();
+        },
+      },
+    ]);
   };
 
   const screenMode = viewing ? 'viewing' : isCreating ? 'creating' : 'list';
@@ -520,7 +540,7 @@ export function MyCodesScreen({ navigation }: Props) {
         {viewing ? (
           <View style={styles.viewer}>
             <View style={styles.qrCard}>
-              <QRCode value={viewing.content} size={220} color={colors.inkOnCream} backgroundColor={colors.cream} />
+              <QrCode value={viewing.content} size={220} color={colors.inkOnCream} backgroundColor={colors.cream} />
             </View>
             <Text style={styles.viewerLabel}>{viewing.label}</Text>
             <Pressable
@@ -797,18 +817,27 @@ export function MyCodesScreen({ navigation }: Props) {
                         contentContainerStyle={[styles.list, { paddingBottom: 20 }]}
                         renderItem={({ item }) => {
                           const itemType = codeTypeOf(item);
+                          const accent = accentTextColor(colors, QR_TYPE_ACCENT[itemType]);
                           return (
                             <Pressable
                               style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
                               onPress={() => setViewing(item)}
                             >
-                              <View style={styles.qrThumb}>
-                                <QRCode value={item.content} size={40} color={colors.inkOnCream} backgroundColor={colors.cream} />
+                              {/* A 40px QR is too small to scan off the
+                                  list anyway, and drawing one per row meant
+                                  building a whole matrix per row. The type
+                                  icon says the same thing for free. */}
+                              <View style={[styles.rowIconBadge, { borderColor: accent }]}>
+                                <Ionicons name={QR_TYPE_ICON[itemType]} size={18} color={accent} />
                               </View>
-                              <Ionicons name={QR_TYPE_ICON[itemType]} size={16} color={colors.text} style={styles.rowIcon} />
-                              <Text style={styles.rowLabel} numberOfLines={1}>
-                                {item.label}
-                              </Text>
+                              <View style={styles.rowText}>
+                                <Text style={styles.rowLabel} numberOfLines={1}>
+                                  {item.label}
+                                </Text>
+                                <Text style={styles.rowMeta} numberOfLines={1}>
+                                  {t(QR_TYPE_LABEL_KEY[itemType])}
+                                </Text>
+                              </View>
                               <Pressable onPress={() => setMenuCode(item)} hitSlop={10} style={styles.rowMenuButton}>
                                 <Ionicons name="ellipsis-vertical" size={16} color={colors.text} style={styles.rowMenuIcon} />
                               </Pressable>
@@ -857,8 +886,12 @@ export function MyCodesScreen({ navigation }: Props) {
           </Pressable>
           <Pressable
             onPress={() => {
-              if (menuCode) handleDelete(menuCode.id);
+              const code = menuCode;
               setMenuCode(null);
+              // The confirmation is a native alert and the sheet is a
+              // native Modal — same race as the share row above, and the
+              // alert would silently never appear. Defer past the dismissal.
+              if (code) setTimeout(() => handleDelete(code.id), 300);
             }}
             style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}
           >
@@ -975,22 +1008,27 @@ function createStyles(colors: ColorTheme) {
     rowPressed: {
       opacity: 0.75,
     },
-    qrThumb: {
-      width: 48,
-      height: 48,
-      borderRadius: 8,
-      backgroundColor: colors.cream,
+    rowIconBadge: {
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      borderWidth: 1.5,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    rowIcon: {
-      opacity: 0.6,
+    rowText: {
+      flex: 1,
     },
     rowLabel: {
-      flex: 1,
       fontFamily: fonts.displayBold,
       fontSize: 14.5,
       color: colors.text,
+    },
+    rowMeta: {
+      fontSize: 11.5,
+      color: colors.text,
+      opacity: 0.5,
+      marginTop: 2,
     },
     rowMenuButton: {
       padding: 4,

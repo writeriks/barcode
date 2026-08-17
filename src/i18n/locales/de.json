@@ -306,7 +306,11 @@
     "driveLabel": "Drive-Link",
     "drivePlaceholder": "https://drive.google.com/…",
     "dropboxLabel": "Dropbox-Link",
-    "dropboxPlaceholder": "https://www.dropbox.com/…"
+    "dropboxPlaceholder": "https://www.dropbox.com/…",
+    "deleteTitle": "Diesen Code löschen?",
+    "deleteBody": "Dieser gespeicherte Code wird entfernt. Das lässt sich nicht rückgängig machen.",
+    "tooLongTitle": "Zu lang für einen QR-Code",
+    "tooLongBody": "Kürze den Inhalt und versuche es erneut — ein QR-Code fasst nur begrenzt viel."
   },
   "qr": {
     "typeLink": "Link",
@@ -357,7 +361,8 @@
     "categoryPersonal": "Persönlich",
     "categoryBusiness": "Beruf & Zahlungen",
     "categorySocial": "Social Media",
-    "categoryUtility": "Werkzeuge & Cloud"
+    "categoryUtility": "Werkzeuge & Cloud",
+    "tooLongToRender": "Zu lang für einen QR-Code"
   },
   "paywall": {
     "title": "Blippo Premium freischalten",

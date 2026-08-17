@@ -306,7 +306,11 @@
     "driveLabel": "Drive bağlantısı",
     "drivePlaceholder": "https://drive.google.com/…",
     "dropboxLabel": "Dropbox bağlantısı",
-    "dropboxPlaceholder": "https://www.dropbox.com/…"
+    "dropboxPlaceholder": "https://www.dropbox.com/…",
+    "deleteTitle": "Bu kod silinsin mi?",
+    "deleteBody": "Kaydedilen bu kod kaldırılacak. Bu işlem geri alınamaz.",
+    "tooLongTitle": "QR kod için çok uzun",
+    "tooLongBody": "İçeriği kısaltıp tekrar deneyin — bir QR kodun alabileceği miktar sınırlı."
   },
   "qr": {
     "typeLink": "Bağlantı",
@@ -357,7 +361,8 @@
     "categoryPersonal": "Kişisel",
     "categoryBusiness": "İş ve ödeme",
     "categorySocial": "Sosyal",
-    "categoryUtility": "Araçlar ve bulut"
+    "categoryUtility": "Araçlar ve bulut",
+    "tooLongToRender": "QR kod için çok uzun"
   },
   "paywall": {
     "title": "Blippo Premium'un Kilidini Aç",

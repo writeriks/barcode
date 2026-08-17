@@ -3,7 +3,6 @@ import * as Clipboard from 'expo-clipboard';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
-import QRCode from 'react-native-qrcode-svg';
 import { useQrShare } from '../hooks/useQrShare';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { useThemeColors } from '../theme/ThemeContext';
@@ -12,6 +11,7 @@ import { classifyQrContent, parseOtpAuth, resolveQrOpenUri, type QrContentType }
 import { QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
 import { fonts } from '../theme/fonts';
 import { PillButton } from './PillButton';
+import { QrCode } from './QrCode';
 
 function typeColor(colors: ColorTheme, type: QrContentType): string {
   switch (type) {
@@ -127,7 +127,7 @@ export function QrContentView({ data, onCopied }: Props) {
   return (
     <View style={styles.wrap}>
       <View style={styles.qrCard}>
-        <QRCode value={data} size={190} color={colors.inkOnCream} backgroundColor={colors.cream} />
+        <QrCode value={data} size={190} color={colors.inkOnCream} backgroundColor={colors.cream} />
       </View>
 
       <View style={[styles.typeChip, { borderColor: color }]}>

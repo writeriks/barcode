@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { useThemeColors } from '../theme/ThemeContext';
+import { accentTextColor, type PillAccent } from '../theme/accents';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 
-export type PillAccent = 'punch' | 'citrus' | 'mint' | 'coral';
+export type { PillAccent };
 
 export interface PillOption<T extends string> {
   value: T;
@@ -28,19 +29,6 @@ const TINT_RGB: Record<PillAccent, string> = {
   mint: '47,230,184',
   coral: '255,90,90',
 };
-
-function accentTextColor(colors: ColorTheme, accent: PillAccent): string {
-  switch (accent) {
-    case 'punch':
-      return colors.punch;
-    case 'citrus':
-      return colors.citrusText;
-    case 'mint':
-      return colors.mintText;
-    case 'coral':
-      return colors.coralText;
-  }
-}
 
 /** A horizontally-scrolling row of toggleable pills, each tinted in its own
  * accent color so the row reads as colorful chips rather than a flat list —

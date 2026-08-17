@@ -1,8 +1,9 @@
 import { File, Paths } from 'expo-file-system';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Share, StyleSheet, View } from 'react-native';
-import QRCode from 'react-native-qrcode-svg';
+import { QrCode } from '../components/QrCode';
 import { useThemeColors } from '../theme/ThemeContext';
+import { isQrEncodable } from '../utils/qrCapacity';
 
 // Bigger than any QR the app displays: this one gets sent to other people
 // and may be scanned off their screen, so it wants the resolution.
@@ -26,7 +27,7 @@ interface PendingShare {
  *
  * Mount `qrRenderer` somewhere in the screen's tree and call `shareQr`.
  */
-export function useQrShare() {
+export function useQrShare(onUnavailable?: () => void) {
   const colors = useThemeColors();
   const [pending, setPending] = useState<PendingShare | null>(null);
   const svgRef = useRef<{ toDataURL: (callback: (base64: string) => void) => void } | null>(null);
@@ -56,11 +57,23 @@ export function useQrShare() {
     });
   }, [pending]);
 
-  const shareQr = useCallback((content: string) => setPending({ content }), []);
+  // Content too big to draw would otherwise mount a renderer that never
+  // calls back, and the share would end as silence. Checked here so the
+  // caller can say something instead.
+  const shareQr = useCallback(
+    (content: string) => {
+      if (!isQrEncodable(content)) {
+        onUnavailable?.();
+        return;
+      }
+      setPending({ content });
+    },
+    [onUnavailable]
+  );
 
   const qrRenderer = pending ? (
     <View style={styles.offscreen} pointerEvents="none">
-      <QRCode
+      <QrCode
         value={pending.content}
         size={SHARE_SIZE}
         quietZone={QUIET_ZONE}

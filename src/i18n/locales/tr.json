@@ -31,6 +31,9 @@
     "freeScansLeft": "{{count}} ücretsiz tarama hakkın kaldı",
     "shareFailed": "Bu tarama paylaşılamadı",
     "pageMissing": "Bu sayfanın dosyası bulunamadı",
+    "tabPage": "Sayfa",
+    "tabText": "Metin",
+    "pagePosition": "Sayfa {{page}} / {{total}}",
     "typeDocument": "Doküman",
     "metaDocument": "Doküman taraması"
   },

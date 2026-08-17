@@ -31,6 +31,9 @@
     "freeScansLeft": "{{count}} free scans left",
     "shareFailed": "Couldn't share this scan",
     "pageMissing": "This page's file is missing",
+    "tabPage": "Page",
+    "tabText": "Text",
+    "pagePosition": "Page {{page}} of {{total}}",
     "typeDocument": "Document",
     "metaDocument": "Document scan"
   },

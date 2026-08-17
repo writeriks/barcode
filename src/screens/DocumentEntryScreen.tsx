@@ -17,6 +17,9 @@ interface Props {
   timestamp: number;
   imageUris: string[];
   pageTexts: string[];
+  /** The name the user gave this entry, when reopened from History. A
+   * fresh scan hasn't been named yet. */
+  label?: string;
   /** Set for a document just captured by the scanner — shows a free user
    * how many scans they have left, once, on mount. Omitted when reopening
    * from History, where nothing was just spent. */
@@ -44,7 +47,14 @@ type ViewState =
  * first, individual pages nested under it). Owns the page-array state so
  * bulk/single-page deletes can update the view in place without needing a
  * fresh navigation — see the ViewState comment above for the exact rules. */
-export function DocumentEntryScreen({ timestamp, imageUris: initialImageUris, pageTexts: initialPageTexts, isFreshScan, onClose }: Props) {
+export function DocumentEntryScreen({
+  timestamp,
+  imageUris: initialImageUris,
+  pageTexts: initialPageTexts,
+  label,
+  isFreshScan,
+  onClose,
+}: Props) {
   const { t } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
   const { isPremium } = usePremium();
@@ -113,6 +123,10 @@ export function DocumentEntryScreen({ timestamp, imageUris: initialImageUris, pa
         <DocumentResultScreen
           imageUri={imageUris[view.index] ?? null}
           text={pageTexts[view.index] ?? ''}
+          label={label}
+          timestamp={timestamp}
+          pageCount={imageUris.length}
+          pageIndex={view.index}
           onDelete={() => handleDeleteSinglePage(view.index)}
           onBack={view.from === 'gallery' ? handleBackToGallery : undefined}
           onCopied={() => showToast(t('qr.copied'))}

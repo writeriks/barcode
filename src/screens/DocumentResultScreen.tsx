@@ -16,6 +16,14 @@ import { resolveSpeechLanguage } from '../utils/speechLanguage';
 interface Props {
   imageUri: string | null;
   text: string;
+  /** The name the user gave this document, if they renamed it. Without one
+   * the header falls back to naming the kind of thing it is. */
+  label?: string;
+  /** When it was scanned, and where this page sits in the document — the
+   * things the History list showed and this screen used to drop. */
+  timestamp: number;
+  pageCount: number;
+  pageIndex: number;
   onDelete: () => void;
   /** Set only for a page opened from the multi-page Gallery — shows a
    * back chevron to it. A standalone page has nothing above it here, so
@@ -24,19 +32,37 @@ interface Props {
   onCopied?: () => void;
 }
 
+type Tab = 'page' | 'text';
+
 // How long after the share sheet resolves to keep ignoring taps on the
 // page. Covers the dismissal animation, which outlives the promise.
 const SHARE_DISMISS_GRACE_MS = 500;
 
-/** A single scanned page: its image and the text Vision's OCR recognized
- * in it. Used both as the sole screen for a one-page document and, nested
- * under DocumentGalleryScreen, for one page of a multi-page document. */
-export function DocumentResultScreen({ imageUri, text, onDelete, onBack, onCopied }: Props) {
+/** A single scanned page. The page and its recognized text each get the
+ * whole screen, switched between rather than stacked: we don't know yet
+ * whether people open a scan to look at it or to use the text out of it,
+ * and splitting the height between them served neither — it left the
+ * bottom third empty and the text in a box too short to read.
+ *
+ * Used both as the sole screen for a one-page document and, nested under
+ * DocumentGalleryScreen, for one page of a multi-page one. */
+export function DocumentResultScreen({
+  imageUri,
+  text,
+  label,
+  timestamp,
+  pageCount,
+  pageIndex,
+  onDelete,
+  onBack,
+  onCopied,
+}: Props) {
   const { t, i18n } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const [tab, setTab] = useState<Tab>('page');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const [didImageFail, setDidImageFail] = useState(false);
@@ -45,10 +71,14 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onBack, onCopie
   const isSharePendingRef = useRef(false);
   const hasText = text.trim().length > 0;
 
-  // A page whose file can't be read used to render as an empty box here
-  // and a black rectangle in the viewer, which says nothing about what
-  // went wrong — and the share button silently had nothing to send. Say
-  // it on screen, and put the path in the log so it can be checked.
+  const scannedAt = new Date(timestamp).toLocaleString(i18n.language, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
+
+  // A page whose file can't be read used to render as an empty box and a
+  // black fullscreen viewer, which says nothing about what went wrong.
+  // Say it on screen, and put the path in the log so it can be checked.
   const handleImageError = (message: string) => {
     console.warn(`[Blippo] scanned page failed to load: ${imageUri} — ${message}`);
     setDidImageFail(true);
@@ -94,7 +124,7 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onBack, onCopie
    *
    * Shares the page itself, never its OCR text — this is a document, and
    * sending someone a wall of recognized characters isn't what "share a
-   * scan" means. The text has its own affordance, the copy button above.
+   * scan" means. The text has its own affordance, the copy button.
    *
    * The share sheet is also how iOS offers to save: "Save Image" and
    * "Save to Files" both appear on it for an image, which is why the
@@ -107,18 +137,12 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onBack, onCopie
     try {
       await Share.share({ url: imageUri });
     } catch {
-      // Anything that goes wrong here used to surface as the button
-      // simply not reacting, which reads as a broken app rather than a
-      // failure. Say so instead.
       Alert.alert(t('document.shareFailed'));
     } finally {
       // The sheet's dismissal animation outlives the promise, and the tap
-      // that dismissed it lands on the page underneath — which sits on a
-      // Pressable that opens the fullscreen viewer. Presenting that while
-      // the sheet is still going away wedges both, and the screen stops
-      // responding entirely. Hold the guard past the animation. Same race
-      // as the deferred Share.share calls in HistoryScreen and
-      // MyCodesScreen, in the other direction.
+      // that dismissed it lands on the page underneath — which opens the
+      // fullscreen viewer. Presenting that while the sheet is still going
+      // away wedges both, and the screen stops responding entirely.
       setTimeout(() => {
         isSharePendingRef.current = false;
       }, SHARE_DISMISS_GRACE_MS);
@@ -148,49 +172,90 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onBack, onCopie
           <Text style={styles.backLabel}>{t('document.backToGallery')}</Text>
         </Pressable>
       ) : null}
-      <ScrollView contentContainerStyle={styles.content}>
-        {imageUri ? (
-          <Pressable
-            style={styles.pageBox}
-            onPress={handleOpenFullscreen}
-            disabled={didImageFail}
-          >
-            <Image
-              source={{ uri: imageUri }}
-              style={styles.pageImage}
-              resizeMode="contain"
-              onError={(event) => handleImageError(event.nativeEvent.error)}
-            />
-            {didImageFail ? (
-              <View style={styles.pageErrorOverlay}>
-                <Ionicons name="alert-circle-outline" size={26} color={colors.coralText} />
-                <Text style={styles.pageErrorText}>{t('document.pageMissing')}</Text>
-              </View>
+
+      <View style={styles.header}>
+        <Text style={styles.title} numberOfLines={2}>
+          {label || t('document.typeDocument')}
+        </Text>
+        <Text style={styles.meta}>
+          {pageCount > 1
+            ? `${scannedAt} · ${t('document.pagePosition', { page: pageIndex + 1, total: pageCount })}`
+            : scannedAt}
+        </Text>
+      </View>
+
+      <View style={styles.segment}>
+        <SegmentButton
+          label={t('document.tabPage')}
+          selected={tab === 'page'}
+          onPress={() => setTab('page')}
+          styles={styles}
+        />
+        <SegmentButton
+          label={t('document.tabText')}
+          selected={tab === 'text'}
+          onPress={() => setTab('text')}
+          styles={styles}
+        />
+      </View>
+
+      {/* Whichever tab is showing gets the whole remaining height, and the
+          actions float over the bottom of it. Deliberately inside this
+          box rather than over the screen: an absolutely-positioned bar
+          measured from the screen's bottom lands on the ad below, which
+          AdMob counts as obscuring an impression. */}
+      <View style={styles.stage}>
+        {tab === 'page' ? (
+          imageUri ? (
+            <Pressable style={styles.pageFill} onPress={handleOpenFullscreen} disabled={didImageFail}>
+              <Image
+                source={{ uri: imageUri }}
+                style={styles.pageImage}
+                resizeMode="contain"
+                onError={(event) => handleImageError(event.nativeEvent.error)}
+              />
+              {didImageFail ? (
+                <View style={styles.pageErrorOverlay}>
+                  <Ionicons name="alert-circle-outline" size={26} color={colors.coralText} />
+                  <Text style={styles.pageErrorText}>{t('document.pageMissing')}</Text>
+                </View>
+              ) : (
+                <View style={styles.expandHint}>
+                  <Ionicons name="expand-outline" size={14} color={colors.cream} />
+                </View>
+              )}
+            </Pressable>
+          ) : (
+            <View style={styles.emptyStage}>
+              <Text style={styles.emptyText}>{t('document.pageMissing')}</Text>
+            </View>
+          )
+        ) : (
+          <View style={styles.textStage}>
+            {hasText ? (
+              <>
+                <Pressable onPress={handleCopy} hitSlop={8} style={styles.copyButton}>
+                  <Ionicons name="copy-outline" size={16} color={colors.text} style={styles.copyIcon} />
+                </Pressable>
+                <ScrollView
+                  style={styles.textScroll}
+                  contentContainerStyle={styles.textContent}
+                  showsVerticalScrollIndicator
+                >
+                  <Text style={styles.bodyText} selectable>
+                    {text}
+                  </Text>
+                </ScrollView>
+              </>
             ) : (
-              <View style={styles.expandHint}>
-                <Ionicons name="expand-outline" size={14} color={colors.cream} />
+              <View style={styles.emptyStage}>
+                <Text style={styles.emptyText}>{t('document.noTextFound')}</Text>
               </View>
             )}
-          </Pressable>
-        ) : null}
-
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.sectionTitle}>{t('document.extractedText')}</Text>
-            {hasText ? (
-              <Pressable onPress={handleCopy} hitSlop={8}>
-                <Ionicons name="copy-outline" size={15} color={colors.text} style={styles.copyIcon} />
-              </Pressable>
-            ) : null}
           </View>
-          {hasText ? (
-            <Text style={styles.bodyText}>{text}</Text>
-          ) : (
-            <Text style={styles.emptyText}>{t('document.noTextFound')}</Text>
-          )}
-        </View>
+        )}
 
-        <View style={styles.iconRow}>
+        <View style={styles.actionBar} pointerEvents="box-none">
           <IconActionButton
             icon={isSpeaking ? 'stop-circle-outline' : 'volume-high-outline'}
             tint={colors.mint}
@@ -202,6 +267,7 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onBack, onCopie
           <IconActionButton
             icon="share-outline"
             tint={colors.citrusText}
+            disabled={!imageUri}
             onPress={handleShare}
             accessibilityLabel={t('qr.share')}
             colors={colors}
@@ -214,7 +280,8 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onBack, onCopie
             colors={colors}
           />
         </View>
-      </ScrollView>
+      </View>
+
       <BottomBannerAd />
 
       {imageUri ? (
@@ -242,10 +309,34 @@ export function DocumentResultScreen({ imageUri, text, onDelete, onBack, onCopie
   );
 }
 
+type Styles = ReturnType<typeof createStyles>;
+
+function SegmentButton({
+  label,
+  selected,
+  onPress,
+  styles,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+  styles: Styles;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[styles.segmentButton, selected && styles.segmentButtonSelected]}
+      accessibilityRole="tab"
+      accessibilityState={{ selected }}
+    >
+      <Text style={[styles.segmentLabel, selected && styles.segmentLabelSelected]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 function IconActionButton({
   icon,
   tint,
-  filled,
   disabled,
   onPress,
   accessibilityLabel,
@@ -253,7 +344,6 @@ function IconActionButton({
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   tint: string;
-  filled?: boolean;
   disabled?: boolean;
   onPress: () => void;
   accessibilityLabel: string;
@@ -265,15 +355,14 @@ function IconActionButton({
       disabled={disabled}
       hitSlop={6}
       accessibilityLabel={accessibilityLabel}
-      style={[
+      style={({ pressed }) => [
         iconButtonStyle.base,
-        filled
-          ? { backgroundColor: tint }
-          : { backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.panelLine },
+        { backgroundColor: colors.panel, borderColor: colors.panelLine },
         disabled && iconButtonStyle.disabled,
+        pressed && iconButtonStyle.pressed,
       ]}
     >
-      <Ionicons name={icon} size={19} color={filled ? colors.cream : tint} />
+      <Ionicons name={icon} size={19} color={tint} />
     </Pressable>
   );
 }
@@ -283,13 +372,21 @@ const iconButtonStyle = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   disabled: {
     opacity: 0.35,
   },
+  pressed: {
+    opacity: 0.7,
+  },
 });
+
+// Enough clearance under the floating actions that the last line of text
+// or the bottom of the page isn't sitting behind them.
+const ACTION_BAR_CLEARANCE = 74;
 
 function createStyles(colors: ColorTheme) {
   return StyleSheet.create({
@@ -309,29 +406,75 @@ function createStyles(colors: ColorTheme) {
       fontSize: 14,
       color: colors.text,
     },
-    content: {
-      padding: 20,
-      gap: 14,
-      paddingBottom: 40,
+    header: {
+      paddingHorizontal: 20,
+      paddingTop: 14,
+      paddingBottom: 12,
+      gap: 3,
     },
-    pageBox: {
-      width: '100%',
-      height: 380,
+    title: {
+      fontFamily: fonts.displayBold,
+      fontSize: 19,
+      lineHeight: 24,
+      color: colors.text,
+    },
+    meta: {
+      fontFamily: fonts.mono,
+      fontSize: 10.5,
+      color: colors.text,
+      opacity: 0.5,
+    },
+    segment: {
+      flexDirection: 'row',
+      gap: 3,
+      marginHorizontal: 20,
+      padding: 3,
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 13,
+    },
+    segmentButton: {
+      flex: 1,
       alignItems: 'center',
-      justifyContent: 'center',
+      paddingVertical: 8,
+      borderRadius: 10,
+    },
+    segmentButtonSelected: {
+      backgroundColor: colors.punch,
+    },
+    segmentLabel: {
+      fontFamily: fonts.displayBold,
+      fontSize: 12.5,
+      color: colors.text,
+      opacity: 0.6,
+    },
+    segmentLabelSelected: {
+      color: colors.cream,
+      opacity: 1,
+    },
+    stage: {
+      flex: 1,
+      marginHorizontal: 20,
+      marginTop: 12,
+      marginBottom: 14,
+    },
+    pageFill: {
+      flex: 1,
+      borderRadius: 16,
+      overflow: 'hidden',
+      backgroundColor: colors.cream,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
     },
     pageImage: {
       width: '100%',
       height: '100%',
-      borderRadius: 16,
-      backgroundColor: colors.cream,
-      borderWidth: 2,
-      borderColor: colors.mint,
     },
     expandHint: {
       position: 'absolute',
       right: 10,
-      bottom: 10,
+      top: 10,
       backgroundColor: 'rgba(0,0,0,0.45)',
       borderRadius: 999,
       padding: 6,
@@ -349,42 +492,61 @@ function createStyles(colors: ColorTheme) {
       textAlign: 'center',
       color: colors.inkOnCream,
     },
-    card: {
+    textStage: {
+      flex: 1,
       backgroundColor: colors.panel,
       borderWidth: 1,
       borderColor: colors.panelLine,
-      borderRadius: 20,
-      padding: 16,
-      gap: 10,
+      borderRadius: 16,
+      overflow: 'hidden',
     },
-    cardHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+    textScroll: {
+      flex: 1,
+    },
+    textContent: {
+      padding: 16,
+      paddingRight: 46,
+      paddingBottom: ACTION_BAR_CLEARANCE,
+    },
+    copyButton: {
+      position: 'absolute',
+      top: 12,
+      right: 12,
+      zIndex: 1,
+      padding: 4,
     },
     copyIcon: {
       opacity: 0.55,
     },
-    sectionTitle: {
-      fontFamily: fonts.displayBold,
-      fontSize: 14,
+    bodyText: {
+      fontSize: 14.5,
+      lineHeight: 22,
       color: colors.text,
     },
-    bodyText: {
-      fontSize: 14,
-      lineHeight: 21,
-      color: colors.text,
+    emptyStage: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 16,
     },
     emptyText: {
       fontSize: 13.5,
+      textAlign: 'center',
       color: colors.text,
       opacity: 0.55,
     },
-    iconRow: {
+    actionBar: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 14,
       flexDirection: 'row',
       justifyContent: 'center',
       gap: 18,
-      paddingVertical: 2,
     },
     fullscreenScreen: {
       flex: 1,

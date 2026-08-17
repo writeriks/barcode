@@ -31,6 +31,9 @@
     "freeScansLeft": "Pozostało darmowych skanów: {{count}}",
     "shareFailed": "Nie udało się udostępnić tego skanu",
     "pageMissing": "Brak pliku tej strony",
+    "tabPage": "Strona",
+    "tabText": "Tekst",
+    "pagePosition": "Strona {{page}} z {{total}}",
     "typeDocument": "Dokument",
     "metaDocument": "Skan dokumentu"
   },

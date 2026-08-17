@@ -25,6 +25,7 @@ export function HistoryDetailScreen({ route, navigation }: Props) {
         timestamp={entry.timestamp}
         pageTexts={entry.pageTexts}
         imageUris={entry.imageUris}
+        label={entry.label}
         onClose={goBack}
       />
     );

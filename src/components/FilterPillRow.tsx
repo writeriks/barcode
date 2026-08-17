@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { useThemeColors } from '../theme/ThemeContext';
 import { accentTextColor, type PillAccent } from '../theme/accents';
-import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 
 export type { PillAccent };

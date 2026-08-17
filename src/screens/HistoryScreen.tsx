@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, FlatList, Platform, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, FlatList, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { BottomSheet } from '../components/BottomSheet';
@@ -13,10 +13,10 @@ import { FilterPillRow, type PillAccent, type PillOption } from '../components/F
 import { HistoryStatusBadge } from '../components/HistoryStatusBadge';
 import { PromptModal } from '../components/PromptModal';
 import { usePremium } from '../premium/PremiumContext';
-import { isExpoGo } from '../services/ads/environment';
 import { captureAnalyticsEvent } from '../services/analytics';
+import { canShareSeveralFiles, shareFiles } from '../services/documentShare';
 import { createFolder, deleteFolder, getFolders } from '../services/historyFolders';
-import { shareHistoryEntriesAsCsv } from '../services/historyExport';
+import { shareHistoryEntries } from '../services/historyExport';
 import {
   clearFolderFromEntries,
   deleteHistoryEntries,
@@ -349,13 +349,11 @@ export function HistoryScreen({ navigation }: Props) {
     // and this app also ships on Android) fixes it.
     setTimeout(async () => {
       // A document shares as its pages, not as its OCR text — the same
-      // rule as everywhere else. Falls back to plain text sharing if the
-      // native module isn't there to take an array of files.
+      // rule as everywhere else.
       if (entry.kind === 'document') {
-        if (Platform.OS !== 'ios' || isExpoGo()) return;
         try {
-          const { shareFilesAsync } = await import('expo-document-scanner');
-          await shareFilesAsync(entry.imageUris);
+          if (!canShareSeveralFiles()) throw new Error('multi-file sharing unavailable');
+          await shareFiles(entry.imageUris);
         } catch {
           // Without this a failure looks exactly like a dead menu row.
           Alert.alert(t('document.shareFailed'));
@@ -408,9 +406,14 @@ export function HistoryScreen({ navigation }: Props) {
     setAssigningKeys(selectedEntries.map((entry) => ({ kind: entry.kind, timestamp: entry.timestamp })));
   };
 
-  const handleBulkShare = () => {
+  const handleBulkShare = async () => {
     if (selectedEntries.length === 0) return;
-    shareHistoryEntriesAsCsv(selectedEntries);
+    try {
+      await shareHistoryEntries(selectedEntries);
+    } catch {
+      // Without this a failure looks exactly like a dead button.
+      Alert.alert(t('document.shareFailed'));
+    }
   };
 
   const handleBulkDelete = () => {

@@ -6,7 +6,6 @@ import {
   Alert,
   FlatList,
   Image,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -15,7 +14,7 @@ import {
 } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
-import { isExpoGo } from '../services/ads/environment';
+import { canShareSeveralFiles, shareFiles } from '../services/documentShare';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -57,13 +56,8 @@ export function DocumentGalleryScreen({ imageUris, onOpenPage, onDeletePages, on
     });
   };
 
-  // Both JS sharing APIs (expo-sharing, RN's Share) take a single file, so
-  // sharing several pages at once goes through the local native module's
-  // UIActivityViewController wrapper instead. Same dynamic-import guard as
-  // every other call into it — see ScannerScreen's handleScanDocument.
   const handleShareSelected = async () => {
     if (selectedIndexes.size === 0) return;
-    if (Platform.OS !== 'ios' || isExpoGo()) return;
     // Page order, not the order the user happened to tap them in.
     const uris = [...selectedIndexes]
       .sort((a, b) => a - b)
@@ -71,8 +65,8 @@ export function DocumentGalleryScreen({ imageUris, onOpenPage, onDeletePages, on
       .filter(Boolean);
     if (uris.length === 0) return;
     try {
-      const { shareFilesAsync } = await import('expo-document-scanner');
-      await shareFilesAsync(uris);
+      if (!canShareSeveralFiles()) throw new Error('multi-file sharing unavailable');
+      await shareFiles(uris);
     } catch {
       // Without this a failure looks exactly like a dead button.
       Alert.alert(t('document.shareFailed'));

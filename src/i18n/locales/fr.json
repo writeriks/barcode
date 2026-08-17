@@ -413,5 +413,16 @@
     "save": "Enregistrer sur l’appareil",
     "viewFullScreen": "Afficher en plein écran",
     "copyText": "Copier le texte"
+  },
+  "onboarding": {
+    "title": "Bienvenue dans {{app}}",
+    "subtitle": "Un scanner qui garde ce qu’il trouve — et le garde pour lui.",
+    "scanTitle": "Scannez tout",
+    "scanBody": "Codes-barres, QR, billets, Wi-Fi — depuis l’appareil photo ou une photo que vous avez déjà.",
+    "documentTitle": "Scannez des documents",
+    "documentBody": "Capturez des pages, extrayez-en le texte, et envoyez-les en images ou en PDF.",
+    "privacyTitle": "Reste sur votre appareil",
+    "privacyBody": "Le scan et la reconnaissance de texte se font sur votre iPhone. Vos documents ne sont jamais envoyés.",
+    "start": "Commencer"
   }
 }

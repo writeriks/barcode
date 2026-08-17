@@ -16,11 +16,13 @@ import { HistoryStack } from './src/navigation/HistoryStack';
 import type { RootTabParamList } from './src/navigation/types';
 import { AppLockScreen } from './src/screens/AppLockScreen';
 import { MyCodesScreen } from './src/screens/MyCodesScreen';
+import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { ScannerFlowScreen } from './src/screens/ScannerFlowScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import i18n, { isSupportedLanguage, type SupportedLanguage } from './src/i18n';
 import { getLanguageOverride, setLanguageOverride } from './src/i18n/languagePreference';
 import { isAppLockEnabled as getAppLockEnabled } from './src/services/appLock';
+import { isOnboardingCompleted, setOnboardingCompleted } from './src/services/onboardingPreference';
 import { getAnalyticsClient } from './src/services/analytics';
 import { initializeAds } from './src/services/ads/initializeAds';
 import { PremiumProvider } from './src/premium/PremiumContext';
@@ -59,10 +61,23 @@ function AppContent() {
   const [appLockEnabled, setAppLockEnabledState] = useState(false);
   const [appLockReady, setAppLockReady] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [onboardingReady, setOnboardingReady] = useState(false);
 
   useEffect(() => {
-    initializeAds();
+    isOnboardingCompleted().then((completed) => {
+      setNeedsOnboarding(!completed);
+      setOnboardingReady(true);
+    });
   }, []);
+
+  // Held until onboarding is out of the way: this is what asks for
+  // tracking permission, and the system dialog should land after the user
+  // has read what the app is, not over a welcome screen they haven't.
+  useEffect(() => {
+    if (!onboardingReady || needsOnboarding) return;
+    initializeAds();
+  }, [onboardingReady, needsOnboarding]);
 
   useEffect(() => {
     getAppLockEnabled().then((enabled) => {
@@ -126,11 +141,28 @@ function AppContent() {
     };
   }, [colors, mode]);
 
-  if (!fontsLoaded || !languageReady || !appLockReady) {
+  if (!fontsLoaded || !languageReady || !appLockReady || !onboardingReady) {
     return (
       <View style={[styles.center, { backgroundColor: colors.cabinet }]}>
         <ActivityIndicator size="large" color={colors.mint} />
       </View>
+    );
+  }
+
+  // Ahead of the lock screen on purpose: a first run has nothing to
+  // protect yet, and being asked for Face ID before knowing what the app
+  // is would be the wrong first impression.
+  if (needsOnboarding) {
+    return (
+      <SafeAreaProvider>
+        <OnboardingScreen
+          onDone={() => {
+            setOnboardingCompleted();
+            setNeedsOnboarding(false);
+          }}
+        />
+        <StatusBar style={mode === 'light' ? 'dark' : 'light'} />
+      </SafeAreaProvider>
     );
   }
 

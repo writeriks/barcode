@@ -413,5 +413,16 @@
     "save": "Guardar en el dispositivo",
     "viewFullScreen": "Ver a pantalla completa",
     "copyText": "Copiar texto"
+  },
+  "onboarding": {
+    "title": "Te damos la bienvenida a {{app}}",
+    "subtitle": "Un escáner que guarda lo que encuentra, y se lo guarda para sí.",
+    "scanTitle": "Escanea lo que sea",
+    "scanBody": "Códigos de barras, QR, entradas, Wi-Fi: desde la cámara o una foto que ya tengas.",
+    "documentTitle": "Escanea documentos",
+    "documentBody": "Captura páginas, extrae su texto y envíalas como imágenes o PDF.",
+    "privacyTitle": "Se queda en tu dispositivo",
+    "privacyBody": "El escaneo y el reconocimiento de texto ocurren en tu iPhone. Tus documentos nunca se suben.",
+    "start": "Empezar"
   }
 }

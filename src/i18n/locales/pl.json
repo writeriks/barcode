@@ -413,5 +413,16 @@
     "save": "Zapisz na urządzeniu",
     "viewFullScreen": "Zobacz na pełnym ekranie",
     "copyText": "Kopiuj tekst"
+  },
+  "onboarding": {
+    "title": "Witaj w {{app}}",
+    "subtitle": "Skaner, który zachowuje to, co znajdzie — i zachowuje to dla siebie.",
+    "scanTitle": "Skanuj wszystko",
+    "scanBody": "Kody kreskowe, QR, bilety, Wi-Fi — z aparatu lub ze zdjęcia, które już masz.",
+    "documentTitle": "Skanuj dokumenty",
+    "documentBody": "Uchwyć strony, wyciągnij z nich tekst i wyślij dalej jako obrazy lub PDF.",
+    "privacyTitle": "Zostaje na Twoim urządzeniu",
+    "privacyBody": "Skanowanie i rozpoznawanie tekstu działają na Twoim iPhonie. Dokumenty nigdy nie są wysyłane.",
+    "start": "Zaczynajmy"
   }
 }

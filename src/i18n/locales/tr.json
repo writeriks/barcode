@@ -413,5 +413,16 @@
     "save": "Cihaza kaydet",
     "viewFullScreen": "Tam ekran görüntüle",
     "copyText": "Metni kopyala"
+  },
+  "onboarding": {
+    "title": "{{app}}’ya hoş geldin",
+    "subtitle": "Bulduğunu saklayan, sakladığını kendine saklayan bir tarayıcı.",
+    "scanTitle": "Her şeyi tara",
+    "scanBody": "Barkod, QR, bilet, Wi-Fi — kameradan ya da zaten çektiğin bir fotoğraftan.",
+    "documentTitle": "Döküman tara",
+    "documentBody": "Sayfaları çek, metnini çıkar, resim veya PDF olarak gönder.",
+    "privacyTitle": "Cihazından çıkmaz",
+    "privacyBody": "Tarama ve metin tanıma iPhone’unda çalışır. Dökümanların hiçbir yere yüklenmez.",
+    "start": "Başla"
   }
 }

@@ -4,7 +4,7 @@
     "NSCameraUsageDescription": "Blippo uses the camera to scan barcodes, QR codes and paper documents. For example, point it at a grocery barcode to see what the product is, or at a receipt to save it and copy the text out of it.",
     "NSUserTrackingUsageDescription": "This identifier is used to show ads that are more relevant to you. Your scans and documents are never shared.",
     "NSPhotoLibraryUsageDescription": "Blippo opens a photo you pick so it can read a barcode or QR code that is already in it — a ticket, a boarding pass, or a Wi-Fi code someone sent you as a picture.",
-    "NSPhotoLibraryAddUsageDescription": "Blippo saves a scanned page or a QR code image to your photos when you choose \"Save Image\" while sharing it.",
+    "NSPhotoLibraryAddUsageDescription": "Blippo saves a scanned page or a QR code image to your photos when you choose “Save Image” while sharing it.",
     "NSFaceIDUsageDescription": "Blippo uses Face ID to unlock the app, so your saved scans and documents stay private if someone else picks up your iPhone."
   },
   "android": {

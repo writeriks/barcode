@@ -21,7 +21,7 @@ import { BottomSheet } from '../components/BottomSheet';
 import { FadeSwitcher } from '../components/FadeSwitcher';
 import { FilterPillRow, type PillOption } from '../components/FilterPillRow';
 import { PillButton } from '../components/PillButton';
-import { QrCode } from '../components/QrCode';
+import { StyledQrCode } from '../components/StyledQrCode';
 import { QrTypePicker } from '../components/QrTypePicker';
 import { Toast } from '../components/Toast';
 import { EmailForm, defaultEmailFields, type EmailFields } from '../components/qrForms/EmailForm';
@@ -597,7 +597,7 @@ export function MyCodesScreen({ navigation }: Props) {
             </Pressable>
             <View style={styles.viewer}>
             <View style={styles.qrCard}>
-              <QrCode value={viewing.content} size={220} color={colors.inkOnCream} backgroundColor={colors.cream} />
+              <StyledQrCode value={viewing.content} size={220} />
             </View>
             <Text style={styles.viewerLabel}>{viewing.label}</Text>
             <Pressable

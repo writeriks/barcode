@@ -12,7 +12,7 @@ import { QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
 import { inspectUrl } from '../utils/urlSafety';
 import { fonts } from '../theme/fonts';
 import { PillButton } from './PillButton';
-import { QrCode } from './QrCode';
+import { StyledQrCode } from './StyledQrCode';
 
 function typeColor(colors: ColorTheme, type: QrContentType): string {
   switch (type) {
@@ -131,7 +131,7 @@ export function QrContentView({ data, onCopied }: Props) {
   return (
     <View style={styles.wrap}>
       <View style={styles.qrCard}>
-        <QrCode value={data} size={190} color={colors.inkOnCream} backgroundColor={colors.cream} />
+        <StyledQrCode value={data} size={190} />
       </View>
 
       <View style={[styles.typeChip, { borderColor: color }]}>

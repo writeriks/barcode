@@ -37,10 +37,10 @@ export function utf8ByteLength(value: string): number {
  * when it doesn't fit in a QR code at all.
  *
  * Encoding is the one place this app can hand a user input straight to a
- * library that throws: react-native-qrcode-svg builds its matrix during
- * render, so an over-capacity value would throw *while rendering* and take
- * the screen down with it. Asking this first means we only ever render
- * codes we know can be built.
+ * library that throws: the encoder rejects an over-capacity value, and the
+ * matrix is built during render, so the throw would take down the screen
+ * that asked for the code. Asking this first means we only ever try to
+ * build codes we know can be built.
  *
  * Content is measured as bytes even when it's all digits or uppercase
  * letters, which QR can pack more tightly — a deliberate underestimate,

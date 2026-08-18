@@ -1,16 +1,12 @@
 import { File, Paths } from 'expo-file-system';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Share, StyleSheet, View } from 'react-native';
-import { QrCode } from '../components/QrCode';
-import { useThemeColors } from '../theme/ThemeContext';
+import { StyledQrCode, type QrSvgRef } from '../components/StyledQrCode';
 import { isQrEncodable } from '../utils/qrCapacity';
 
 // Bigger than any QR the app displays: this one gets sent to other people
 // and may be scanned off their screen, so it wants the resolution.
 const SHARE_SIZE = 512;
-// A QR with no margin around it is unreliable to scan — readers need the
-// quiet zone to find the code's edges in whatever the image is pasted into.
-const QUIET_ZONE = 20;
 
 interface PendingShare {
   content: string;
@@ -28,9 +24,8 @@ interface PendingShare {
  * Mount `qrRenderer` somewhere in the screen's tree and call `shareQr`.
  */
 export function useQrShare(onUnavailable?: () => void) {
-  const colors = useThemeColors();
   const [pending, setPending] = useState<PendingShare | null>(null);
-  const svgRef = useRef<{ toDataURL: (callback: (base64: string) => void) => void } | null>(null);
+  const svgRef = useRef<QrSvgRef | null>(null);
 
   // Runs once the off-screen QR above has rendered — React attaches refs
   // before effects, so getRef has already handed us the SVG by now.
@@ -73,14 +68,11 @@ export function useQrShare(onUnavailable?: () => void) {
 
   const qrRenderer = pending ? (
     <View style={styles.offscreen} pointerEvents="none">
-      <QrCode
+      <StyledQrCode
         value={pending.content}
         size={SHARE_SIZE}
-        quietZone={QUIET_ZONE}
-        color={colors.inkOnCream}
-        backgroundColor={colors.cream}
-        getRef={(c) => {
-          svgRef.current = c;
+        getRef={(instance) => {
+          svgRef.current = instance;
         }}
       />
     </View>

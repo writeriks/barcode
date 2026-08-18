@@ -6,6 +6,7 @@ import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-na
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { COUNTRY_CALLING_CODES, type CountryCallingCode } from '../utils/countryCallingCodes';
+import { localizedCountryName } from '../utils/countryNames';
 
 interface Props {
   label: string;
@@ -22,7 +23,7 @@ const WHEEL_HEIGHT = 180;
  * search box above it — used by the Phone/SMS generator forms, next to
  * the number input.
  *
- * The wheel is what makes this fit inside a form at all. Ninety-one
+ * The wheel is what makes this fit inside a form at all. Ninety
  * countries need their own scrolling, and a scrolling list nested in the
  * sheet's own ScrollView fights it for every drag. `Picker` renders a
  * native UIPickerView on iOS — the same kind of component as the time
@@ -36,7 +37,7 @@ const WHEEL_HEIGHT = 180;
  * right — the device's region is filled in from the start.
  */
 export function CountryCodeField({ label, value, onChange }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const colors = useThemeColors();
   const mode = useThemeMode();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -44,13 +45,31 @@ export function CountryCodeField({ label, value, onChange }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
 
+  const language = i18n.language;
+
+  // Named and ordered in the reader's own language: a Turkish list that
+  // says "Germany" between "Georgia" and "Ghana" is sorted for someone
+  // else. `name` stays as the English original, which search also matches
+  // so that typing "Germany" still finds Almanya.
+  const countries = useMemo(
+    () =>
+      COUNTRY_CALLING_CODES.map((country) => ({
+        ...country,
+        displayName: localizedCountryName(country.iso2, language, country.name),
+      })).sort((a, b) => a.displayName.localeCompare(b.displayName, language)),
+    [language]
+  );
+
   const filtered = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
-    if (!trimmed) return COUNTRY_CALLING_CODES;
-    return COUNTRY_CALLING_CODES.filter(
-      (country) => country.name.toLowerCase().includes(trimmed) || country.dialCode.includes(trimmed)
+    if (!trimmed) return countries;
+    return countries.filter(
+      (country) =>
+        country.displayName.toLowerCase().includes(trimmed) ||
+        country.name.toLowerCase().includes(trimmed) ||
+        country.dialCode.includes(trimmed)
     );
-  }, [query]);
+  }, [countries, query]);
 
   const handleSelect = (iso2: string) => {
     const country = COUNTRY_CALLING_CODES.find((candidate) => candidate.iso2 === iso2);
@@ -100,7 +119,7 @@ export function CountryCodeField({ label, value, onChange }: Props) {
               {filtered.map((country) => (
                 <Picker.Item
                   key={country.iso2}
-                  label={`${country.name}  ${country.dialCode}`}
+                  label={`${country.displayName}  ${country.dialCode}`}
                   value={country.iso2}
                   color={colors.text}
                 />

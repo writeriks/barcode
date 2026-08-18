@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useEffect, useMemo, useRef } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   KeyboardAvoidingView,
@@ -12,10 +12,42 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
+
+/** A second screen shown inside a sheet that is already open, in place of
+ *  its usual body — a long list of choices one of its fields needs. */
+export interface SheetStep {
+  title: string;
+  /** Called on every render of the sheet rather than stored as an element,
+   *  so whatever it returns keeps its own state (a search box's text, a
+   *  list's scroll position) across the sheet's re-renders. */
+  render: () => ReactNode;
+  /** Leave off when the step brings its own scrolling — nesting a list
+   *  inside the sheet's ScrollView breaks both. */
+  scroll?: boolean;
+}
+
+interface SheetStepControls {
+  open: (step: SheetStep) => void;
+  close: () => void;
+}
+
+const SheetStepContext = createContext<SheetStepControls | null>(null);
+
+/**
+ * Lets a field deep inside a sheet take the sheet over for one step,
+ * instead of opening a second sheet on top of the first.
+ *
+ * Returns null outside a sheet, which is the caller's cue to fall back to
+ * presenting something of its own.
+ */
+export function useSheetStep(): SheetStepControls | null {
+  return useContext(SheetStepContext);
+}
 
 interface Props {
   visible: boolean;
@@ -23,7 +55,8 @@ interface Props {
   title: string;
   children: ReactNode;
   /** Pinned below the body — a Save button on a tall form, so it stays
-   *  reachable while the fields scroll. */
+   *  reachable while the fields scroll. Hidden while a step is open: it
+   *  belongs to the form, not to the list covering it. */
   footer?: ReactNode;
   /** Caps the body and scrolls it. Needed for generator forms that can
    *  be a vCard's worth of fields; short sheets should leave this off so
@@ -55,6 +88,12 @@ export function BottomSheet({ visible, onClose, title, children, footer, scroll 
   const styles = useMemo(() => createStyles(colors), [colors]);
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const sheetTranslateY = useRef(new Animated.Value(OFFSCREEN_Y)).current;
+  const [step, setStep] = useState<SheetStep | null>(null);
+
+  const stepControls = useMemo<SheetStepControls>(
+    () => ({ open: setStep, close: () => setStep(null) }),
+    []
+  );
 
   useEffect(() => {
     if (visible) {
@@ -71,10 +110,20 @@ export function BottomSheet({ visible, onClose, title, children, footer, scroll 
     } else {
       backdropOpacity.setValue(0);
       sheetTranslateY.setValue(OFFSCREEN_Y);
+      // A sheet that reopens should start on its own content, never on
+      // whatever step was showing when it was last dismissed.
+      setStep(null);
     }
   }, [visible, backdropOpacity, sheetTranslateY]);
 
-  const body = scroll ? (
+  // Back out of a step before out of the sheet — the step is what's on
+  // top, so it's what a tap outside or a hardware back is aimed at.
+  const handleDismiss = () => {
+    if (step) setStep(null);
+    else onClose();
+  };
+
+  const scrolled = (content: ReactNode) => (
     <ScrollView
       style={{ maxHeight: windowHeight * 0.62 }}
       contentContainerStyle={styles.scrollBody}
@@ -82,10 +131,8 @@ export function BottomSheet({ visible, onClose, title, children, footer, scroll 
       keyboardDismissMode="on-drag"
       showsVerticalScrollIndicator={false}
     >
-      {children}
+      {content}
     </ScrollView>
-  ) : (
-    children
   );
 
   return (
@@ -94,10 +141,10 @@ export function BottomSheet({ visible, onClose, title, children, footer, scroll 
       transparent
       animationType="none"
       presentationStyle="overFullScreen"
-      onRequestClose={onClose}
+      onRequestClose={handleDismiss}
     >
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <Pressable style={styles.backdropTouchable} onPress={onClose}>
+        <Pressable style={styles.backdropTouchable} onPress={handleDismiss}>
           <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]} />
         </Pressable>
         <Animated.View
@@ -107,9 +154,22 @@ export function BottomSheet({ visible, onClose, title, children, footer, scroll 
           ]}
         >
           <View style={styles.handle} />
-          <Text style={styles.title}>{title}</Text>
-          {body}
-          {footer ? <View style={styles.footer}>{footer}</View> : null}
+          <View style={styles.titleRow}>
+            {step ? (
+              <Pressable onPress={() => setStep(null)} hitSlop={10} style={styles.backButton}>
+                <Ionicons name="chevron-back" size={18} color={colors.text} />
+              </Pressable>
+            ) : null}
+            <Text style={styles.title}>{step ? step.title : title}</Text>
+          </View>
+          <SheetStepContext.Provider value={stepControls}>
+            {/* Hidden rather than unmounted: the field that opened the step
+                lives in here, and so does everything the form has been
+                typed into. Unmounting would hand back a blank form. */}
+            <View style={step ? styles.hidden : undefined}>{scroll ? scrolled(children) : children}</View>
+            {step ? (step.scroll ? scrolled(step.render()) : step.render()) : null}
+          </SheetStepContext.Provider>
+          {footer && !step ? <View style={styles.footer}>{footer}</View> : null}
         </Animated.View>
       </KeyboardAvoidingView>
     </Modal>
@@ -120,6 +180,9 @@ function createStyles(colors: ColorTheme) {
   return StyleSheet.create({
     flex: {
       flex: 1,
+    },
+    hidden: {
+      display: 'none',
     },
     backdropTouchable: {
       flex: 1,
@@ -146,11 +209,20 @@ function createStyles(colors: ColorTheme) {
       backgroundColor: colors.panelLine,
       marginBottom: 14,
     },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      marginBottom: 12,
+    },
+    backButton: {
+      marginLeft: -4,
+    },
     title: {
+      flex: 1,
       fontFamily: fonts.displayBold,
       fontSize: 17,
       color: colors.text,
-      marginBottom: 12,
     },
     scrollBody: {
       gap: 14,

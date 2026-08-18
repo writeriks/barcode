@@ -25,6 +25,39 @@ const iosAppId = process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID || TEST_ADMOB_IOS_APP_
 const isEasBuild = process.env.EAS_BUILD === 'true';
 const premiumTestingEnabled = !isEasBuild && process.env.EXPO_PUBLIC_PREMIUM_TESTING !== 'false';
 
+// The English original of every permission prompt. Each one names what the
+// app does with the permission and gives an example of when — Apple
+// rejects a description that only restates the permission's name
+// (Guideline 5.1.1(iv)), which is what happened here before.
+//
+// The app's name is written out rather than using $(PRODUCT_NAME). That
+// placeholder is expanded in the Info.plist but *not* in the
+// InfoPlist.strings files the `locales` key below generates (they're
+// copied as plain resources), so every non-default language would show the
+// placeholder text itself. It also resolves to the Xcode target's name,
+// which is still "Beep" in any ios/ directory generated before the rename.
+//
+// Keep these in sync with the same keys in locales/*.json — those are the
+// translations, and iOS prefers them over these whenever the device's
+// language has a file.
+const PERMISSIONS = {
+  camera:
+    'Blippo uses the camera to scan barcodes, QR codes and paper documents. For example, point it at a ' +
+    'grocery barcode to see what the product is, or at a receipt to save it and copy the text out of it.',
+  photoLibrary:
+    'Blippo opens a photo you pick so it can read a barcode or QR code that is already in it — a ticket, ' +
+    'a boarding pass, or a Wi-Fi code someone sent you as a picture.',
+  photoLibraryAdd:
+    'Blippo saves a scanned page or a QR code image to your photos when you choose "Save Image" while ' +
+    'sharing it.',
+  faceId:
+    'Blippo uses Face ID to unlock the app, so your saved scans and documents stay private if someone ' +
+    'else picks up your iPhone.',
+  tracking:
+    'This identifier is used to show ads that are more relevant to you. Your scans and documents are ' +
+    'never shared.',
+} as const;
+
 const config: ExpoConfig = {
   name: 'Blippo',
   slug: 'barcode',
@@ -48,6 +81,16 @@ const config: ExpoConfig = {
     // scans private — they can still live in Documents (see
     // modules/expo-document-scanner) and leave only through a share the
     // app initiated, where "Save to Files" is offered as a destination.
+    infoPlist: {
+      // No config plugin writes this one — expo-image-picker's only covers
+      // *reading* the library (NSPhotoLibraryUsageDescription, see its
+      // withImagePicker.js). Adding to it is a separate permission, and
+      // iOS terminates the app outright when a save is attempted without
+      // this key. It gets attempted every time someone picks "Save Image"
+      // out of the share sheet on a scanned page or a QR image, which is
+      // an ordinary thing to do.
+      NSPhotoLibraryAddUsageDescription: PERMISSIONS.photoLibraryAdd,
+    },
   },
   android: {
     // TODO: confirm/change before a real Play Store submission — this must
@@ -83,8 +126,7 @@ const config: ExpoConfig = {
     [
       'expo-camera',
       {
-        cameraPermission:
-          '$(PRODUCT_NAME) uses the camera to scan product barcodes and QR codes so you can look up product details and save scans. For example, point the camera at a grocery barcode to see the product name and information.',
+        cameraPermission: PERMISSIONS.camera,
       },
     ],
     ['expo-asset', { assets: [] }],
@@ -100,8 +142,7 @@ const config: ExpoConfig = {
     [
       'expo-image-picker',
       {
-        photosPermission:
-          'Allow $(PRODUCT_NAME) to access your photos so you can look up a barcode from a saved picture.',
+        photosPermission: PERMISSIONS.photoLibrary,
         // expo-camera's plugin already sets these — avoid two plugins fighting over the same Info.plist keys.
         cameraPermission: false,
         microphonePermission: false,
@@ -110,7 +151,7 @@ const config: ExpoConfig = {
     [
       'expo-tracking-transparency',
       {
-        userTrackingPermission: 'This identifier will be used to deliver ads that are more relevant to you.',
+        userTrackingPermission: PERMISSIONS.tracking,
       },
     ],
     [
@@ -123,7 +164,7 @@ const config: ExpoConfig = {
     [
       'expo-local-authentication',
       {
-        faceIDPermission: 'Allow $(PRODUCT_NAME) to use Face ID to unlock the app.',
+        faceIDPermission: PERMISSIONS.faceId,
       },
     ],
   ],

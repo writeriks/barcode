@@ -1,8 +1,11 @@
 {
   "ios": {
     "CFBundleDisplayName": "Blippo",
-    "NSCameraUsageDescription": "$(PRODUCT_NAME), ürün bilgilerini görüntülemek ve taramaları kaydetmek için ürün barkodlarını ve QR kodlarını taramak üzere kamerayı kullanır. Örneğin, bir market barkoduna kamerayı doğrultarak ürün adını ve bilgilerini görebilirsiniz.",
-    "NSUserTrackingUsageDescription": "Bu tanımlayıcı, size daha uygun reklamlar sunmak için kullanılacaktır."
+    "NSCameraUsageDescription": "Blippo, barkodları, QR kodları ve kâğıt dökümanları taramak için kamerayı kullanır. Örneğin bir market barkoduna tutarak ürünün ne olduğunu görebilir, bir fişe tutarak fişi kaydedip metnini kopyalayabilirsin.",
+    "NSUserTrackingUsageDescription": "Bu tanımlayıcı sana daha uygun reklamlar göstermek için kullanılır. Taramaların ve dökümanların hiçbir zaman paylaşılmaz.",
+    "NSPhotoLibraryUsageDescription": "Blippo, seçtiğin fotoğrafı açarak içindeki barkodu veya QR kodu okur — bir bilet, biniş kartı ya da birinin resim olarak gönderdiği Wi-Fi kodu gibi.",
+    "NSPhotoLibraryAddUsageDescription": "Blippo, paylaşırken \"Görseli Kaydet\" seçtiğinde taranan sayfayı veya QR kod görselini fotoğraflarına kaydeder.",
+    "NSFaceIDUsageDescription": "Blippo, uygulamayı açmak için Face ID kullanır; böylece iPhone’unu başkası eline aldığında kayıtlı taramaların ve dökümanların gizli kalır."
   },
   "android": {
     "app_name": "Blippo"

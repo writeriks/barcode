@@ -1,8 +1,11 @@
 {
   "ios": {
     "CFBundleDisplayName": "Blippo",
-    "NSCameraUsageDescription": "$(PRODUCT_NAME) verwendet die Kamera, um Produktbarcodes und QR-Codes zu scannen, damit du Produktdetails nachschlagen und Scans speichern kannst. Richte die Kamera zum Beispiel auf einen Lebensmittel-Barcode, um den Produktnamen und die Informationen zu sehen.",
-    "NSUserTrackingUsageDescription": "Diese Kennung wird verwendet, um dir relevantere Werbung anzuzeigen."
+    "NSCameraUsageDescription": "Blippo verwendet die Kamera, um Barcodes, QR-Codes und Papierdokumente zu scannen. Richte sie zum Beispiel auf einen Barcode im Supermarkt, um zu sehen, was das Produkt ist, oder auf einen Kassenbon, um ihn zu speichern und seinen Text zu kopieren.",
+    "NSUserTrackingUsageDescription": "Diese Kennung wird verwendet, um dir relevantere Werbung zu zeigen. Deine Scans und Dokumente werden nie weitergegeben.",
+    "NSPhotoLibraryUsageDescription": "Blippo öffnet ein von dir ausgewähltes Foto, um einen Barcode oder QR-Code darin zu lesen — ein Ticket, eine Bordkarte oder einen WLAN-Code, den dir jemand als Bild geschickt hat.",
+    "NSPhotoLibraryAddUsageDescription": "Blippo sichert eine gescannte Seite oder ein QR-Code-Bild in deinen Fotos, wenn du beim Teilen \"Bild sichern\" wählst.",
+    "NSFaceIDUsageDescription": "Blippo verwendet Face ID zum Entsperren der App, damit deine gespeicherten Scans und Dokumente privat bleiben, wenn jemand anderes dein iPhone in die Hand nimmt."
   },
   "android": {
     "app_name": "Blippo"

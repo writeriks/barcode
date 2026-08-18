@@ -1,8 +1,11 @@
 {
   "ios": {
     "CFBundleDisplayName": "Blippo",
-    "NSCameraUsageDescription": "$(PRODUCT_NAME) używa aparatu do skanowania kodów kreskowych i kodów QR produktów, abyś mógł sprawdzić szczegóły produktu i zapisać skany. Na przykład skieruj aparat na kod kreskowy produktu spożywczego, aby zobaczyć jego nazwę i informacje.",
-    "NSUserTrackingUsageDescription": "Ten identyfikator będzie używany do wyświetlania reklam bardziej dopasowanych do Ciebie."
+    "NSCameraUsageDescription": "Blippo używa aparatu do skanowania kodów kreskowych, kodów QR i dokumentów papierowych. Na przykład skieruj go na kod kreskowy w sklepie, aby zobaczyć, co to za produkt, albo na paragon, aby go zapisać i skopiować z niego tekst.",
+    "NSUserTrackingUsageDescription": "Ten identyfikator służy do wyświetlania bardziej trafnych reklam. Twoje skany i dokumenty nigdy nie są udostępniane.",
+    "NSPhotoLibraryUsageDescription": "Blippo otwiera wybrane przez Ciebie zdjęcie, aby odczytać znajdujący się na nim kod kreskowy lub QR — bilet, kartę pokładową albo kod Wi-Fi, który ktoś przysłał Ci jako obrazek.",
+    "NSPhotoLibraryAddUsageDescription": "Blippo zapisuje zeskanowaną stronę lub obraz kodu QR w Twoich zdjęciach, gdy podczas udostępniania wybierzesz \"Zapisz obraz\".",
+    "NSFaceIDUsageDescription": "Blippo używa Face ID do odblokowania aplikacji, dzięki czemu zapisane skany i dokumenty pozostaną prywatne, jeśli ktoś inny weźmie Twojego iPhone’a."
   },
   "android": {
     "app_name": "Blippo"

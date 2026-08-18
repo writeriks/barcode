@@ -110,7 +110,11 @@ function createStyles(colors: ColorTheme) {
       width: '100%',
       flexDirection: 'row',
       flexWrap: 'wrap',
-      justifyContent: 'center',
+      // Left-aligned, not centered: a category whose count isn't a
+      // multiple of three ends on a short row, and centering that row
+      // under a full one reads as a misalignment. Rows fill exactly now
+      // that the tile width is floored, so the grid no longer drifts.
+      justifyContent: 'flex-start',
       gap: GRID_GAP,
     },
     tile: {

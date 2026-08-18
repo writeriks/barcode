@@ -412,30 +412,49 @@ export function MyCodesScreen({ navigation }: Props) {
     resetForm();
   }, [resetForm]);
 
+  /**
+   * Closing the form means different things in the two flows it serves.
+   *
+   * Creating, the type grid is still mounted behind the sheet, so closing
+   * is "pick a different type" and the draft stays. Editing, there is no
+   * grid — the code's type was decided when it was saved — so closing is
+   * the end of the edit, and leaving `editingId` set would arm a trap:
+   * the next type tapped would save over the original code as a different
+   * type, with the fields of neither.
+   */
+  const handleCloseFormSheet = useCallback(() => {
+    setFormSheetOpen(false);
+    if (editingId) {
+      setEditingId(null);
+      resetForm();
+    }
+  }, [editingId, resetForm]);
+
   // Re-tapping the already-active My Codes tab while viewing a code or
   // creating one should pop back to the list, not do nothing.
   useEffect(() => {
     return navigation.addListener('tabPress', () => {
       if (!navigation.isFocused()) return;
-      if (viewing) setViewing(null);
+      if (formSheetOpen) handleCloseFormSheet();
+      else if (viewing) setViewing(null);
       else if (isCreating) handleCancel();
     });
-  }, [navigation, viewing, isCreating, handleCancel]);
+  }, [navigation, viewing, isCreating, formSheetOpen, handleCloseFormSheet, handleCancel]);
 
   // This tab shows three things without a navigator between them, so
   // Android's back gesture had nothing to act on and the viewer and the
   // form were both dead ends. Handled only while one of them is open, so
   // back still leaves the app from the list itself.
   useEffect(() => {
-    if (!viewing && !isCreating) return;
+    if (!viewing && !isCreating && !formSheetOpen) return;
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (viewing) setViewing(null);
-      else if (formSheetOpen) setFormSheetOpen(false);
+      if (formSheetOpen) handleCloseFormSheet();
+      else if (viewing) setViewing(null);
       else handleCancel();
       return true;
     });
     return () => subscription.remove();
-  }, [viewing, isCreating, formSheetOpen, handleCancel]);
+  }, [viewing, isCreating, formSheetOpen, handleCloseFormSheet, handleCancel]);
 
   const content = useMemo(() => buildContent(type, fields), [type, fields]);
 
@@ -508,6 +527,9 @@ export function MyCodesScreen({ navigation }: Props) {
     setIsCreating(false);
     setFormSheetOpen(false);
     setEditingId(null);
+    // The viewer, if it's behind this sheet, is still drawing the code as
+    // it was before the edit. Back to the list, where the change shows.
+    setViewing(null);
     resetForm();
     reload();
   };
@@ -523,8 +545,10 @@ export function MyCodesScreen({ navigation }: Props) {
     setType(parsedType);
     setLabel(code.label);
     setFields(parsedFields);
-    setViewing(null);
-    setIsCreating(true);
+    // Deliberately leaves `isCreating` and `viewing` alone. The type grid
+    // has nothing to offer an existing code, and keeping the viewer
+    // mounted underneath is what makes closing the sheet land back where
+    // the edit was started from.
     setFormSheetOpen(true);
   };
 
@@ -741,8 +765,8 @@ export function MyCodesScreen({ navigation }: Props) {
           vCard's worth of inputs onto the same screen. Tapping a type
           now opens them here instead. */}
       <BottomSheet
-        visible={isCreating && formSheetOpen}
-        onClose={() => setFormSheetOpen(false)}
+        visible={formSheetOpen}
+        onClose={handleCloseFormSheet}
         title={t(QR_TYPE_LABEL_KEY[type])}
         scroll
         footer={

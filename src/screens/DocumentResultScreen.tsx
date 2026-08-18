@@ -8,8 +8,10 @@ import { Alert, Image, Modal, Pressable, ScrollView, Share, StyleSheet, Text, Vi
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { KeyInformationRow } from '../components/KeyInformationRow';
+import { ShareFormatSheet, type ShareFormat } from '../components/ShareFormatSheet';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { useKeyInformation } from '../hooks/useKeyInformation';
+import { shareDocument } from '../services/documentShare';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -68,6 +70,7 @@ export function DocumentResultScreen({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const [didImageFail, setDidImageFail] = useState(false);
+  const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
   // True from opening the share sheet until well past its dismissal — see
   // shareImage for why the gap after matters.
   const isSharePendingRef = useRef(false);
@@ -133,14 +136,15 @@ export function DocumentResultScreen({
    * "Save to Files" both appear on it for an image, which is why the
    * fullscreen viewer's save button lands here too.
    */
-  const shareImage = async (action: 'share' | 'save') => {
+  const shareImage = async (action: 'share' | 'save', format: ShareFormat = 'image') => {
     if (!imageUri || isSharePendingRef.current) return;
-    captureAnalyticsEvent('document_action', { action });
+    captureAnalyticsEvent('document_action', { action, format });
     isSharePendingRef.current = true;
     try {
-      await Share.share({ url: imageUri });
+      if (format === 'pdf') await shareDocument([imageUri], label ?? t('document.typeDocument'), 'pdf');
+      else await Share.share({ url: imageUri });
     } catch {
-      Alert.alert(t('document.shareFailed'));
+      Alert.alert(t(format === 'pdf' ? 'document.pdfFailed' : 'document.shareFailed'));
     } finally {
       // The sheet's dismissal animation outlives the promise, and the tap
       // that dismissed it lands on the page underneath — which opens the
@@ -157,7 +161,9 @@ export function DocumentResultScreen({
     setIsFullscreenOpen(true);
   };
 
-  const handleShare = () => shareImage('share');
+  // The format question comes first; the fullscreen viewer's save button
+  // skips it, because "save this picture" has already answered it.
+  const handleShare = () => setIsShareSheetOpen(true);
   const handleSaveToDevice = () => shareImage('save');
 
   const handleDeletePress = () => {
@@ -302,6 +308,13 @@ export function DocumentResultScreen({
       </View>
 
       <BottomBannerAd />
+
+      <ShareFormatSheet
+        visible={isShareSheetOpen}
+        pageCount={1}
+        onClose={() => setIsShareSheetOpen(false)}
+        onSelect={(format) => shareImage('share', format)}
+      />
 
       {imageUri ? (
         <Modal visible={isFullscreenOpen} animationType="fade" onRequestClose={() => setIsFullscreenOpen(false)}>

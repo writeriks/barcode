@@ -13,9 +13,9 @@ import { FilterPillRow, type PillAccent, type PillOption } from '../components/F
 import { HistoryStatusBadge } from '../components/HistoryStatusBadge';
 import { PillButton } from '../components/PillButton';
 import { PromptModal } from '../components/PromptModal';
+import { ShareFormatSheet, type ShareFormat } from '../components/ShareFormatSheet';
 import { usePremium } from '../premium/PremiumContext';
 import { captureAnalyticsEvent } from '../services/analytics';
-import { canShareSeveralFiles, shareFiles, sharePdf } from '../services/documentShare';
 import { createFolder, deleteFolder, getFolders } from '../services/historyFolders';
 import { maybeRequestReview } from '../services/reviewPrompt';
 import { shareHistoryEntries } from '../services/historyExport';
@@ -164,6 +164,9 @@ export function HistoryScreen({ navigation }: Props) {
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
   const [menuEntry, setMenuEntry] = useState<ScanHistoryEntry | null>(null);
   const [renamingEntry, setRenamingEntry] = useState<ScanHistoryEntry | null>(null);
+  // The document(s) waiting on a format choice, and where the choice came
+  // from — a single row's menu, or the edit-mode toolbar.
+  const [sharingEntries, setSharingEntries] = useState<ScanHistoryEntry[] | null>(null);
   const [renameValue, setRenameValue] = useState('');
 
   const reload = useCallback(() => {
@@ -354,36 +357,15 @@ export function HistoryScreen({ navigation }: Props) {
     // the share sheet silently never appears. Deferring past the
     // dismissal (a plain setTimeout since Modal's onDismiss is iOS-only,
     // and this app also ships on Android) fixes it.
-    setTimeout(async () => {
-      // A document shares as its pages, not as its OCR text — the same
-      // rule as everywhere else.
+    setTimeout(() => {
+      // A document shares as its pages or as a PDF of them — never as its
+      // OCR text, the same rule as everywhere else. Which of the two is a
+      // question, so it gets asked.
       if (entry.kind === 'document') {
-        try {
-          if (!canShareSeveralFiles()) throw new Error('multi-file sharing unavailable');
-          await shareFiles(entry.imageUris);
-        } catch {
-          // Without this a failure looks exactly like a dead menu row.
-          Alert.alert(t('document.shareFailed'));
-        }
+        setSharingEntries([entry]);
         return;
       }
       Share.share({ message: entry.kind === 'qr' ? entry.data : entry.barcode });
-    }, 300);
-  };
-
-  const handlePdfMenuEntry = () => {
-    if (menuEntry?.kind !== 'document') return;
-    const entry = menuEntry;
-    setMenuEntry(null);
-    // Same native-presentation race as the share row: the share sheet the
-    // PDF ends up in can't be presented while the sheet is dismissing.
-    setTimeout(async () => {
-      try {
-        if (!canShareSeveralFiles()) throw new Error('PDF export unavailable');
-        await sharePdf(entry.imageUris, entry.label ?? t('document.typeDocument'));
-      } catch {
-        Alert.alert(t('document.pdfFailed'));
-      }
     }, 300);
   };
 
@@ -431,11 +413,28 @@ export function HistoryScreen({ navigation }: Props) {
 
   const handleBulkShare = async () => {
     if (selectedEntries.length === 0) return;
+    // Only documents have a choice of format; a selection without any
+    // goes straight out as the CSV it has always been.
+    if (selectedEntries.some((entry) => entry.kind === 'document')) {
+      setSharingEntries(selectedEntries);
+      return;
+    }
     try {
-      await shareHistoryEntries(selectedEntries);
+      await shareHistoryEntries(selectedEntries, 'image');
     } catch {
       // Without this a failure looks exactly like a dead button.
       Alert.alert(t('document.shareFailed'));
+    }
+  };
+
+  const handleShareFormat = async (format: ShareFormat) => {
+    const entries = sharingEntries;
+    setSharingEntries(null);
+    if (!entries) return;
+    try {
+      await shareHistoryEntries(entries, format);
+    } catch {
+      Alert.alert(t(format === 'pdf' ? 'document.pdfFailed' : 'document.shareFailed'));
     }
   };
 
@@ -698,6 +697,16 @@ export function HistoryScreen({ navigation }: Props) {
         </Pressable>
       </BottomSheet>
 
+      <ShareFormatSheet
+        visible={sharingEntries !== null}
+        pageCount={(sharingEntries ?? []).reduce(
+          (total, entry) => total + (entry.kind === 'document' ? entry.imageUris.length : 0),
+          0
+        )}
+        onClose={() => setSharingEntries(null)}
+        onSelect={handleShareFormat}
+      />
+
       <BottomSheet visible={menuEntry !== null} onClose={() => setMenuEntry(null)} title={t('history.entryOptionsTitle')}>
         <View style={styles.sheetList}>
           <Pressable onPress={handleRenameMenuEntry} style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}>
@@ -712,12 +721,6 @@ export function HistoryScreen({ navigation }: Props) {
             <Ionicons name="share-outline" size={18} color={colors.citrusText} />
             <Text style={styles.menuRowText}>{t('history.share')}</Text>
           </Pressable>
-          {menuEntry?.kind === 'document' ? (
-            <Pressable onPress={handlePdfMenuEntry} style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}>
-              <Ionicons name="document-outline" size={18} color={colors.mintText} />
-              <Text style={styles.menuRowText}>{t('document.exportPdf')}</Text>
-            </Pressable>
-          ) : null}
           <Pressable
             onPress={handleDeleteMenuEntry}
             style={({ pressed }) => [styles.menuRow, pressed && styles.rowPressed]}

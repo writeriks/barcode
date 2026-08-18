@@ -36,8 +36,12 @@
     "pagePosition": "Strona {{page}} z {{total}}",
     "typeDocument": "Dokument",
     "metaDocument": "Skan dokumentu",
-    "exportPdf": "PDF",
-    "pdfFailed": "Nie udało się utworzyć pliku PDF."
+    "pdfFailed": "Nie udało się utworzyć pliku PDF.",
+    "shareFormatTitle": "Jak chcesz udostępnić?",
+    "shareAsImages": "Obrazy",
+    "shareAsImagesBody": "{{count}} osobnych zdjęć",
+    "shareAsPdf": "PDF",
+    "shareAsPdfBody": "{{count}} stron w jednym pliku"
   },
   "result": {
     "unnamedProduct": "Produkt bez nazwy",

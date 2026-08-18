@@ -1,6 +1,7 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { canShareSeveralFiles, existingPages } from './documentShare';
+import type { ShareFormat } from '../components/ShareFormatSheet';
+import { buildPdf, canShareSeveralFiles, existingPages } from './documentShare';
 import type { ScanHistoryEntry } from '../types/history';
 
 function csvEscape(value: string): string {
@@ -37,14 +38,31 @@ function writeCsv(entries: ExportableEntry[]): File {
 }
 
 /**
+ * What one document's PDF is called inside a batch.
+ *
+ * Every PDF is written to the same temporary directory under its own name,
+ * so two documents sharing one — two unnamed scans, or two renamed the
+ * same — would have the second quietly overwrite the first and go out
+ * twice. Numbering the duplicates keeps them distinct without putting a
+ * suffix on the single-document case, which is the usual one.
+ */
+function pdfName(documents: ScanHistoryEntry[], index: number): string {
+  const base = documents[index].label?.trim() || 'Blippo';
+  const earlierWithSameName = documents
+    .slice(0, index)
+    .filter((document) => (document.label?.trim() || 'Blippo') === base).length;
+  return earlierWithSameName > 0 ? `${base} ${earlierWithSameName + 1}` : base;
+}
+
+/**
  * Shares a selection of history entries — what similar scanner apps call
  * "export".
  *
- * Scans and codes go out as a CSV. Documents go out as their pages: a
- * scanned document is its pages, and putting its OCR text in a spreadsheet
- * column would hand out the text of a document the user only meant to send
- * the images of — the same rule the single-entry share and the gallery
- * already follow.
+ * Scans and codes go out as a CSV. Documents go out as their pages, or as
+ * a PDF of them if that's what was asked for — never as their OCR text,
+ * which in a spreadsheet column would hand out the words of a document the
+ * user only meant to send the pictures of. One PDF per document, since two
+ * scans that happen to be selected together are still two documents.
  *
  * A mixed selection needs both in one sheet, which rules out the JS
  * sharing APIs (each takes exactly one file). The native module's
@@ -53,12 +71,19 @@ function writeCsv(entries: ExportableEntry[]): File {
  * isn't there — Android, Expo Go — a selection with documents in it falls
  * back to the CSV of everything else.
  */
-export async function shareHistoryEntries(entries: ScanHistoryEntry[]): Promise<void> {
+export async function shareHistoryEntries(entries: ScanHistoryEntry[], format: ShareFormat): Promise<void> {
   const exportable = entries.filter(isExportable);
-  const pages = existingPages(entries.flatMap((entry) => (entry.kind === 'document' ? entry.imageUris : [])));
+  const documents = entries.filter((entry) => entry.kind === 'document');
 
-  if (pages.length > 0 && canShareSeveralFiles()) {
-    const files = exportable.length > 0 ? [...pages, writeCsv(exportable).uri] : pages;
+  if (documents.length > 0 && canShareSeveralFiles()) {
+    const attachments =
+      format === 'pdf'
+        ? (await Promise.all(documents.map((document, index) => buildPdf(document.imageUris, pdfName(documents, index)))))
+            .filter((uri): uri is string => uri !== null)
+        : existingPages(documents.flatMap((document) => document.imageUris));
+
+    const files = exportable.length > 0 ? [...attachments, writeCsv(exportable).uri] : attachments;
+    if (files.length === 0) return;
     const { shareFilesAsync } = await import('expo-document-scanner');
     await shareFilesAsync(files);
     return;

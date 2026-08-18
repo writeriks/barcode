@@ -36,8 +36,12 @@
     "pagePosition": "Sayfa {{page}} / {{total}}",
     "typeDocument": "Doküman",
     "metaDocument": "Doküman taraması",
-    "exportPdf": "PDF",
-    "pdfFailed": "PDF oluşturulamadı."
+    "pdfFailed": "PDF oluşturulamadı.",
+    "shareFormatTitle": "Nasıl paylaşmak istersin?",
+    "shareAsImages": "Görsel",
+    "shareAsImagesBody": "{{count}} ayrı resim",
+    "shareAsPdf": "PDF",
+    "shareAsPdfBody": "Tek dosyada {{count}} sayfa"
   },
   "result": {
     "unnamedProduct": "İsimsiz ürün",

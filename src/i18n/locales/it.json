@@ -36,8 +36,12 @@
     "pagePosition": "Pagina {{page}} di {{total}}",
     "typeDocument": "Documento",
     "metaDocument": "Scansione documento",
-    "exportPdf": "PDF",
-    "pdfFailed": "Impossibile creare il PDF."
+    "pdfFailed": "Impossibile creare il PDF.",
+    "shareFormatTitle": "Come vuoi condividere?",
+    "shareAsImages": "Immagini",
+    "shareAsImagesBody": "{{count}} immagini separate",
+    "shareAsPdf": "PDF",
+    "shareAsPdfBody": "{{count}} pagine in un unico file"
   },
   "result": {
     "unnamedProduct": "Prodotto senza nome",

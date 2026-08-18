@@ -1,5 +1,6 @@
 import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
+import type { ShareFormat } from '../components/ShareFormatSheet';
 import { isExpoGo } from './ads/environment';
 
 /** Of the given page files, the ones still on disk. A page deleted from
@@ -45,12 +46,29 @@ function toFileName(name: string): string {
   return `${cleaned || 'Blippo'}.pdf`;
 }
 
-/** Renders the given pages into one PDF and opens the share sheet on it,
- * which is where "Save to Files" lives. */
-export async function sharePdf(uris: string[], name: string): Promise<void> {
+/** Renders the given pages into one PDF and returns its file:// URI. */
+export async function buildPdf(uris: string[], name: string): Promise<string | null> {
   const files = existingPages(uris);
-  if (files.length === 0) return;
-  const { createPdfAsync, shareFilesAsync } = await import('expo-document-scanner');
-  const pdfUri = await createPdfAsync(files, toFileName(name));
-  await shareFilesAsync([pdfUri]);
+  if (files.length === 0) return null;
+  const { createPdfAsync } = await import('expo-document-scanner');
+  return createPdfAsync(files, toFileName(name));
+}
+
+/**
+ * Shares a document the way the user asked for it — as its pages, or as
+ * one PDF of them.
+ *
+ * Rejects rather than doing nothing when multi-file sharing isn't
+ * available, so callers can say so instead of leaving a button that looks
+ * dead.
+ */
+export async function shareDocument(uris: string[], name: string, format: ShareFormat): Promise<void> {
+  if (!canShareSeveralFiles()) throw new Error('multi-file sharing unavailable');
+  if (format === 'image') {
+    await shareFiles(uris);
+    return;
+  }
+  const pdfUri = await buildPdf(uris, name);
+  if (!pdfUri) return;
+  await shareFiles([pdfUri]);
 }

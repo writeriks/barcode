@@ -14,7 +14,8 @@ import {
 } from 'react-native';
 import { BottomBannerAd } from '../components/BottomBannerAd';
 import { PillButton } from '../components/PillButton';
-import { canShareSeveralFiles, shareFiles, sharePdf } from '../services/documentShare';
+import { ShareFormatSheet, type ShareFormat } from '../components/ShareFormatSheet';
+import { shareDocument } from '../services/documentShare';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -43,7 +44,8 @@ export function DocumentGalleryScreen({ imageUris, label, onOpenPage, onDeletePa
   const styles = useMemo(() => createStyles(colors, itemWidth), [colors, itemWidth]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(new Set());
-  const [isBuildingPdf, setIsBuildingPdf] = useState(false);
+  const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   const handleToggleEditMode = () => {
     setIsEditMode((prev) => !prev);
@@ -66,29 +68,17 @@ export function DocumentGalleryScreen({ imageUris, label, onOpenPage, onDeletePa
       .map((index) => imageUris[index])
       .filter(Boolean);
 
-  const handleShareSelected = async () => {
+  const handleShare = async (format: ShareFormat) => {
     const uris = selectedUris();
-    if (uris.length === 0) return;
+    if (uris.length === 0 || isSharing) return;
+    setIsSharing(true);
     try {
-      if (!canShareSeveralFiles()) throw new Error('multi-file sharing unavailable');
-      await shareFiles(uris);
+      await shareDocument(uris, label ?? t('document.typeDocument'), format);
     } catch {
       // Without this a failure looks exactly like a dead button.
-      Alert.alert(t('document.shareFailed'));
-    }
-  };
-
-  const handlePdfSelected = async () => {
-    const uris = selectedUris();
-    if (uris.length === 0 || isBuildingPdf) return;
-    setIsBuildingPdf(true);
-    try {
-      if (!canShareSeveralFiles()) throw new Error('multi-file sharing unavailable');
-      await sharePdf(uris, label ?? t('document.typeDocument'));
-    } catch {
-      Alert.alert(t('document.pdfFailed'));
+      Alert.alert(t(format === 'pdf' ? 'document.pdfFailed' : 'document.shareFailed'));
     } finally {
-      setIsBuildingPdf(false);
+      setIsSharing(false);
     }
   };
 
@@ -162,17 +152,10 @@ export function DocumentGalleryScreen({ imageUris, label, onOpenPage, onDeletePa
           <View style={styles.editActions}>
             <PillButton
               title={t('history.share')}
-              onPress={handleShareSelected}
+              onPress={() => setIsShareSheetOpen(true)}
               variant="ghost"
               icon="share-outline"
-              style={selectedIndexes.size === 0 && styles.disabledButton}
-            />
-            <PillButton
-              title={t('document.exportPdf')}
-              onPress={handlePdfSelected}
-              variant="ghost"
-              icon="document-outline"
-              style={(selectedIndexes.size === 0 || isBuildingPdf) && styles.disabledButton}
+              style={(selectedIndexes.size === 0 || isSharing) && styles.disabledButton}
             />
             <PillButton
               title={t('history.delete')}
@@ -190,6 +173,13 @@ export function DocumentGalleryScreen({ imageUris, label, onOpenPage, onDeletePa
       ) : null}
 
       {!isEditMode ? <BottomBannerAd /> : null}
+
+      <ShareFormatSheet
+        visible={isShareSheetOpen}
+        pageCount={selectedIndexes.size}
+        onClose={() => setIsShareSheetOpen(false)}
+        onSelect={handleShare}
+      />
     </View>
   );
 }

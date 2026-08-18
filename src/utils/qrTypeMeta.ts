@@ -100,10 +100,12 @@ export const QR_TYPE_ACCENT: Record<QrContentType, PillAccent> = {
   dropbox: 'mint',
 };
 
-/** Only the types the generator actually has a form for — 'otp' is
- * scan-only (you don't hand-author a 2FA secret), and more of these will
- * join the list as their forms get designed. Shared by the My Codes type
- * picker and its type filter row, so both list types in the same order. */
+/** Only the types the generator actually has a form for. 'otp' is
+ * scan-only — you don't hand-author a 2FA secret — and so is 'upi', which
+ * is an Indian payment scheme no app outside India resolves; codes made
+ * here would have been dead everywhere they were pointed. Both are still
+ * recognized and shown when scanned. Shared by the My Codes type picker
+ * and its type filter row, so both list types in the same order. */
 export const QR_GENERATE_TYPES: QrContentType[] = [
   'link',
   'text',
@@ -117,7 +119,6 @@ export const QR_GENERATE_TYPES: QrContentType[] = [
   'mecard',
   'event',
   'location',
-  'upi',
   'facebook',
   'instagram',
   'twitter',
@@ -193,7 +194,7 @@ export const QR_TYPE_CATEGORIES: { labelKey: string; types: QrContentType[] }[] 
   },
   {
     labelKey: 'qr.categoryBusiness',
-    types: ['mecard', 'paypal', 'upi', 'zoom', 'event'],
+    types: ['mecard', 'paypal', 'zoom', 'event'],
   },
   {
     labelKey: 'qr.categorySocial',

@@ -167,8 +167,13 @@ export function parseZoomFields(content: string): ZoomFields {
   return { meetingId, password: params.pwd ?? '' };
 }
 
+/** Reads back both encodings: the Apple Maps link this app writes now,
+ *  and the `geo:` URI it used to write (and still recognizes when scanned
+ *  from elsewhere). */
 export function parseLocationFields(content: string): LocationFields {
-  const match = content.match(/^geo:(-?[\d.]+),(-?[\d.]+)/i);
+  const match =
+    content.match(/^geo:(-?[\d.]+),(-?[\d.]+)/i) ??
+    content.match(/^https?:\/\/maps\.apple\.com\/\?(?:[^#]*&)?ll=(-?[\d.]+),(-?[\d.]+)/i);
   if (!match) return { ...defaultLocationFields };
   return { latitude: match[1], longitude: match[2] };
 }

@@ -46,6 +46,8 @@ const APPSTORE_LINK_PATTERN = /^https?:\/\/apps\.apple\.com\//i;
 // "Drive" label covers both without lying about where the link goes.
 const DRIVE_LINK_PATTERN = /^https?:\/\/(drive|docs)\.google\.com\//i;
 const DROPBOX_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?dropbox\.com\//i;
+/** What this app now generates for a place — see buildLocationContent. */
+const MAPS_LINK_PATTERN = /^https?:\/\/maps\.apple\.com\/\?/i;
 
 /** Local, network-free classification of a decoded QR string — enough to
  * pick the right primary action (Open link / Open email / Call number),
@@ -72,6 +74,7 @@ export function classifyQrContent(data: string): QrContentType {
   if (APPSTORE_LINK_PATTERN.test(trimmed)) return 'appstore';
   if (DRIVE_LINK_PATTERN.test(trimmed)) return 'drive';
   if (DROPBOX_LINK_PATTERN.test(trimmed)) return 'dropbox';
+  if (MAPS_LINK_PATTERN.test(trimmed)) return 'location';
   if (/^https?:\/\//i.test(trimmed)) return 'link';
   if (/^mailto:/i.test(trimmed)) return 'email';
   // SMSTO: is the older Nokia-era scheme some generators still emit;
@@ -127,11 +130,12 @@ export function resolveQrOpenUri(data: string, type: QrContentType): string | nu
       // platforms' Linking.openURL reliably recognize.
       return trimmed.toLowerCase().startsWith('smsto:') ? `sms:${trimmed.slice(6)}` : trimmed;
     case 'location': {
-      // geo: isn't a scheme iOS (our only target platform) resolves —
-      // that's an Android convention — so hand off to Apple Maps' web
-      // link instead, which the OS always knows how to open.
+      // Codes this app makes are already Apple Maps links. A scanned one
+      // may well be a geo: URI, which is an Android convention iOS doesn't
+      // resolve, so that gets translated to the same kind of link.
       const match = trimmed.match(GEO_URI_PATTERN);
-      return match ? `https://maps.apple.com/?ll=${match[1]},${match[2]}` : null;
+      if (match) return `https://maps.apple.com/?ll=${match[1]},${match[2]}`;
+      return MAPS_LINK_PATTERN.test(trimmed) ? trimmed : null;
     }
     case 'wifi':
     case 'vcard':

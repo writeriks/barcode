@@ -169,11 +169,20 @@ export function buildVCardContent(fields: VCardFormFields): string | null {
   return lines.join('\n');
 }
 
+/**
+ * A place, as an Apple Maps link.
+ *
+ * `geo:` is the obvious encoding and the wrong one here: iOS registers no
+ * handler for it, so a code holding one is scanned by the Camera app and
+ * simply does nothing. This app is for iOS, and a QR that opens Maps is
+ * the point of a location code — so it encodes the link that does that.
+ * Scanned `geo:` codes are still understood; see classifyQrContent.
+ */
 export function buildLocationContent(fields: { latitude: string; longitude: string }): string | null {
   const latitude = fields.latitude.trim();
   const longitude = fields.longitude.trim();
   if (!latitude || !longitude || Number.isNaN(Number(latitude)) || Number.isNaN(Number(longitude))) return null;
-  return `geo:${latitude},${longitude}`;
+  return `https://maps.apple.com/?ll=${latitude},${longitude}&q=${latitude},${longitude}`;
 }
 
 export interface MeCardFormFields {
@@ -232,20 +241,68 @@ function pad2(n: number): string {
 /** Formats as a floating (no timezone/UTC suffix) local date-time, per the
  * iCalendar TEXT-DATETIME form — good enough here since these are
  * one-device-authored events, not calendar invites synced across timezones. */
-function toIcsDateTime(date: Date | null): string | null {
-  if (!date) return null;
+function toIcsDateTime(date: Date): string {
   return `${date.getFullYear()}${pad2(date.getMonth() + 1)}${pad2(date.getDate())}T${pad2(date.getHours())}${pad2(date.getMinutes())}00`;
 }
 
+/** A UTC stamp, which is the only form DTSTAMP is allowed to take. */
+function toIcsUtcDateTime(date: Date): string {
+  return `${date.getUTCFullYear()}${pad2(date.getUTCMonth() + 1)}${pad2(date.getUTCDate())}T${pad2(date.getUTCHours())}${pad2(date.getUTCMinutes())}00Z`;
+}
+
+/**
+ * A short, stable id for the event's own fields.
+ *
+ * UID has to identify the event, and it also has to be the same every time
+ * the same event is built: the form rebuilds its content on every
+ * keystroke, and a random id would redraw the code — and change what gets
+ * saved — for no reason. Derived from the fields, so editing the event
+ * gives it a new id and re-editing it back gives the old one.
+ */
+function eventUid(seed: string): string {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash ^= seed.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return `${hash.toString(36)}@blippo.app`;
+}
+
+/**
+ * An event, as a whole calendar object.
+ *
+ * A bare VEVENT is what most QR generators emit and what this used to
+ * emit, and iOS does nothing useful with it — scanning one showed the raw
+ * BEGIN:VEVENT text rather than an "Add to Calendar" offer. A VEVENT is a
+ * component of a calendar, not a document; wrapped in VCALENDAR with the
+ * VERSION and PRODID that makes it a valid one, and given the UID and
+ * DTSTAMP the spec requires of every event, the same data is recognized.
+ */
 export function buildEventContent(fields: EventFormFields): string | null {
   const title = fields.title.trim();
-  const start = toIcsDateTime(fields.startTime);
-  if (!title || !start) return null;
+  const startDate = fields.startTime;
+  if (!title || !startDate) return null;
+  const start = toIcsDateTime(startDate);
 
-  const lines = ['BEGIN:VEVENT', `SUMMARY:${escapeStructuredText(title)}`];
+  // An end before the start is a nonsense event that calendars either
+  // reject or silently rewrite, and it's an easy thing to leave behind
+  // when moving the start later. Dropped rather than corrected: an event
+  // with no end is an ordinary thing, an invented one is a guess.
+  const end = fields.endTime && fields.endTime > startDate ? toIcsDateTime(fields.endTime) : null;
+
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Blippo//QR Event//EN',
+    'BEGIN:VEVENT',
+    `UID:${eventUid(`${title}|${start}|${end ?? ''}`)}`,
+    // The event's own start rather than the moment of writing, so building
+    // the same event twice gives the same code.
+    `DTSTAMP:${toIcsUtcDateTime(startDate)}`,
+    `SUMMARY:${escapeStructuredText(title)}`,
+  ];
   if (fields.location.trim()) lines.push(`LOCATION:${escapeStructuredText(fields.location.trim())}`);
   lines.push(`DTSTART:${start}`);
-  const end = toIcsDateTime(fields.endTime);
   if (end) lines.push(`DTEND:${end}`);
   if (fields.link.trim()) lines.push(`URL:${fields.link.trim()}`);
   if (fields.notes.trim()) lines.push(`DESCRIPTION:${escapeStructuredText(fields.notes.trim())}`);
@@ -258,6 +315,8 @@ export function buildEventContent(fields: EventFormFields): string | null {
       'END:VALARM'
     );
   }
-  lines.push('END:VEVENT');
-  return lines.join('\n');
+  lines.push('END:VEVENT', 'END:VCALENDAR');
+  // CRLF, which is what RFC 5545 calls a line break. iOS is forgiving
+  // about it and other readers are not.
+  return lines.join('\r\n');
 }

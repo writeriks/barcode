@@ -261,7 +261,6 @@
     "notesLabel": "Notes",
     "vcardRequiredHint": "Ajoutez un nom/prénom ou une entreprise pour générer le code.",
     "selectDateTime": "Choisir la date et l'heure",
-    "done": "Terminé",
     "searchPlaceholder": "Rechercher des codes",
     "edit": "Modifier",
     "share": "Partager",
@@ -312,7 +311,8 @@
     "deleteTitle": "Supprimer ce code ?",
     "deleteBody": "Ce code enregistré sera supprimé. Cette action est irréversible.",
     "tooLongTitle": "Trop long pour un code QR",
-    "tooLongBody": "Raccourcissez le contenu et réessayez : un code QR a une capacité limitée."
+    "tooLongBody": "Raccourcissez le contenu et réessayez : un code QR a une capacité limitée.",
+    "chooseType": "Choisissez un type"
   },
   "qr": {
     "typeLink": "Lien",

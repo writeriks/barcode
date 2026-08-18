@@ -261,7 +261,6 @@
     "notesLabel": "Notizen",
     "vcardRequiredHint": "Gib einen Namen oder eine Firma an, um einen Code zu erstellen.",
     "selectDateTime": "Datum und Uhrzeit wählen",
-    "done": "Fertig",
     "searchPlaceholder": "Codes durchsuchen",
     "edit": "Bearbeiten",
     "share": "Teilen",
@@ -312,7 +311,8 @@
     "deleteTitle": "Diesen Code löschen?",
     "deleteBody": "Dieser gespeicherte Code wird entfernt. Das lässt sich nicht rückgängig machen.",
     "tooLongTitle": "Zu lang für einen QR-Code",
-    "tooLongBody": "Kürze den Inhalt und versuche es erneut — ein QR-Code fasst nur begrenzt viel."
+    "tooLongBody": "Kürze den Inhalt und versuche es erneut — ein QR-Code fasst nur begrenzt viel.",
+    "chooseType": "Typ wählen"
   },
   "qr": {
     "typeLink": "Link",

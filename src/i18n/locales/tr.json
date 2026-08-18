@@ -261,7 +261,6 @@
     "notesLabel": "Notlar",
     "vcardRequiredHint": "Kod oluşturmak için bir ad/soyad veya şirket girin.",
     "selectDateTime": "Tarih ve saat seç",
-    "done": "Tamam",
     "searchPlaceholder": "Kodlarda ara",
     "edit": "Düzenle",
     "share": "Paylaş",
@@ -312,7 +311,8 @@
     "deleteTitle": "Bu kod silinsin mi?",
     "deleteBody": "Kaydedilen bu kod kaldırılacak. Bu işlem geri alınamaz.",
     "tooLongTitle": "QR kod için çok uzun",
-    "tooLongBody": "İçeriği kısaltıp tekrar deneyin — bir QR kodun alabileceği miktar sınırlı."
+    "tooLongBody": "İçeriği kısaltıp tekrar deneyin — bir QR kodun alabileceği miktar sınırlı.",
+    "chooseType": "Tür seç"
   },
   "qr": {
     "typeLink": "Bağlantı",

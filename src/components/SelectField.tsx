@@ -16,9 +16,16 @@ interface Props<T extends string> {
   onChange: (value: T) => void;
 }
 
-/** Past this many options the choices stop fitting across the width as
- * equal segments, and become a row you scroll instead. */
-const SEGMENT_LIMIT = 3;
+/**
+ * Past this many options the choices stop fitting across the width as
+ * equal segments, and become a row you scroll instead.
+ *
+ * Two, not three, because the widest label decides: splitting the sheet
+ * three ways leaves about 90pt of text per segment, and Wi-Fi's "no
+ * encryption" is "Keine Verschlüsselung" in German — roughly 150pt. As a
+ * row, each option is as wide as its own label instead.
+ */
+const SEGMENT_LIMIT = 2;
 
 /**
  * A small, fixed choice, shown in full rather than hidden behind a picker.

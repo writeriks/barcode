@@ -261,7 +261,6 @@
     "notesLabel": "Notes",
     "vcardRequiredHint": "Add a first/last name or a company to generate a code.",
     "selectDateTime": "Select date & time",
-    "done": "Done",
     "searchPlaceholder": "Search codes",
     "edit": "Edit",
     "share": "Share",
@@ -312,7 +311,8 @@
     "deleteTitle": "Delete this code?",
     "deleteBody": "This saved code will be removed. This cannot be undone.",
     "tooLongTitle": "Too long for a QR code",
-    "tooLongBody": "Shorten the content and try again — a QR code can only hold so much."
+    "tooLongBody": "Shorten the content and try again — a QR code can only hold so much.",
+    "chooseType": "Choose a type"
   },
   "qr": {
     "typeLink": "Link",

@@ -637,15 +637,20 @@ export function MyCodesScreen({ navigation }: Props) {
         ) : (
           <>
             {isCreating ? (
-              <Pressable
-                onPress={handleCancel}
-                hitSlop={10}
-                style={styles.backRow}
-                accessibilityLabel={t('myCodes.title')}
-              >
-                <Ionicons name="chevron-back" size={18} color={colors.text} />
-                <Text style={styles.backLabel}>{t('myCodes.title')}</Text>
-              </Pressable>
+              <>
+                <Pressable
+                  onPress={handleCancel}
+                  hitSlop={10}
+                  style={styles.backRow}
+                  accessibilityLabel={t('myCodes.title')}
+                >
+                  <Ionicons name="chevron-back" size={18} color={colors.text} />
+                  <Text style={styles.backLabel}>{t('myCodes.title')}</Text>
+                </Pressable>
+                {/* The back row names where it goes, not where you are —
+                    without this the type grid arrived unlabelled. */}
+                <Text style={styles.screenTitle}>{t('myCodes.chooseType')}</Text>
+              </>
             ) : (
               <View style={styles.header}>
                 <Text style={styles.title}>{t('myCodes.title')}</Text>
@@ -1168,6 +1173,14 @@ function createStyles(colors: ColorTheme) {
       fontFamily: fonts.displayBold,
       fontSize: 15,
       color: colors.text,
+    },
+    screenTitle: {
+      fontFamily: fonts.displayBold,
+      fontSize: 22,
+      color: colors.text,
+      paddingHorizontal: 20,
+      paddingTop: 6,
+      paddingBottom: 2,
     },
     viewer: {
       flex: 1,

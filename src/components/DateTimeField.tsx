@@ -1,12 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
-import { BottomSheet } from './BottomSheet';
-import { PillButton } from './PillButton';
 
 interface Props {
   label: string;
@@ -14,6 +12,11 @@ interface Props {
   value: Date | null;
   onChange: (date: Date) => void;
   required?: boolean;
+  /** Whether this field's picker is expanded. Owned by the form so that
+   *  opening one date field collapses the other — two calendars unfurled
+   *  at once is a scrolling puzzle, and it isn't how Calendar behaves. */
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
 function combineDateAndTime(date: Date, time: Date): Date {
@@ -27,53 +30,55 @@ function formatDateTime(date: Date, locale: string): string {
 }
 
 /**
- * A date + time field. Android has its own native calendar/clock dialogs
- * (DateTimePickerAndroid), so tapping just opens those back to back. iOS's
- * equivalent isn't a standalone dialog — it's a plain view you place
- * yourself — so there it's shown inline inside our own BottomSheet: an
- * actual calendar grid for the date, a scroll wheel for the hour/minute,
- * and a Done button to commit both at once.
+ * A date + time field.
+ *
+ * Android has its own native calendar/clock dialogs (DateTimePickerAndroid),
+ * so tapping just opens those back to back. iOS's equivalent isn't a dialog
+ * at all — it's a plain view you place yourself — so there the picker
+ * unfolds directly beneath the field, the way Calendar's own event editor
+ * does it.
+ *
+ * It used to unfold inside a BottomSheet, which stopped working once the
+ * generator form became a sheet itself: iOS drops one of two modals
+ * presented over each other. Inline has no modal to lose, and it also
+ * removes the Done button that the sheet needed — a pick applies as it is
+ * made, so there is nothing left to confirm.
  */
-export function DateTimeField({ label, placeholder, value, onChange, required }: Props) {
-  const { t, i18n } = useTranslation();
+export function DateTimeField({ label, placeholder, value, onChange, required, isOpen, onToggle }: Props) {
+  const { i18n } = useTranslation();
   const colors = useThemeColors();
   const mode = useThemeMode();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [draftDate, setDraftDate] = useState(() => value ?? new Date());
-  const [draftTime, setDraftTime] = useState(() => value ?? new Date());
+  // What the pickers show before anything has been chosen. Held in a ref so
+  // it can't drift between renders and make the calendar jump under a
+  // finger that hasn't picked anything yet.
+  const fallback = useRef(new Date()).current;
+  const current = value ?? fallback;
 
-  const openPicker = () => {
-    const initial = value ?? new Date();
-
-    if (Platform.OS === 'android') {
-      DateTimePickerAndroid.open({
-        value: initial,
-        mode: 'date',
-        onChange: (_dateEvent, pickedDate) => {
-          if (!pickedDate) return;
-          DateTimePickerAndroid.open({
-            value: initial,
-            mode: 'time',
-            onChange: (_timeEvent, pickedTime) => {
-              if (!pickedTime) return;
-              onChange(combineDateAndTime(pickedDate, pickedTime));
-            },
-          });
-        },
-      });
+  const handlePress = () => {
+    if (Platform.OS !== 'android') {
+      onToggle();
       return;
     }
-
-    setDraftDate(initial);
-    setDraftTime(initial);
-    setIsOpen(true);
+    const initial = value ?? new Date();
+    DateTimePickerAndroid.open({
+      value: initial,
+      mode: 'date',
+      onChange: (_dateEvent, pickedDate) => {
+        if (!pickedDate) return;
+        DateTimePickerAndroid.open({
+          value: initial,
+          mode: 'time',
+          onChange: (_timeEvent, pickedTime) => {
+            if (!pickedTime) return;
+            onChange(combineDateAndTime(pickedDate, pickedTime));
+          },
+        });
+      },
+    });
   };
 
-  const handleDone = () => {
-    onChange(combineDateAndTime(draftDate, draftTime));
-    setIsOpen(false);
-  };
+  const expanded = isOpen && Platform.OS === 'ios';
 
   return (
     <View style={styles.wrap}>
@@ -81,35 +86,43 @@ export function DateTimeField({ label, placeholder, value, onChange, required }:
         {label}
         {required ? <Text style={styles.required}> *</Text> : null}
       </Text>
-      <Pressable style={styles.field} onPress={openPicker}>
+      <Pressable
+        style={[styles.field, expanded && styles.fieldExpanded]}
+        onPress={handlePress}
+        accessibilityRole="button"
+        accessibilityState={{ expanded }}
+      >
         <Text style={[styles.fieldText, !value && styles.placeholderText]} numberOfLines={1}>
           {value ? formatDateTime(value, i18n.language) : placeholder}
         </Text>
-        <Ionicons name="calendar-outline" size={16} color={colors.text} style={styles.icon} />
+        <Ionicons
+          name={expanded ? 'chevron-up' : 'calendar-outline'}
+          size={16}
+          color={expanded ? colors.mint : colors.text}
+          style={styles.icon}
+        />
       </Pressable>
 
-      {Platform.OS === 'ios' ? (
-        <BottomSheet visible={isOpen} onClose={() => setIsOpen(false)} title={label}>
-          <View style={styles.pickerWrap}>
-            <DateTimePicker
-              mode="date"
-              display="inline"
-              value={draftDate}
-              themeVariant={mode}
-              onChange={(_event, date) => date && setDraftDate(date)}
-              style={styles.calendar}
-            />
-          </View>
+      {expanded ? (
+        <View style={styles.picker}>
+          <DateTimePicker
+            mode="date"
+            display="inline"
+            value={current}
+            themeVariant={mode}
+            onChange={(_event, date) => date && onChange(combineDateAndTime(date, current))}
+            style={styles.calendar}
+          />
+          <View style={styles.divider} />
           <DateTimePicker
             mode="time"
             display="spinner"
-            value={draftTime}
+            value={current}
             themeVariant={mode}
-            onChange={(_event, date) => date && setDraftTime(date)}
+            onChange={(_event, date) => date && onChange(combineDateAndTime(current, date))}
             style={styles.timeSpinner}
           />
-          <PillButton title={t('myCodes.done')} onPress={handleDone} variant="citrus" />
-        </BottomSheet>
+        </View>
       ) : null}
     </View>
   );
@@ -140,6 +153,9 @@ function createStyles(colors: ColorTheme) {
       paddingHorizontal: 16,
       paddingVertical: 12,
     },
+    fieldExpanded: {
+      borderColor: colors.mint,
+    },
     fieldText: {
       flex: 1,
       color: colors.text,
@@ -152,17 +168,25 @@ function createStyles(colors: ColorTheme) {
       opacity: 0.55,
       marginLeft: 8,
     },
-    pickerWrap: {
-      width: '100%',
-      alignItems: 'center',
+    picker: {
+      backgroundColor: colors.cabinet,
+      borderWidth: 1,
+      borderColor: colors.panelLine,
+      borderRadius: 14,
+      paddingVertical: 4,
+      paddingHorizontal: 6,
     },
     calendar: {
       alignSelf: 'center',
       width: '100%',
     },
+    divider: {
+      height: 1,
+      backgroundColor: colors.panelLine,
+      marginHorizontal: 10,
+    },
     timeSpinner: {
       alignSelf: 'center',
-      marginTop: 4,
     },
   });
 }

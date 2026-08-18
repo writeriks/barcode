@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DateTimeField } from '../DateTimeField';
 import { SelectField, type SelectOption } from '../SelectField';
@@ -32,6 +33,11 @@ interface Props {
 
 export function EventForm({ value, onChange }: Props) {
   const { t } = useTranslation();
+  // Which date field has its picker unfolded, if any. Owned here rather
+  // than inside each field so opening one collapses the other.
+  const [openPicker, setOpenPicker] = useState<'start' | 'end' | null>(null);
+  const togglePicker = (which: 'start' | 'end') =>
+    setOpenPicker((current) => (current === which ? null : which));
   const set = <K extends keyof EventFields>(key: K, fieldValue: EventFields[K]) => onChange({ ...value, [key]: fieldValue });
 
   const reminderOptions: SelectOption<string>[] = REMINDER_OPTIONS.map((minutes) => ({
@@ -49,19 +55,21 @@ export function EventForm({ value, onChange }: Props) {
         placeholder={t('myCodes.selectDateTime')}
         value={value.startTime}
         onChange={(startTime) => set('startTime', startTime)}
+        isOpen={openPicker === 'start'}
+        onToggle={() => togglePicker('start')}
       />
       <DateTimeField
         label={t('myCodes.endTimeLabel')}
         placeholder={t('myCodes.selectDateTime')}
         value={value.endTime}
         onChange={(endTime) => set('endTime', endTime)}
+        isOpen={openPicker === 'end'}
+        onToggle={() => togglePicker('end')}
       />
       <SelectField
         label={t('myCodes.reminderLabel')}
-        placeholder={t('myCodes.countryCodePlaceholder')}
         value={value.reminderMinutes || null}
         options={reminderOptions}
-        sheetTitle={t('myCodes.reminderLabel')}
         onChange={(reminderMinutes) => set('reminderMinutes', reminderMinutes)}
       />
       <FormField

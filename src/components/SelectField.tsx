@@ -1,9 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
-import { BottomSheet } from './BottomSheet';
+import { fonts } from '../theme/fonts';
 
 export interface SelectOption<T extends string> {
   value: T;
@@ -12,53 +11,71 @@ export interface SelectOption<T extends string> {
 
 interface Props<T extends string> {
   label: string;
-  placeholder: string;
   value: T | null;
   options: SelectOption<T>[];
-  sheetTitle: string;
   onChange: (value: T) => void;
 }
 
-/** A labeled field that opens a BottomSheet with a short, fixed list of
- * options — Wi-Fi's network type, Event's reminder, V-card's version. For
- * the one field with dozens of options (country calling codes), see
- * CountryCodeField instead, which adds search. */
-export function SelectField<T extends string>({ label, placeholder, value, options, sheetTitle, onChange }: Props<T>) {
+/** Past this many options the choices stop fitting across the width as
+ * equal segments, and become a row you scroll instead. */
+const SEGMENT_LIMIT = 3;
+
+/**
+ * A small, fixed choice, shown in full rather than hidden behind a picker.
+ *
+ * This used to open a BottomSheet. That was already a tap too many for
+ * three options — and once the generator form itself became a sheet, it
+ * meant presenting a modal from inside a modal, which iOS handles by
+ * silently dropping one of them. Rendering the options in place removes
+ * both problems at once, and a Wi-Fi security type you can read without
+ * tapping is simply better than one you can't.
+ *
+ * The one choice with too many options to show this way is the country
+ * calling code; see CountryCodeField.
+ */
+export function SelectField<T extends string>({ label, value, options, onChange }: Props<T>) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [isOpen, setIsOpen] = useState(false);
-  const selectedLabel = options.find((option) => option.value === value)?.label ?? placeholder;
+  const asSegments = options.length <= SEGMENT_LIMIT;
+
+  const chips = options.map((option) => {
+    const selected = option.value === value;
+    return (
+      <Pressable
+        key={option.value}
+        onPress={() => onChange(option.value)}
+        accessibilityRole="button"
+        accessibilityState={{ selected }}
+        style={({ pressed }) => [
+          styles.chip,
+          asSegments && styles.chipSegment,
+          selected && styles.chipSelected,
+          pressed && styles.chipPressed,
+        ]}
+      >
+        <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]} numberOfLines={1}>
+          {option.label}
+        </Text>
+      </Pressable>
+    );
+  });
 
   return (
     <View style={styles.wrap}>
       <Text style={styles.label}>{label}</Text>
-      <Pressable style={styles.field} onPress={() => setIsOpen(true)}>
-        <Text style={styles.fieldText} numberOfLines={1}>
-          {selectedLabel}
-        </Text>
-        <Ionicons name="chevron-down" size={14} color={colors.text} style={styles.chevron} />
-      </Pressable>
-
-      <BottomSheet visible={isOpen} onClose={() => setIsOpen(false)} title={sheetTitle}>
-        <View style={styles.sheetList}>
-          {options.map((option) => {
-            const selected = option.value === value;
-            return (
-              <Pressable
-                key={option.value}
-                onPress={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-                style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-              >
-                <Text style={styles.rowLabel}>{option.label}</Text>
-                {selected ? <Text style={styles.checkmark}>✓</Text> : null}
-              </Pressable>
-            );
-          })}
-        </View>
-      </BottomSheet>
+      {asSegments ? (
+        <View style={styles.segmentRow}>{chips}</View>
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          style={styles.scrollRow}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {chips}
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -73,51 +90,50 @@ function createStyles(colors: ColorTheme) {
       color: colors.text,
       opacity: 0.65,
     },
-    field: {
+    segmentRow: {
       flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      gap: 8,
+    },
+    scrollRow: {
+      flexGrow: 0,
+      // Cancels the form's own padding so the row can run to both edges,
+      // which is what makes it read as scrollable rather than clipped.
+      marginHorizontal: -20,
+    },
+    scrollContent: {
+      gap: 8,
+      paddingHorizontal: 20,
+    },
+    chip: {
+      // Matches the app's other form controls: the cabinet colour, because
+      // these sit on a panel-coloured sheet and would vanish otherwise.
       backgroundColor: colors.cabinet,
       borderWidth: 1,
       borderColor: colors.panelLine,
       borderRadius: 14,
       paddingHorizontal: 16,
       paddingVertical: 12,
-    },
-    fieldText: {
-      flex: 1,
-      color: colors.text,
-      fontSize: 14,
-    },
-    chevron: {
-      opacity: 0.55,
-      marginLeft: 6,
-    },
-    sheetList: {
-      gap: 10,
-      paddingBottom: 6,
-    },
-    row: {
-      flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      backgroundColor: colors.panel,
-      borderWidth: 1,
-      borderColor: colors.panelLine,
-      borderRadius: 16,
-      paddingHorizontal: 16,
-      paddingVertical: 14,
+      justifyContent: 'center',
     },
-    rowPressed: {
+    chipSegment: {
+      flex: 1,
+      paddingHorizontal: 8,
+    },
+    chipSelected: {
+      backgroundColor: colors.mint,
+      borderColor: colors.mint,
+    },
+    chipPressed: {
       opacity: 0.75,
     },
-    rowLabel: {
-      fontSize: 15,
+    chipLabel: {
+      fontSize: 14,
       color: colors.text,
     },
-    checkmark: {
-      fontSize: 16,
-      color: colors.mint,
+    chipLabelSelected: {
+      fontFamily: fonts.displayBold,
+      color: colors.inkOnCream,
     },
   });
 }

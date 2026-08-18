@@ -46,10 +46,8 @@ export function WifiForm({ value, onChange }: Props) {
       />
       <SelectField
         label={t('myCodes.networkTypeLabel')}
-        placeholder={t('myCodes.countryCodePlaceholder')}
         value={value.networkType}
         options={networkTypeOptions}
-        sheetTitle={t('myCodes.networkTypeLabel')}
         onChange={(networkType) => onChange({ ...value, networkType })}
       />
       {value.networkType !== 'nopass' ? (

@@ -78,10 +78,8 @@ export function VCardForm({ value, onChange }: Props) {
     <>
       <SelectField
         label={t('myCodes.versionLabel')}
-        placeholder="2.1"
         value={value.version}
         options={versionOptions}
-        sheetTitle={t('myCodes.versionLabel')}
         onChange={(version) => set('version', version)}
       />
       <FormField label={t('myCodes.titleLabel')} value={value.title} onChangeText={(v) => set('title', v)} />

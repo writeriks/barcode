@@ -34,40 +34,62 @@ export function HueSlider({ hue, onChange }: Props) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [width, setWidth] = useState(0);
-  // Read inside the pan handlers, which are created once and would
-  // otherwise close over the first width they saw.
+
+  // The pan handlers are built once and would close over whatever these
+  // were on first render, so they read them from refs instead.
   const widthRef = useRef(0);
+  const originRef = useRef(0);
+  const trackRef = useRef<View>(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   const responder = useMemo(
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: () => true,
-        onPanResponderGrant: (event) => emit(event.nativeEvent.locationX),
-        onPanResponderMove: (event) => emit(event.nativeEvent.locationX),
+        // Only claim a drag that is going sideways. A vertical one belongs
+        // to the sheet's scroll view, and stealing it would trap the form.
+        onMoveShouldSetPanResponder: (_event, gesture) => Math.abs(gesture.dx) > Math.abs(gesture.dy),
+        // Once the drag is ours it stays ours: letting the scroll view take
+        // it back mid-stroke is what made this feel like it seized up.
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: (event) => emit(event.nativeEvent.pageX),
+        onPanResponderMove: (event) => emit(event.nativeEvent.pageX),
       }),
-    // `emit` only reads refs and the stable `onChange`, so the responder
-    // never needs rebuilding.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
-  function emit(x: number) {
+  /**
+   * Measured from the screen's edge rather than from the touched view.
+   *
+   * `locationX` is relative to whatever element the touch landed on, so as
+   * soon as a finger crossed the knob the readings were suddenly relative
+   * to a 24pt circle — the value leapt, and dragging looked broken while
+   * tapping worked. A page coordinate minus the track's own position on
+   * screen means the same number wherever the finger is.
+   */
+  function emit(pageX: number) {
     const trackWidth = widthRef.current;
     if (trackWidth <= 0) return;
-    const ratio = Math.min(1, Math.max(0, x / trackWidth));
-    onChange(Math.round(ratio * 359));
+    const ratio = Math.min(1, Math.max(0, (pageX - originRef.current) / trackWidth));
+    onChangeRef.current(Math.round(ratio * 359));
   }
 
   const knobLeft = width > 0 ? (hue / 359) * (width - KNOB_SIZE) : 0;
 
   return (
     <View
+      ref={trackRef}
       style={styles.wrap}
       onLayout={(event) => {
         const next = event.nativeEvent.layout.width;
         widthRef.current = next;
         setWidth(next);
+        // Where the track sits on screen, for turning a touch's page
+        // coordinate into a position along the band.
+        trackRef.current?.measureInWindow((x) => {
+          originRef.current = x;
+        });
       }}
       {...responder.panHandlers}
     >
@@ -79,16 +101,14 @@ export function HueSlider({ hue, onChange }: Props) {
             ))}
           </LinearGradient>
         </Defs>
-        <Rect
-          x={0}
-          y={0}
-          width="100%"
-          height={TRACK_HEIGHT}
-          rx={TRACK_HEIGHT / 2}
-          fill="url(#hue)"
-        />
+        <Rect x={0} y={0} width="100%" height={TRACK_HEIGHT} rx={TRACK_HEIGHT / 2} fill="url(#hue)" />
       </Svg>
-      <View style={[styles.knob, { left: knobLeft, backgroundColor: hueToQrColor(hue) }]} />
+      {/* Never a touch target: if the knob could take the touch, the
+          readings above would start measuring from its edge. */}
+      <View
+        pointerEvents="none"
+        style={[styles.knob, { left: knobLeft, backgroundColor: hueToQrColor(hue) }]}
+      />
     </View>
   );
 }

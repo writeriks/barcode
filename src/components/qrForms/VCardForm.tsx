@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 import { useThemeColors } from '../../theme/ThemeContext';
 import type { CountryCallingCode } from '../../utils/countryCallingCodes';
-import { CountryCodeField } from '../CountryCodeField';
+import { CountryCodeField, CountryCodePanel } from '../CountryCodeField';
 import { SelectField, type SelectOption } from '../SelectField';
 import { FormField } from './FormField';
 import { createFieldStyles } from './formFieldStyles';
@@ -58,6 +58,9 @@ export function defaultVCardFields(defaultCountry: CountryCallingCode | null): V
   };
 }
 
+/** The four numbers a vCard can carry, each with its own country. */
+type CountryKey = 'homeCountry' | 'mobileCountry' | 'officeCountry' | 'faxCountry';
+
 interface Props {
   value: VCardFields;
   onChange: (value: VCardFields) => void;
@@ -67,6 +70,11 @@ export function VCardForm({ value, onChange }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createFieldStyles(colors), [colors]);
+  // One country wheel open at a time — four unfolded at once would bury
+  // the form they belong to.
+  const [openCountry, setOpenCountry] = useState<CountryKey | null>(null);
+  const toggleCountry = (which: CountryKey) =>
+    setOpenCountry((current) => (current === which ? null : which));
   const set = <K extends keyof VCardFields>(key: K, fieldValue: VCardFields[K]) => onChange({ ...value, [key]: fieldValue });
 
   const versionOptions: SelectOption<'2.1' | '3.0'>[] = [
@@ -88,7 +96,13 @@ export function VCardForm({ value, onChange }: Props) {
       <Text style={styles.hint}>{t('myCodes.vcardRequiredHint')}</Text>
 
       <View style={styles.row}>
-        <CountryCodeField label={t('myCodes.phoneHomeLabel')} value={value.homeCountry} onChange={(c) => set('homeCountry', c)} />
+        <CountryCodeField
+          label={t('myCodes.phoneHomeLabel')}
+          value={value.homeCountry}
+          isOpen={openCountry === 'homeCountry'}
+          onToggle={() => toggleCountry('homeCountry')}
+          onClear={() => set('homeCountry', null)}
+        />
         <FormField
           style={styles.flexField}
           label={t('myCodes.phoneNumberLabel')}
@@ -97,8 +111,17 @@ export function VCardForm({ value, onChange }: Props) {
           keyboardType="phone-pad"
         />
       </View>
+      {openCountry === 'homeCountry' ? (
+        <CountryCodePanel value={value.homeCountry} onChange={(country) => set('homeCountry', country)} />
+      ) : null}
       <View style={styles.row}>
-        <CountryCodeField label={t('myCodes.phoneMobileLabel')} value={value.mobileCountry} onChange={(c) => set('mobileCountry', c)} />
+        <CountryCodeField
+          label={t('myCodes.phoneMobileLabel')}
+          value={value.mobileCountry}
+          isOpen={openCountry === 'mobileCountry'}
+          onToggle={() => toggleCountry('mobileCountry')}
+          onClear={() => set('mobileCountry', null)}
+        />
         <FormField
           style={styles.flexField}
           label={t('myCodes.phoneNumberLabel')}
@@ -107,6 +130,9 @@ export function VCardForm({ value, onChange }: Props) {
           keyboardType="phone-pad"
         />
       </View>
+      {openCountry === 'mobileCountry' ? (
+        <CountryCodePanel value={value.mobileCountry} onChange={(country) => set('mobileCountry', country)} />
+      ) : null}
 
       <FormField
         label={t('myCodes.emailPlaceholder')}
@@ -129,7 +155,13 @@ export function VCardForm({ value, onChange }: Props) {
       <FormField label={t('myCodes.jobTitleLabel')} value={value.jobTitle} onChangeText={(v) => set('jobTitle', v)} />
 
       <View style={styles.row}>
-        <CountryCodeField label={t('myCodes.phoneOfficeLabel')} value={value.officeCountry} onChange={(c) => set('officeCountry', c)} />
+        <CountryCodeField
+          label={t('myCodes.phoneOfficeLabel')}
+          value={value.officeCountry}
+          isOpen={openCountry === 'officeCountry'}
+          onToggle={() => toggleCountry('officeCountry')}
+          onClear={() => set('officeCountry', null)}
+        />
         <FormField
           style={styles.flexField}
           label={t('myCodes.phoneNumberLabel')}
@@ -138,8 +170,17 @@ export function VCardForm({ value, onChange }: Props) {
           keyboardType="phone-pad"
         />
       </View>
+      {openCountry === 'officeCountry' ? (
+        <CountryCodePanel value={value.officeCountry} onChange={(country) => set('officeCountry', country)} />
+      ) : null}
       <View style={styles.row}>
-        <CountryCodeField label={t('myCodes.faxLabel')} value={value.faxCountry} onChange={(c) => set('faxCountry', c)} />
+        <CountryCodeField
+          label={t('myCodes.faxLabel')}
+          value={value.faxCountry}
+          isOpen={openCountry === 'faxCountry'}
+          onToggle={() => toggleCountry('faxCountry')}
+          onClear={() => set('faxCountry', null)}
+        />
         <FormField
           style={styles.flexField}
           label={t('myCodes.phoneNumberLabel')}
@@ -148,6 +189,9 @@ export function VCardForm({ value, onChange }: Props) {
           keyboardType="phone-pad"
         />
       </View>
+      {openCountry === 'faxCountry' ? (
+        <CountryCodePanel value={value.faxCountry} onChange={(country) => set('faxCountry', country)} />
+      ) : null}
 
       <FormField label={t('myCodes.addressLabel')} value={value.address} onChangeText={(v) => set('address', v)} multiline />
       <View style={styles.row}>

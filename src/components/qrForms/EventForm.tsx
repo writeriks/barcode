@@ -55,6 +55,7 @@ export function EventForm({ value, onChange }: Props) {
         placeholder={t('myCodes.selectDateTime')}
         value={value.startTime}
         onChange={(startTime) => set('startTime', startTime)}
+        onClear={() => set('startTime', null)}
         isOpen={openPicker === 'start'}
         onToggle={() => togglePicker('start')}
       />
@@ -63,6 +64,7 @@ export function EventForm({ value, onChange }: Props) {
         placeholder={t('myCodes.selectDateTime')}
         value={value.endTime}
         onChange={(endTime) => set('endTime', endTime)}
+        onClear={() => set('endTime', null)}
         isOpen={openPicker === 'end'}
         onToggle={() => togglePicker('end')}
       />
@@ -71,6 +73,8 @@ export function EventForm({ value, onChange }: Props) {
         value={value.reminderMinutes || null}
         options={reminderOptions}
         onChange={(reminderMinutes) => set('reminderMinutes', reminderMinutes)}
+        clearable
+        onClear={() => set('reminderMinutes', '')}
       />
       <FormField
         label={t('myCodes.linkLabel')}

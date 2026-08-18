@@ -11,6 +11,9 @@ interface Props {
   placeholder: string;
   value: Date | null;
   onChange: (date: Date) => void;
+  /** Puts the field back to empty. A date picked by accident had no way
+   *  out before — the picker can only ever hand back another date. */
+  onClear: () => void;
   required?: boolean;
   /** Whether this field's picker is expanded. Owned by the form so that
    *  opening one date field collapses the other — two calendars unfurled
@@ -44,8 +47,8 @@ function formatDateTime(date: Date, locale: string): string {
  * removes the Done button that the sheet needed — a pick applies as it is
  * made, so there is nothing left to confirm.
  */
-export function DateTimeField({ label, placeholder, value, onChange, required, isOpen, onToggle }: Props) {
-  const { i18n } = useTranslation();
+export function DateTimeField({ label, placeholder, value, onChange, onClear, required, isOpen, onToggle }: Props) {
+  const { t, i18n } = useTranslation();
   const colors = useThemeColors();
   const mode = useThemeMode();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -95,12 +98,18 @@ export function DateTimeField({ label, placeholder, value, onChange, required, i
         <Text style={[styles.fieldText, !value && styles.placeholderText]} numberOfLines={1}>
           {value ? formatDateTime(value, i18n.language) : placeholder}
         </Text>
-        <Ionicons
-          name={expanded ? 'chevron-up' : 'calendar-outline'}
-          size={16}
-          color={expanded ? colors.mint : colors.text}
-          style={styles.icon}
-        />
+        {value ? (
+          <Pressable onPress={onClear} hitSlop={10} accessibilityLabel={t('a11y.clearSearch')}>
+            <Ionicons name="close-circle" size={16} color={colors.text} style={styles.icon} />
+          </Pressable>
+        ) : (
+          <Ionicons
+            name={expanded ? 'chevron-up' : 'calendar-outline'}
+            size={16}
+            color={expanded ? colors.mint : colors.text}
+            style={styles.icon}
+          />
+        )}
       </Pressable>
 
       {expanded ? (

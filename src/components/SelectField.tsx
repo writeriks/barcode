@@ -14,6 +14,11 @@ interface Props<T extends string> {
   value: T | null;
   options: SelectOption<T>[];
   onChange: (value: T) => void;
+  /** Lets the chosen option be tapped again to unchoose it. Only for
+   *  choices where "none" is a real answer — an event reminder, not a
+   *  Wi-Fi security type. */
+  clearable?: boolean;
+  onClear?: () => void;
 }
 
 /**
@@ -40,7 +45,7 @@ const SEGMENT_LIMIT = 2;
  * The one choice with too many options to show this way is the country
  * calling code; see CountryCodeField.
  */
-export function SelectField<T extends string>({ label, value, options, onChange }: Props<T>) {
+export function SelectField<T extends string>({ label, value, options, onChange, clearable, onClear }: Props<T>) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const asSegments = options.length <= SEGMENT_LIMIT;
@@ -50,7 +55,7 @@ export function SelectField<T extends string>({ label, value, options, onChange 
     return (
       <Pressable
         key={option.value}
-        onPress={() => onChange(option.value)}
+        onPress={() => (selected && clearable ? onClear?.() : onChange(option.value))}
         accessibilityRole="button"
         accessibilityState={{ selected }}
         style={({ pressed }) => [

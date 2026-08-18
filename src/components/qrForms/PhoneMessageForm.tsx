@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useThemeColors } from '../../theme/ThemeContext';
 import type { CountryCallingCode } from '../../utils/countryCallingCodes';
-import { CountryCodeField } from '../CountryCodeField';
+import { CountryCodeField, CountryCodePanel } from '../CountryCodeField';
 import { FormField } from './FormField';
 import { createFieldStyles } from './formFieldStyles';
 
@@ -29,6 +29,7 @@ export function PhoneMessageForm({ value, onChange }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createFieldStyles(colors), [colors]);
+  const [isCountryOpen, setIsCountryOpen] = useState(false);
 
   return (
     <>
@@ -36,7 +37,9 @@ export function PhoneMessageForm({ value, onChange }: Props) {
         <CountryCodeField
           label={t('myCodes.countryCodeLabel')}
           value={value.country}
-          onChange={(country) => onChange({ ...value, country })}
+          isOpen={isCountryOpen}
+          onToggle={() => setIsCountryOpen((open) => !open)}
+          onClear={() => onChange({ ...value, country: null })}
         />
         <FormField
           style={styles.flexField}
@@ -48,6 +51,9 @@ export function PhoneMessageForm({ value, onChange }: Props) {
           keyboardType="phone-pad"
         />
       </View>
+      {isCountryOpen ? (
+        <CountryCodePanel value={value.country} onChange={(country) => onChange({ ...value, country })} />
+      ) : null}
       <FormField
         label={t('myCodes.messageLabel')}
         placeholder={t('myCodes.messagePlaceholder')}

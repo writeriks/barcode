@@ -316,7 +316,15 @@
     "deleteBody": "Kaydedilen bu kod kaldırılacak. Bu işlem geri alınamaz.",
     "tooLongTitle": "QR kod için çok uzun",
     "tooLongBody": "İçeriği kısaltıp tekrar deneyin — bir QR kodun alabileceği miktar sınırlı.",
-    "chooseType": "Tür seç"
+    "chooseType": "Tür seç",
+    "appearance": "Görünüm",
+    "colorLabel": "Renk",
+    "captionLabel": "Alt yazı",
+    "captionPlaceholder": "ör. Menü için tara",
+    "logoLabel": "Marka logosu",
+    "logoDescription": "Kodun ortasına çizilir",
+    "logoUnavailable": "Kullanılamıyor — bu kod logoya yer bırakmayacak kadar dolu",
+    "resetAppearance": "Sade koda dön"
   },
   "qr": {
     "typeLink": "Bağlantı",

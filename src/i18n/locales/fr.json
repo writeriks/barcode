@@ -316,7 +316,15 @@
     "deleteBody": "Ce code enregistré sera supprimé. Cette action est irréversible.",
     "tooLongTitle": "Trop long pour un code QR",
     "tooLongBody": "Raccourcissez le contenu et réessayez : un code QR a une capacité limitée.",
-    "chooseType": "Choisissez un type"
+    "chooseType": "Choisissez un type",
+    "appearance": "Apparence",
+    "colorLabel": "Couleur",
+    "captionLabel": "Légende",
+    "captionPlaceholder": "ex. Scannez le menu",
+    "logoLabel": "Logo de la marque",
+    "logoDescription": "Dessiné au centre du code",
+    "logoUnavailable": "Indisponible : ce code contient trop de données pour laisser la place",
+    "resetAppearance": "Revenir au code simple"
   },
   "qr": {
     "typeLink": "Lien",

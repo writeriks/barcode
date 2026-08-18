@@ -316,7 +316,15 @@
     "deleteBody": "This saved code will be removed. This cannot be undone.",
     "tooLongTitle": "Too long for a QR code",
     "tooLongBody": "Shorten the content and try again — a QR code can only hold so much.",
-    "chooseType": "Choose a type"
+    "chooseType": "Choose a type",
+    "appearance": "Appearance",
+    "colorLabel": "Colour",
+    "captionLabel": "Caption",
+    "captionPlaceholder": "e.g. Scan for menu",
+    "logoLabel": "Brand logo",
+    "logoDescription": "Drawn over the middle of the code",
+    "logoUnavailable": "Not available — this code holds too much to spare the room",
+    "resetAppearance": "Back to the plain code"
   },
   "qr": {
     "typeLink": "Link",

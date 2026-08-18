@@ -22,6 +22,9 @@ interface Props {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  /** Pinned above the body — a live preview of what the form is editing,
+   *  so it stays in view while the fields scroll past it. */
+  header?: ReactNode;
   /** Pinned below the body — a Save button on a tall form, so it stays
    *  reachable while the fields scroll. */
   footer?: ReactNode;
@@ -47,7 +50,7 @@ const OFFSCREEN_Y = 1200;
  * an autoFocus'd "name this folder" field) doesn't end up hidden behind
  * the keyboard, which sits on top of the sheet by default inside a Modal.
  */
-export function BottomSheet({ visible, onClose, title, children, footer, scroll }: Props) {
+export function BottomSheet({ visible, onClose, title, children, header, footer, scroll }: Props) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
@@ -107,6 +110,7 @@ export function BottomSheet({ visible, onClose, title, children, footer, scroll 
         >
           <View style={styles.handle} />
           <Text style={styles.title}>{title}</Text>
+          {header ? <View style={styles.header}>{header}</View> : null}
           {body}
           {footer ? <View style={styles.footer}>{footer}</View> : null}
         </Animated.View>
@@ -154,6 +158,13 @@ function createStyles(colors: ColorTheme) {
     scrollBody: {
       gap: 14,
       paddingBottom: 4,
+    },
+    header: {
+      alignItems: 'center',
+      paddingBottom: 14,
+      marginBottom: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.panelLine,
     },
     footer: {
       marginTop: 14,

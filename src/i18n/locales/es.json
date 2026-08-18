@@ -316,7 +316,15 @@
     "deleteBody": "Este código guardado se eliminará. Esta acción no se puede deshacer.",
     "tooLongTitle": "Demasiado largo para un código QR",
     "tooLongBody": "Acorta el contenido e inténtalo de nuevo: un código QR tiene una capacidad limitada.",
-    "chooseType": "Elige un tipo"
+    "chooseType": "Elige un tipo",
+    "appearance": "Aspecto",
+    "colorLabel": "Color",
+    "captionLabel": "Texto",
+    "captionPlaceholder": "p. ej. Escanea la carta",
+    "logoLabel": "Logotipo de marca",
+    "logoDescription": "Se dibuja en el centro del código",
+    "logoUnavailable": "No disponible: este código lleva demasiado para dejar sitio",
+    "resetAppearance": "Volver al código simple"
   },
   "qr": {
     "typeLink": "Enlace",

@@ -1,7 +1,10 @@
 import { File, Paths } from 'expo-file-system';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Share, StyleSheet, View } from 'react-native';
+import type { QrAppearance } from '../components/QrAppearanceSection';
 import { StyledQrCode, type QrSvgRef } from '../components/StyledQrCode';
+import { brandLogoFor } from '../utils/brandLogos';
+import { classifyQrContent } from '../utils/classifyQrContent';
 import { isQrEncodable } from '../utils/qrCapacity';
 
 // Bigger than any QR the app displays: this one gets sent to other people
@@ -10,6 +13,7 @@ const SHARE_SIZE = 512;
 
 interface PendingShare {
   content: string;
+  appearance?: QrAppearance;
 }
 
 /**
@@ -56,21 +60,29 @@ export function useQrShare(onUnavailable?: () => void) {
   // calls back, and the share would end as silence. Checked here so the
   // caller can say something instead.
   const shareQr = useCallback(
-    (content: string) => {
+    (content: string, appearance?: QrAppearance) => {
       if (!isQrEncodable(content)) {
         onUnavailable?.();
         return;
       }
-      setPending({ content });
+      setPending({ content, appearance });
     },
     [onUnavailable]
   );
+
+  // The shared PNG has to be the picture the user approved, so it is drawn
+  // from the same component and the same appearance as the preview.
+  const logo = pending?.appearance?.logo ? brandLogoFor(classifyQrContent(pending.content)) : null;
 
   const qrRenderer = pending ? (
     <View style={styles.offscreen} pointerEvents="none">
       <StyledQrCode
         value={pending.content}
         size={SHARE_SIZE}
+        color={pending.appearance?.color}
+        caption={pending.appearance?.caption}
+        logoPath={logo?.path}
+        logoColor={logo?.color}
         getRef={(instance) => {
           svgRef.current = instance;
         }}

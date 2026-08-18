@@ -21,6 +21,7 @@ import { BottomSheet } from '../components/BottomSheet';
 import { FadeSwitcher } from '../components/FadeSwitcher';
 import { FilterPillRow, type PillOption } from '../components/FilterPillRow';
 import { PillButton } from '../components/PillButton';
+import { QrAppearanceSection, type QrAppearance } from '../components/QrAppearanceSection';
 import { StyledQrCode } from '../components/StyledQrCode';
 import { QrTypePicker } from '../components/QrTypePicker';
 import { Toast } from '../components/Toast';
@@ -48,7 +49,8 @@ import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import type { MyCode } from '../types/myCode';
 import { classifyQrContent, type QrContentType } from '../utils/classifyQrContent';
-import { isQrEncodable } from '../utils/qrCapacity';
+import { bestErrorCorrectionLevel, isQrEncodable } from '../utils/qrCapacity';
+import { brandLogoFor } from '../utils/brandLogos';
 import { findCountryByRegionCode, type CountryCallingCode } from '../utils/countryCallingCodes';
 import { getDeviceRegionCode } from '../utils/locale';
 import {
@@ -392,6 +394,8 @@ export function MyCodesScreen({ navigation }: Props) {
   const [type, setType] = useState<QrContentType>('link');
   const [label, setLabel] = useState('');
   const [fields, setFields] = useState<FormState>(() => makeDefaultFormState(defaultCountry));
+  const [appearance, setAppearance] = useState<QrAppearance>({});
+  const [isAppearanceOpen, setIsAppearanceOpen] = useState(false);
 
   const reload = useCallback(() => {
     getMyCodes().then(setCodes);
@@ -403,6 +407,8 @@ export function MyCodesScreen({ navigation }: Props) {
     setType('link');
     setLabel('');
     setFields(makeDefaultFormState(defaultCountry));
+    setAppearance({});
+    setIsAppearanceOpen(false);
   }, [defaultCountry]);
 
   const handleCancel = useCallback(() => {
@@ -512,7 +518,14 @@ export function MyCodesScreen({ navigation }: Props) {
     const resolvedLabel = label.trim() || defaultLabelFor(type, content, fields);
     if (editingId) {
       const original = codes.find((c) => c.id === editingId);
-      await updateMyCode({ id: editingId, label: resolvedLabel, content, createdAt: original?.createdAt ?? Date.now(), type });
+      await updateMyCode({
+        id: editingId,
+        label: resolvedLabel,
+        content,
+        createdAt: original?.createdAt ?? Date.now(),
+        type,
+        ...appearance,
+      });
       captureAnalyticsEvent('my_code_updated', { type });
     } else {
       await saveMyCode({
@@ -521,6 +534,7 @@ export function MyCodesScreen({ navigation }: Props) {
         content,
         createdAt: Date.now(),
         type,
+        ...appearance,
       });
       captureAnalyticsEvent('my_code_created', { type });
     }
@@ -545,6 +559,7 @@ export function MyCodesScreen({ navigation }: Props) {
     setType(parsedType);
     setLabel(code.label);
     setFields(parsedFields);
+    setAppearance({ color: code.color, caption: code.caption, logo: code.logo });
     // Deliberately leaves `isCreating` and `viewing` alone. The type grid
     // has nothing to offer an existing code, and keeping the viewer
     // mounted underneath is what makes closing the sheet land back where
@@ -556,7 +571,9 @@ export function MyCodesScreen({ navigation }: Props) {
     captureAnalyticsEvent('my_code_shared', { type: codeTypeOf(code) });
     // Sends the code as a scannable image alongside its text — sharing a
     // QR as bare text makes the recipient rebuild it to actually use it.
-    shareQr(code.content);
+    // Drawn with the code's own colour, caption and logo, so what goes out
+    // is what the user set up.
+    shareQr(code.content, { color: code.color, caption: code.caption, logo: code.logo });
   };
 
   const handleCopyContent = async (code: MyCode) => {
@@ -597,7 +614,14 @@ export function MyCodesScreen({ navigation }: Props) {
             </Pressable>
             <View style={styles.viewer}>
             <View style={styles.qrCard}>
-              <StyledQrCode value={viewing.content} size={220} />
+              <StyledQrCode
+                value={viewing.content}
+                size={220}
+                color={viewing.color}
+                caption={viewing.caption}
+                logoPath={viewing.logo ? brandLogoFor(codeTypeOf(viewing))?.path : undefined}
+                logoColor={viewing.logo ? brandLogoFor(codeTypeOf(viewing))?.color : undefined}
+              />
             </View>
             <Text style={styles.viewerLabel}>{viewing.label}</Text>
             <Pressable
@@ -774,6 +798,23 @@ export function MyCodesScreen({ navigation }: Props) {
         onClose={handleCloseFormSheet}
         title={t(QR_TYPE_LABEL_KEY[type])}
         scroll
+        // Only while the appearance controls are open. The rest of the
+        // time it costs a fifth of the sheet to show a code nobody is
+        // adjusting — and a vCard has twenty-one fields to get through.
+        header={
+          isAppearanceOpen && content ? (
+            <View style={styles.previewCard}>
+              <StyledQrCode
+                value={content}
+                size={104}
+                color={appearance.color}
+                caption={appearance.caption}
+                logoPath={appearance.logo ? brandLogoFor(type)?.path : undefined}
+                logoColor={appearance.logo ? brandLogoFor(type)?.color : undefined}
+              />
+            </View>
+          ) : null
+        }
         footer={
           <PillButton
             title={t(editingId ? 'myCodes.update' : 'myCodes.save')}
@@ -922,6 +963,18 @@ export function MyCodesScreen({ navigation }: Props) {
             placeholder={t('myCodes.dropboxPlaceholder')}
           />
         )}
+
+        <QrAppearanceSection
+          type={type}
+          value={appearance}
+          onChange={setAppearance}
+          isOpen={isAppearanceOpen}
+          onToggle={() => setIsAppearanceOpen((open) => !open)}
+          // A logo covers modules only level H carries enough redundancy
+          // to rebuild. Content long enough to drop below it loses the
+          // option, and the section says why rather than going quiet.
+          canCarryLogo={content !== null && bestErrorCorrectionLevel(content) === 'H'}
+        />
       </BottomSheet>
 
       <BottomSheet visible={menuCode !== null} onClose={() => setMenuCode(null)} title={t('myCodes.codeOptionsTitle')}>
@@ -1130,6 +1183,11 @@ function createStyles(colors: ColorTheme) {
     },
     menuRowTextDestructive: {
       color: colors.coralText,
+    },
+    previewCard: {
+      backgroundColor: colors.cream,
+      borderRadius: 14,
+      padding: 10,
     },
     form: {
       width: '100%',

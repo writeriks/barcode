@@ -316,7 +316,15 @@
     "deleteBody": "Dieser gespeicherte Code wird entfernt. Das lässt sich nicht rückgängig machen.",
     "tooLongTitle": "Zu lang für einen QR-Code",
     "tooLongBody": "Kürze den Inhalt und versuche es erneut — ein QR-Code fasst nur begrenzt viel.",
-    "chooseType": "Typ wählen"
+    "chooseType": "Typ wählen",
+    "appearance": "Aussehen",
+    "colorLabel": "Farbe",
+    "captionLabel": "Bildunterschrift",
+    "captionPlaceholder": "z. B. Menü scannen",
+    "logoLabel": "Markenlogo",
+    "logoDescription": "Wird in die Mitte des Codes gezeichnet",
+    "logoUnavailable": "Nicht verfügbar — dieser Code enthält zu viel, um Platz zu lassen",
+    "resetAppearance": "Zurück zum schlichten Code"
   },
   "qr": {
     "typeLink": "Link",

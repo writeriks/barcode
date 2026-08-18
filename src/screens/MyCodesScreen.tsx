@@ -569,11 +569,10 @@ export function MyCodesScreen({ navigation }: Props) {
 
   const handleShare = (code: MyCode) => {
     captureAnalyticsEvent('my_code_shared', { type: codeTypeOf(code) });
-    // Sends the code as a scannable image alongside its text — sharing a
-    // QR as bare text makes the recipient rebuild it to actually use it.
     // Drawn with the code's own colour, caption and logo, so what goes out
-    // is what the user set up.
-    shareQr(code.content, { color: code.color, caption: code.caption, logo: code.logo });
+    // is what the user set up — and with its saved type, so the brand mark
+    // is the one the viewer showed rather than a guess from the address.
+    shareQr(code.content, { color: code.color, caption: code.caption, logo: code.logo }, codeTypeOf(code));
   };
 
   const handleCopyContent = async (code: MyCode) => {

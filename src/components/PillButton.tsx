@@ -10,10 +10,14 @@ interface Props {
   onPress: () => void;
   variant?: 'punch' | 'citrus' | 'ghost';
   icon?: keyof typeof Ionicons.glyphMap;
+  /** Dimmed and unpressable, for a button whose action has nothing to act
+   *  on yet — a Continue with no choice made. Shown rather than hidden so
+   *  the sheet doesn't change height as boxes are ticked. */
+  disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
-export function PillButton({ title, onPress, variant = 'punch', icon, style }: Props) {
+export function PillButton({ title, onPress, variant = 'punch', icon, disabled, style }: Props) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -22,12 +26,16 @@ export function PillButton({ title, onPress, variant = 'punch', icon, style }: P
   return (
     <Pressable
       onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: Boolean(disabled) }}
       style={({ pressed }) => [
         styles.base,
         variant === 'punch' && styles.punch,
         variant === 'citrus' && styles.citrus,
         variant === 'ghost' && styles.ghost,
         pressed && styles.pressed,
+        disabled && styles.disabled,
         style,
       ]}
     >
@@ -71,6 +79,9 @@ function createStyles(colors: ColorTheme) {
     },
     pressed: {
       opacity: 0.8,
+    },
+    disabled: {
+      opacity: 0.4,
     },
     text: {
       fontFamily: fonts.displayBold,

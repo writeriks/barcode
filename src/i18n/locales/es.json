@@ -385,7 +385,13 @@
       "embeddedCredentials": "Hay un usuario antes de la @: el destino real es lo que viene después.",
       "shortener": "Enlace acortado. El destino real está oculto hasta que lo abras.",
       "manySubdomains": "Demasiados subdominios: el dominio real es la parte final, no la inicial."
-    }
+    },
+    "sharePartsTitle": "¿Qué quieres compartir?",
+    "sharePartImage": "Código QR",
+    "sharePartImageBody": "Una imagen que cualquiera puede escanear.",
+    "sharePartText": "Texto",
+    "sharePartTextBody": "El valor que contiene el código.",
+    "shareContinue": "Continuar"
   },
   "paywall": {
     "title": "Desbloquea Blippo Premium",

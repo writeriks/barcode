@@ -385,7 +385,13 @@
       "embeddedCredentials": "Vor dem @ steht ein Benutzername — das eigentliche Ziel ist der Teil dahinter.",
       "shortener": "Gekürzter Link. Das eigentliche Ziel bleibt bis zum Öffnen verborgen.",
       "manySubdomains": "Ungewöhnlich viele Subdomains — die echte Domain steht am Ende, nicht am Anfang."
-    }
+    },
+    "sharePartsTitle": "Was möchtest du teilen?",
+    "sharePartImage": "QR-Code",
+    "sharePartImageBody": "Ein Bild, das jeder scannen kann.",
+    "sharePartText": "Text",
+    "sharePartTextBody": "Der Wert, den der Code enthält.",
+    "shareContinue": "Weiter"
   },
   "paywall": {
     "title": "Blippo Premium freischalten",

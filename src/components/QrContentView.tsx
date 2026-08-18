@@ -123,9 +123,9 @@ export function QrContentView({ data, onCopied }: Props) {
 
   const handleShare = () => {
     captureAnalyticsEvent('qr_action', { action: 'share', contentType: type });
-    // Same as My Codes: send the scannable image along with the value, so
-    // whoever receives it can point a camera at it instead of retyping.
-    shareQr(data);
+    // Same as My Codes: asks whether to send the scannable image, the
+    // value, or both.
+    shareQr(data, undefined, type);
   };
 
   return (

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
-import Svg, { Path, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { G, Path, Rect, Text as SvgText } from 'react-native-svg';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -101,8 +101,12 @@ export function StyledQrCode({ value, size, color, caption, logoPath, logoColor,
         fill={color ?? DEFAULT_QR_COLOR}
       />
 
+      {/* A real group rather than a React fragment: the SVG is walked to
+          build the native view tree, and a fragment is not a node that walk
+          knows about — on screen it happened to work, in the captured PNG
+          the logo went missing. */}
       {showLogo ? (
-        <>
+        <G>
           {/* The plate is the paper colour rather than white so it
               disappears into the code's background instead of sitting on
               it as a second surface. */}
@@ -121,7 +125,7 @@ export function StyledQrCode({ value, size, color, caption, logoPath, logoColor,
             // plate and move it to the middle of the code.
             transform={`translate(${centre - logoSpan / 2} ${centre - logoSpan / 2}) scale(${logoSpan / 24})`}
           />
-        </>
+        </G>
       ) : null}
 
       {trimmedCaption ? (

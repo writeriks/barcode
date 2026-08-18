@@ -385,7 +385,13 @@
       "embeddedCredentials": "There is a username before the @ — the real destination is whatever comes after it.",
       "shortener": "A shortened link. The real destination is hidden until you open it.",
       "manySubdomains": "Unusually many subdomains — the real domain is the part at the end, not the start."
-    }
+    },
+    "sharePartsTitle": "What do you want to share?",
+    "sharePartImage": "QR code",
+    "sharePartImageBody": "A picture anyone can scan.",
+    "sharePartText": "Text",
+    "sharePartTextBody": "The value the code holds.",
+    "shareContinue": "Continue"
   },
   "paywall": {
     "title": "Unlock Blippo Premium",

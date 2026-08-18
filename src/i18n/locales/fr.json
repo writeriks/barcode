@@ -385,7 +385,13 @@
       "embeddedCredentials": "Un nom d’utilisateur précède le @ — la vraie destination est ce qui suit.",
       "shortener": "Lien raccourci. La vraie destination reste cachée jusqu’à l’ouverture.",
       "manySubdomains": "Beaucoup de sous-domaines — le vrai domaine est la fin, pas le début."
-    }
+    },
+    "sharePartsTitle": "Que voulez-vous partager ?",
+    "sharePartImage": "Code QR",
+    "sharePartImageBody": "Une image que tout le monde peut scanner.",
+    "sharePartText": "Texte",
+    "sharePartTextBody": "La valeur contenue dans le code.",
+    "shareContinue": "Continuer"
   },
   "paywall": {
     "title": "Débloquez Blippo Premium",

@@ -385,7 +385,13 @@
       "embeddedCredentials": "@ işaretinden önce bir kullanıcı adı var — gerçek adres sonrasında gelen kısım.",
       "shortener": "Kısaltılmış bağlantı. Gerçek adres açana kadar gizli.",
       "manySubdomains": "Alışılmadık sayıda alt alan adı — gerçek alan adı sondaki kısım, baştaki değil."
-    }
+    },
+    "sharePartsTitle": "Neyi paylaşmak istiyorsun?",
+    "sharePartImage": "QR kod",
+    "sharePartImageBody": "Herkesin okutabileceği bir görsel.",
+    "sharePartText": "Metin",
+    "sharePartTextBody": "Kodun içindeki değer.",
+    "shareContinue": "Devam"
   },
   "paywall": {
     "title": "Blippo Premium'un Kilidini Aç",

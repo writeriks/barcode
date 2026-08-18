@@ -385,7 +385,13 @@
       "embeddedCredentials": "Przed znakiem @ jest nazwa użytkownika — prawdziwy cel to część po nim.",
       "shortener": "Skrócony link. Prawdziwy cel jest ukryty do momentu otwarcia.",
       "manySubdomains": "Nietypowo dużo subdomen — prawdziwa domena jest na końcu, nie na początku."
-    }
+    },
+    "sharePartsTitle": "Co chcesz udostępnić?",
+    "sharePartImage": "Kod QR",
+    "sharePartImageBody": "Obraz, który każdy może zeskanować.",
+    "sharePartText": "Tekst",
+    "sharePartTextBody": "Wartość zapisana w kodzie.",
+    "shareContinue": "Dalej"
   },
   "paywall": {
     "title": "Odblokuj Blippo Premium",

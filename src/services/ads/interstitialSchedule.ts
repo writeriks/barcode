@@ -9,12 +9,15 @@
  * handful of things per session never saw an ad at all, which is most
  * people and therefore most of the reason to ever pay for premium.
  *
- * What is left is deliberately middling. A first-run grace period, once
- * ever rather than once per launch; a few minutes of quiet after each ad,
- * so a burst of scanning costs one interruption; and a ceiling per run of
- * the app, so a long session can't turn into a slideshow. A casual user
- * meets it a couple of times a day, which is enough to make "no ads" worth
- * money and little enough to keep the app worth opening.
+ * What is left is two rules. A first-run grace period, counted once ever
+ * rather than once per launch, so nobody's first minutes with the app are
+ * interrupted; and a minute of quiet after each ad, so a burst of scanning
+ * costs one interruption rather than one per item.
+ *
+ * There is deliberately no ceiling per session or per day. A cap makes the
+ * app quietest for the people using it most, which is backwards: they are
+ * the ones with a reason to pay to switch the ads off, and a ceiling hands
+ * them the quiet for free.
  *
  * Frequency is only half of it. The other half is that this fires when the
  * user leaves a result, not when the result arrives — see
@@ -28,13 +31,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  *  someone's first minutes are clean, not that every session is. */
 const WARMUP_SCANS = 3;
 
-/** Quiet time after showing one. Long enough that scanning a shelf of
- *  barcodes stays a single interruption, short enough to be met more than
- *  once in a day of real use. */
-const COOLDOWN_MS = 3 * 60 * 1000;
-
-/** Ceiling for a single run of the app, however long it lasts. */
-const MAX_PER_SESSION = 3;
+/** Quiet time after showing one. Short enough to be met several times in
+ *  a session, long enough that scanning a shelf of barcodes is still one
+ *  interruption rather than one per barcode. */
+const COOLDOWN_MS = 60 * 1000;
 
 /** Where the lifetime scan count lives. Plain storage, not the keychain:
  *  this is a politeness counter, not an entitlement, and someone who
@@ -43,7 +43,6 @@ const WARMUP_KEY = 'blippo.adWarmupScans';
 
 let warmupScans = 0;
 let warmupLoaded = false;
-let shownThisSession = 0;
 let lastShownAt = 0;
 
 /**
@@ -97,13 +96,11 @@ export function recordScan(): void {
  */
 export function canShowInterstitial(now = Date.now()): boolean {
   if (warmupScans <= WARMUP_SCANS) return false;
-  if (shownThisSession >= MAX_PER_SESSION) return false;
   return lastShownAt === 0 || now - lastShownAt >= COOLDOWN_MS;
 }
 
 /** Call right after an ad has actually been shown. */
 export function recordInterstitialShown(now = Date.now()): void {
-  shownThisSession += 1;
   lastShownAt = now;
 }
 
@@ -111,6 +108,5 @@ export function recordInterstitialShown(now = Date.now()): void {
 export function resetInterstitialSchedule(warmup = 0): void {
   warmupScans = warmup;
   warmupLoaded = true;
-  shownThisSession = 0;
   lastShownAt = 0;
 }

@@ -135,17 +135,25 @@ export const QR_GENERATE_TYPES: QrContentType[] = [
   'dropbox',
 ];
 
-/** Generator types gated behind premium — a free user tapping one of
- * these in QrTypePicker opens the paywall instead of switching to it. */
-export const QR_PREMIUM_TYPES: ReadonlySet<QrContentType> = new Set<QrContentType>([
-  'facebook',
-  'instagram',
-  'twitter',
-  'spotify',
-  'viber',
-  'paypal',
-  'linkedin',
-]);
+/**
+ * Generator types gated behind premium — a free user tapping one of these
+ * in QrTypePicker opens the paywall instead of switching to it.
+ *
+ * Empty, deliberately. It used to hold the seven social types, and that
+ * was a gate around nothing: every one of them is a username pasted onto a
+ * fixed base URL, so a locked Instagram tile only taught people to pick
+ * Link and paste the address themselves. A paywall you can walk around in
+ * two taps doesn't read as valuable, it reads as arbitrary — and with a
+ * third of the grid wearing padlocks, the generator opened looking like a
+ * paywall with a scanner attached.
+ *
+ * What is worth paying for in a generated code is how it looks, which is
+ * additive and can't be got at another way; see QrAppearanceSection.
+ *
+ * The mechanism stays because the next type genuinely worth gating should
+ * be a one-line change rather than a rebuild.
+ */
+export const QR_PREMIUM_TYPES: ReadonlySet<QrContentType> = new Set<QrContentType>();
 
 /** Types whose whole form is a username pasted onto a fixed base URL. */
 export type QrUsernameType =

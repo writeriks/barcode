@@ -421,7 +421,9 @@
     "titleDocumentScans": "Bu ayki ücretsiz taramalarını kullandın",
     "titleHistory": "Geçmişin doldu",
     "titleSettings": "Tüm ayarların kilidini aç",
-    "titleQrTypes": "Tüm QR türlerinin kilidini aç"
+    "titleQrTypes": "Tüm QR türlerinin kilidini aç",
+    "titleCustomization": "Kodlarını kendine ait yap",
+    "benefitCustomization": "QR kodlarını renklendir, alt yazı ve markanın logosunu ekle"
   },
   "a11y": {
     "add": "Ekle",

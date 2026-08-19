@@ -421,7 +421,9 @@
     "titleDocumentScans": "Hai usato le scansioni gratuite di questo mese",
     "titleHistory": "La cronologia è piena",
     "titleSettings": "Sblocca tutte le impostazioni",
-    "titleQrTypes": "Sblocca tutti i tipi di QR"
+    "titleQrTypes": "Sblocca tutti i tipi di QR",
+    "titleCustomization": "Rendi tuoi i tuoi codici",
+    "benefitCustomization": "Colora i tuoi codici QR e aggiungi una didascalia e il logo del marchio"
   },
   "a11y": {
     "add": "Aggiungi",

@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { usePremium } from '../premium/PremiumContext';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -41,6 +42,13 @@ interface Props {
  * Folded away by default. A vCard's form is already twenty-one fields, and
  * most codes never need any of this — the plain black code is a perfectly
  * good code.
+ *
+ * It is also the one part of the generator behind premium, and the reason
+ * no content type is. What this section adds is additive — a free user
+ * still gets a working, scannable code, just a plain one — and there is no
+ * way to get a coloured code with a brand mark in it by picking some other
+ * type instead. A locked social type taught people to use Link; a locked
+ * palette has nothing to teach.
  */
 export function QrAppearanceSection({ type, value, onChange, isOpen, onToggle, canCarryLogo }: Props) {
   const { t } = useTranslation();
@@ -48,26 +56,43 @@ export function QrAppearanceSection({ type, value, onChange, isOpen, onToggle, c
   const mode = useThemeMode();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const placeholderColor = mode === 'light' ? 'rgba(36,25,51,0.35)' : 'rgba(255,246,233,0.4)';
+  const { isPremium, openPaywall } = usePremium();
 
   const brand = brandLogoFor(type);
   const hue = qrColorToHue(value.color ?? DEFAULT_QR_COLOR);
   const isCustomized = Boolean(value.color || value.caption?.trim() || value.logo);
+  // Shown rather than hidden: the row is the whole advert for what premium
+  // does to a code, and a feature nobody can see is one nobody buys.
+  const expanded = isOpen && isPremium;
 
   return (
     <View style={styles.wrap}>
       <Pressable
-        onPress={onToggle}
-        style={[styles.header, isOpen && styles.headerOpen]}
+        onPress={isPremium ? onToggle : () => openPaywall('customization')}
+        style={[styles.header, expanded && styles.headerOpen]}
         accessibilityRole="button"
-        accessibilityState={{ expanded: isOpen }}
+        accessibilityState={{ expanded }}
       >
-        <Ionicons name="color-palette-outline" size={17} color={isOpen ? colors.mint : colors.text} />
+        <Ionicons name="color-palette-outline" size={17} color={expanded ? colors.mint : colors.text} />
         <Text style={styles.headerLabel}>{t('myCodes.appearance')}</Text>
-        {isCustomized && !isOpen ? <View style={[styles.dot, { backgroundColor: value.color ?? colors.mint }]} /> : null}
-        <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={14} color={colors.text} style={styles.chevron} />
+        {isCustomized && !expanded ? (
+          <View style={[styles.dot, { backgroundColor: value.color ?? colors.mint }]} />
+        ) : null}
+        {isPremium ? (
+          <Ionicons
+            name={expanded ? 'chevron-up' : 'chevron-down'}
+            size={14}
+            color={colors.text}
+            style={styles.chevron}
+          />
+        ) : (
+          <View style={styles.lockBadge}>
+            <Ionicons name="lock-closed" size={9} color={colors.inkOnCream} />
+          </View>
+        )}
       </Pressable>
 
-      {isOpen ? (
+      {expanded ? (
         <View style={styles.body}>
           <View style={styles.control}>
             <Text style={styles.label}>{t('myCodes.colorLabel')}</Text>
@@ -156,6 +181,16 @@ function createStyles(colors: ColorTheme) {
     },
     chevron: {
       opacity: 0.55,
+    },
+    // The same badge the type picker used to wear, in the one place a lock
+    // now belongs. Citrus rather than muted: it is an offer, not a fault.
+    lockBadge: {
+      width: 15,
+      height: 15,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.citrus,
     },
     body: {
       gap: 14,

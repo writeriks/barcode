@@ -421,7 +421,9 @@
     "titleDocumentScans": "Wykorzystano darmowe skany w tym miesiącu",
     "titleHistory": "Twoja historia jest pełna",
     "titleSettings": "Odblokuj wszystkie ustawienia",
-    "titleQrTypes": "Odblokuj wszystkie typy kodów QR"
+    "titleQrTypes": "Odblokuj wszystkie typy kodów QR",
+    "titleCustomization": "Nadaj kodom swój styl",
+    "benefitCustomization": "Koloruj kody QR oraz dodawaj podpis i logo marki"
   },
   "a11y": {
     "add": "Dodaj",

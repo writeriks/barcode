@@ -27,6 +27,7 @@ const REASON_TITLE_KEY: Record<PaywallReason, string> = {
   documentScans: 'paywall.titleDocumentScans',
   history: 'paywall.titleHistory',
   settings: 'paywall.titleSettings',
+  customization: 'paywall.titleCustomization',
   qrTypes: 'paywall.titleQrTypes',
   general: 'paywall.title',
 };
@@ -37,7 +38,8 @@ const REASON_LEAD_BENEFIT: Record<PaywallReason, string | null> = {
   documentScans: 'paywall.benefitScans',
   history: 'paywall.benefitHistory',
   settings: 'paywall.benefitSettings',
-  qrTypes: 'paywall.benefitSettings',
+  customization: 'paywall.benefitCustomization',
+  qrTypes: 'paywall.benefitCustomization',
   general: null,
 };
 
@@ -46,6 +48,7 @@ const REASON_LEAD_BENEFIT: Record<PaywallReason, string | null> = {
 const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; labelKey: string }[] = [
   { icon: 'document-text-outline', labelKey: 'paywall.benefitScans' },
   { icon: 'ban-outline', labelKey: 'paywall.benefitNoAds' },
+  { icon: 'color-palette-outline', labelKey: 'paywall.benefitCustomization' },
   { icon: 'infinite-outline', labelKey: 'paywall.benefitHistory' },
   { icon: 'options-outline', labelKey: 'paywall.benefitSettings' },
 ];

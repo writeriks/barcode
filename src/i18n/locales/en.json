@@ -421,7 +421,9 @@
     "titleDocumentScans": "You have used this month's free scans",
     "titleHistory": "Your history is full",
     "titleSettings": "Unlock every setting",
-    "titleQrTypes": "Unlock every QR type"
+    "titleQrTypes": "Unlock every QR type",
+    "titleCustomization": "Make your codes your own",
+    "benefitCustomization": "Colour your QR codes, add a caption and the brand’s logo"
   },
   "a11y": {
     "add": "Add",

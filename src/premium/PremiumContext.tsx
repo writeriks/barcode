@@ -7,7 +7,16 @@ import { configurePurchases, fetchIsPremium, subscribeToPremiumChanges } from '.
 
 /** What sent the user here, so the pitch can lead with the thing they
  * were just stopped from doing rather than a generic headline. */
-export type PaywallReason = 'documentScans' | 'history' | 'settings' | 'qrTypes' | 'general';
+export type PaywallReason =
+  | 'documentScans'
+  | 'history'
+  | 'settings'
+  | 'customization'
+  // No generator type is gated any more (see QR_PREMIUM_TYPES), but the
+  // picker still knows how to lock one, so the reason it would raise stays
+  // reachable rather than being deleted and reinvented later.
+  | 'qrTypes'
+  | 'general';
 
 interface PremiumContextValue {
   isPremium: boolean;

@@ -63,10 +63,10 @@ export function StyledQrCode({ value, size, color, caption, logo, getRef }: Prop
   const trimmedCaption = caption?.trim();
   // A gradient is referenced by id, and this component is on screen twice
   // whenever a code is being shared — once visibly, once off-screen at
-  // export size. Two identical ids would have one of them win both. The
-  // stripping is because React's ids carry punctuation that a URL
-  // reference can't.
-  const gradientId = `qr-brand-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  // export size. Two identical ids would have one of them win both, so the
+  // mark's own gradient names are prefixed per instance. The stripping is
+  // because React's ids carry punctuation a URL reference can't.
+  const gradientPrefix = `qr-${useId().replace(/[^a-zA-Z0-9]/g, '')}-`;
 
   if (!matrix) {
     return (
@@ -105,19 +105,22 @@ export function StyledQrCode({ value, size, color, caption, logo, getRef }: Prop
           react-native-svg version resolves the same way. Its coordinates
           are fractions of the filled shape's own box, so where it is
           declared makes no difference to how it lands. */}
-      {showLogo && logo?.gradient ? (
+      {showLogo && logo?.gradients ? (
         <Defs>
-          <LinearGradient
-            id={gradientId}
-            x1={logo.gradient.x1}
-            y1={logo.gradient.y1}
-            x2={logo.gradient.x2}
-            y2={logo.gradient.y2}
-          >
-            {logo.gradient.stops.map((stop) => (
-              <Stop key={stop.offset} offset={stop.offset} stopColor={stop.color} />
-            ))}
-          </LinearGradient>
+          {logo.gradients.map((gradient) => (
+            <LinearGradient
+              key={gradient.id}
+              id={`${gradientPrefix}${gradient.id}`}
+              x1={gradient.x1}
+              y1={gradient.y1}
+              x2={gradient.x2}
+              y2={gradient.y2}
+            >
+              {gradient.stops.map((stop) => (
+                <Stop key={stop.offset} offset={stop.offset} stopColor={stop.color} />
+              ))}
+            </LinearGradient>
+          ))}
         </Defs>
       ) : null}
 
@@ -156,8 +159,11 @@ export function StyledQrCode({ value, size, color, caption, logo, getRef }: Prop
                 <Path
                   key={index}
                   d={part.d}
-                  transform={part.transform}
-                  fill={part.fill === 'gradient' ? `url(#${gradientId})` : part.fill}
+                  fill={
+                    part.fill.startsWith('@')
+                      ? `url(#${gradientPrefix}${part.fill.slice(1)})`
+                      : part.fill
+                  }
                 />
               ))}
             </G>

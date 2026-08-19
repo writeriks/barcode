@@ -1,192 +1,250 @@
-// Regenerates src/utils/brandLogos.ts from the simple-icons package.
+// Regenerates src/utils/brandLogos.ts from two icon packages.
 //
 // Run after adding a branded QR type:
 //   node scripts/generateBrandLogos.mjs
 //
-// simple-icons is a devDependency and never ships: this pulls out the
+// Both packages are devDependencies and neither ships: this pulls out the
 // handful of marks the app draws and writes them as plain path data, so
-// the app carries a few kilobytes instead of three thousand icons.
+// the app carries a few kilobytes instead of five thousand icons.
 //
-// The path data is CC0. The marks themselves are the brands' trademarks,
-// used here only to label a code that points at that brand's own service.
-import * as icons from 'simple-icons';
+// @iconify-json/logos is gilbarbara's SVG Logos — full-colour marks, the
+// real ones, several paths and a gradient where the brand has one. It is
+// the source for everything it covers. simple-icons fills the gaps, in a
+// single colour, and supplies the brand's documented hex either way.
+//
+// Both sets are CC0. The marks themselves are the brands' trademarks, used
+// here only to label a code that points at that brand's own service.
+import logoSet from '@iconify-json/logos/icons.json' with { type: 'json' };
+import * as simpleIcons from 'simple-icons';
 import { writeFileSync } from 'node:fs';
 
-/** QR content type → simple-icons slug. Types absent from this map draw
- *  no logo, which is the right answer for anything without a brand. */
+/**
+ * QR content type → where its mark comes from.
+ *
+ * `logos` names an icon in the full-colour set; the `-icon` variants are
+ * the square glyphs, since the wordmarks are four times wider than they
+ * are tall and would come out as a stripe in the middle of a code.
+ * `simple` is the monochrome fallback for brands that set doesn't carry.
+ *
+ * Every entry also names a simple-icons slug, because that package is
+ * where the brand's own hex comes from, and that colour is what a code
+ * carrying the mark is tinted with.
+ */
 const BRANDS = {
-  facebook: 'facebook',
-  instagram: 'instagram',
-  twitter: 'x',
-  spotify: 'spotify',
-  viber: 'viber',
-  paypal: 'paypal',
-  tiktok: 'tiktok',
-  youtube: 'youtube',
-  telegram: 'telegram',
-  pinterest: 'pinterest',
-  whatsapp: 'whatsapp',
-  appstore: 'appstore',
-  drive: 'googledrive',
-  dropbox: 'dropbox',
-  zoom: 'zoom',
+  facebook: { simple: 'facebook', logos: 'facebook' },
+  instagram: { simple: 'instagram', logos: 'instagram-icon', gradient: 'instagram' },
+  twitter: { simple: 'x', logos: 'x' },
+  spotify: { simple: 'spotify', logos: 'spotify-icon' },
+  // Not in the colour set. Viber's mark is one purple anyway, so the
+  // monochrome glyph is the real thing rather than a stand-in for it.
+  viber: { simple: 'viber' },
+  paypal: { simple: 'paypal', logos: 'paypal' },
+  tiktok: { simple: 'tiktok', logos: 'tiktok-icon' },
+  youtube: { simple: 'youtube', logos: 'youtube-icon' },
+  telegram: { simple: 'telegram', logos: 'telegram' },
+  pinterest: { simple: 'pinterest', logos: 'pinterest' },
+  whatsapp: { simple: 'whatsapp', logos: 'whatsapp-icon' },
+  appstore: { simple: 'appstore', logos: 'apple-app-store' },
+  drive: { simple: 'googledrive', logos: 'google-drive' },
+  dropbox: { simple: 'dropbox', logos: 'dropbox' },
+  zoom: { simple: 'zoom', logos: 'zoom-icon' },
 };
 
-const key = (slug) => `si${slug.charAt(0).toUpperCase()}${slug.slice(1)}`;
-const iconFor = (slug) => icons[key(slug)];
-
 /**
- * Drive's six-piece geometry — the whole point of this mark, since it is
- * three colours meeting at two folds and a single-colour silhouette of it
- * is just a triangle. On Drive's own 87.3×80 box; the transform below maps
- * that onto the 24 grid everything else uses.
+ * The one mark the colour set has only in monochrome.
  *
- * Reproduced rather than taken from a file: it was written out here and
- * then checked by rendering it against the real logo, not downloaded from
- * Google. It draws correctly — wrong path data would be visibly wrong
- * rather than subtly off — but nobody has diffed it against the official
- * asset. Replace it with that asset if exactness ever matters.
+ * Instagram's glyph outline is sourced like all the others; these stops
+ * are not. They are the widely-used approximation of Instagram's gradient
+ * rather than a published specification of it, and they are here because a
+ * flat near-black Instagram glyph looks like a mistake.
  */
-const DRIVE_PARTS = [
-  ['#0066da', 'm6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z'],
-  ['#00ac47', 'm43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0-1.2 4.5h27.5z'],
-  ['#ea4335', 'm73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z'],
-  ['#00832d', 'm43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z'],
-  ['#2684fc', 'm59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z'],
-  ['#ffba00', 'm73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z'],
-];
-const DRIVE_SCALE = 24 / 87.3;
-const DRIVE_TRANSFORM = `translate(0 ${((24 - 80 * DRIVE_SCALE) / 2).toFixed(3)}) scale(${DRIVE_SCALE.toFixed(5)})`;
-
-/** A rounded square filling the 24 grid, for marks that are an app icon
- *  rather than a glyph. 5.4 is Apple's corner radius at this size. */
-const SQUIRCLE =
-  'M5.4 0H18.6A5.4 5.4 0 0 1 24 5.4V18.6A5.4 5.4 0 0 1 18.6 24H5.4A5.4 5.4 0 0 1 0 18.6V5.4A5.4 5.4 0 0 1 5.4 0Z';
-
-/**
- * The marks whose real form isn't one shape in one colour.
- *
- * Everything else in BRANDS is genuinely monochrome — WhatsApp, Spotify,
- * Dropbox and the rest are one colour by their own design, and drawing
- * them from simple-icons in the brand's own hex is already the real mark.
- * These five are the ones where that loses something.
- *
- * PayPal is deliberately absent. Its mark is two tones, but the two P's
- * are a single merged outline in the source art, and the seam between them
- * doesn't fall on a straight line — every way of splitting it cuts the
- * front P's stem in half, which reads as a rendering fault rather than a
- * logo. The official monochrome navy is the better of the two wrongs. Drop
- * a real two-path PayPal in here and it will just work.
- */
-const OVERRIDES = {
-  // Three colours, offset — the fringe is the logo.
-  tiktok: (path) => ({
-    parts: [
-      { d: path, fill: '#25F4EE', transform: 'translate(-0.9 -0.5)' },
-      { d: path, fill: '#FE2C55', transform: 'translate(0.9 0.5)' },
-      { d: path, fill: '#000000' },
+const GRADIENT_OVERRIDES = {
+  instagram: {
+    x1: 0,
+    y1: 1,
+    x2: 1,
+    y2: 0,
+    stops: [
+      [0, '#FEDA75'],
+      [0.25, '#FA7E1E'],
+      [0.5, '#D62976'],
+      [0.75, '#962FBF'],
+      [1, '#4F5BD5'],
     ],
-  }),
-  // The same simple-icons glyph, filled with a gradient instead of a flat
-  // colour. The stops are the widely-used approximation of Instagram's
-  // gradient, not a specification of it.
-  instagram: (path) => ({
-    parts: [{ d: path, fill: 'gradient' }],
-    gradient: {
-      x1: 0,
-      y1: 1,
-      x2: 1,
-      y2: 0,
-      stops: [
-        [0, '#FEDA75'],
-        [0.25, '#FA7E1E'],
-        [0.5, '#D62976'],
-        [0.75, '#962FBF'],
-        [1, '#4F5BD5'],
-      ],
-    },
-  }),
-  // simple-icons draws the "A" alone; the App Store's mark is that "A"
-  // reversed out of the blue tile, and the tile is most of what people
-  // recognise. The tile, its corner radius and the two gradient stops were
-  // all set by eye against the real icon.
-  appstore: (path) => ({
-    parts: [
-      { d: SQUIRCLE, fill: 'gradient' },
-      { d: path, fill: '#FFFFFF', transform: 'translate(12 12) scale(0.6) translate(-12 -12)' },
-    ],
-    gradient: { x1: 0, y1: 0, x2: 0, y2: 1, stops: [[0, '#17C9FB'], [1, '#1A74E8']] },
-  }),
-  drive: () => ({
-    parts: DRIVE_PARTS.map(([fill, d]) => ({ d, fill })),
-    transform: DRIVE_TRANSFORM,
-  }),
+  },
 };
+
+const simpleIconFor = (slug) => simpleIcons[`si${slug.charAt(0).toUpperCase()}${slug.slice(1)}`];
+
+/** '50%' → 0.5, '0.5' → 0.5. Gradients in this set are all in the default
+ *  objectBoundingBox units, so everything lands in 0–1 either way. */
+function ratio(value, attribute) {
+  const text = String(value).trim();
+  const number = Number(text.endsWith('%') ? Number(text.slice(0, -1)) / 100 : text);
+  if (!Number.isFinite(number)) throw new Error(`Unreadable ${attribute}: ${value}`);
+  return Number(number.toFixed(4));
+}
+
+function attribute(tag, name) {
+  const match = tag.match(new RegExp(`\\s${name}="([^"]*)"`));
+  return match ? match[1] : null;
+}
+
+/**
+ * Turns one iconify body into parts and gradients on the 24 grid.
+ *
+ * Deliberately strict rather than best-effort. It understands exactly what
+ * these fifteen icons are made of — paths, and linear gradients declared
+ * in a defs block — and throws on anything else, because the failure mode
+ * of a lenient parser here is a logo that silently draws wrong.
+ */
+function normalize(type, name) {
+  const icon = logoSet.icons[name];
+  if (!icon) throw new Error(`${type}: no icon named "${name}" in @iconify-json/logos`);
+  const width = icon.width ?? logoSet.width;
+  const height = icon.height ?? logoSet.height;
+  let body = icon.body;
+
+  const unsupported = body.match(/<(?!path|defs|\/defs|linearGradient|\/linearGradient|stop)[a-zA-Z]+/g);
+  if (unsupported) throw new Error(`${type}: unsupported element(s) ${[...new Set(unsupported)].join(', ')}`);
+  if (/gradientUnits=/.test(body)) throw new Error(`${type}: gradientUnits is not handled`);
+  if (/gradientTransform=|transform=/.test(body)) throw new Error(`${type}: transforms are not handled`);
+
+  // Gradients first, so the paths can be pointed at them by a local name.
+  const gradients = [];
+  const idAlias = new Map();
+  const defs = body.match(/<defs>([\s\S]*?)<\/defs>/);
+  if (defs) {
+    const declarations = defs[1].match(/<linearGradient[\s\S]*?<\/linearGradient>/g) ?? [];
+    for (const declaration of declarations) {
+      const open = declaration.slice(0, declaration.indexOf('>') + 1);
+      const sourceId = attribute(open, 'id');
+      const alias = `${type}${gradients.length}`;
+      idAlias.set(sourceId, alias);
+      gradients.push({
+        id: alias,
+        x1: ratio(attribute(open, 'x1') ?? '0', 'x1'),
+        y1: ratio(attribute(open, 'y1') ?? '0', 'y1'),
+        x2: ratio(attribute(open, 'x2') ?? '1', 'x2'),
+        y2: ratio(attribute(open, 'y2') ?? '0', 'y2'),
+        stops: (declaration.match(/<stop[^>]*>/g) ?? []).map((stop) => [
+          ratio(attribute(stop, 'offset') ?? '0', 'offset'),
+          attribute(stop, 'stop-color') ?? '#000000',
+        ]),
+      });
+    }
+    body = body.replace(defs[0], '');
+  }
+
+  const parts = (body.match(/<path[^>]*>/g) ?? []).map((tag) => {
+    const d = attribute(tag, 'd');
+    if (!d) throw new Error(`${type}: a path with no d`);
+    // No fill attribute means black, which is what SVG says and what the
+    // X mark relies on.
+    let fill = attribute(tag, 'fill') ?? '#000000';
+    const reference = fill.match(/^url\(#(.+)\)$/);
+    if (reference) {
+      const alias = idAlias.get(reference[1]);
+      if (!alias) throw new Error(`${type}: path points at unknown gradient ${reference[1]}`);
+      fill = `@${alias}`;
+    }
+    return { d, fill };
+  });
+  if (parts.length === 0) throw new Error(`${type}: no paths`);
+
+  // Fit the icon's own box inside the 24 grid without distorting it, and
+  // centre what's left over.
+  const scale = 24 / Math.max(width, height);
+  const tx = (24 - width * scale) / 2;
+  const ty = (24 - height * scale) / 2;
+  const transform = `translate(${tx.toFixed(4)} ${ty.toFixed(4)}) scale(${scale.toFixed(6)})`;
+
+  return { parts, gradients, transform };
+}
 
 const quote = (value) => `'${value}'`;
 
-function renderPart({ d, fill, transform }) {
-  const fields = [`d: ${quote(d)}`, `fill: ${quote(fill)}`];
-  if (transform) fields.push(`transform: ${quote(transform)}`);
-  return `      { ${fields.join(', ')} },`;
-}
-
-function renderGradient({ x1, y1, x2, y2, stops }) {
-  const rendered = stops.map(([offset, color]) => `{ offset: ${offset}, color: ${quote(color)} }`);
-  return (
-    `    gradient: {\n      x1: ${x1},\n      y1: ${y1},\n      x2: ${x2},\n      y2: ${y2},\n` +
-    `      stops: [${rendered.join(', ')}],\n    },`
-  );
+function render(type, mark, hex) {
+  const lines = [`  ${type}: {`, '    parts: ['];
+  for (const part of mark.parts) {
+    lines.push(`      { d: ${quote(part.d)}, fill: ${quote(part.fill)} },`);
+  }
+  lines.push('    ],');
+  if (mark.transform) lines.push(`    transform: ${quote(mark.transform)},`);
+  if (mark.gradients.length > 0) {
+    lines.push('    gradients: [');
+    for (const gradient of mark.gradients) {
+      const stops = gradient.stops.map(([offset, color]) => `{ offset: ${offset}, color: ${quote(color)} }`);
+      lines.push(
+        `      { id: ${quote(gradient.id)}, x1: ${gradient.x1}, y1: ${gradient.y1}, ` +
+          `x2: ${gradient.x2}, y2: ${gradient.y2}, stops: [${stops.join(', ')}] },`
+      );
+    }
+    lines.push('    ],');
+  }
+  lines.push(`    color: '#${hex}',`, '  },');
+  return lines.join('\n');
 }
 
 const entries = [];
-const missing = [];
+const summary = [];
 
-for (const [type, slug] of Object.entries(BRANDS)) {
-  const icon = iconFor(slug);
-  if (!icon) {
-    missing.push(`${type} (${slug})`);
-    continue;
+for (const [type, source] of Object.entries(BRANDS)) {
+  const icon = simpleIconFor(source.simple);
+  if (!icon) throw new Error(`${type}: no simple-icons slug "${source.simple}"`);
+
+  let mark;
+  if (source.logos) {
+    mark = normalize(type, source.logos);
+    const override = GRADIENT_OVERRIDES[source.gradient];
+    if (override) {
+      // Recolour a monochrome glyph rather than trusting its flat fill.
+      const alias = `${type}0`;
+      mark.gradients = [{ id: alias, ...override }];
+      mark.parts = mark.parts.map((part) => ({ ...part, fill: `@${alias}` }));
+    }
+    summary.push(
+      `${type}: logos/${source.logos} — ${mark.parts.length} part(s)` +
+        (mark.gradients.length ? `, ${mark.gradients.length} gradient(s)` : '') +
+        (override ? ' (gradient approximated)' : '')
+    );
+  } else {
+    mark = { parts: [{ d: icon.path, fill: `#${icon.hex}` }], gradients: [] };
+    summary.push(`${type}: simple-icons/${source.simple} — monochrome`);
   }
-  const override = OVERRIDES[type]?.(icon.path);
-  const mark = override ?? { parts: [{ d: icon.path, fill: `#${icon.hex}` }] };
 
-  const lines = [`  ${type}: {`, '    parts: ['];
-  lines.push(...mark.parts.map(renderPart));
-  lines.push('    ],');
-  if (mark.transform) lines.push(`    transform: ${quote(mark.transform)},`);
-  if (mark.gradient) lines.push(renderGradient(mark.gradient));
-  lines.push(`    color: '#${icon.hex}',`, '  },');
-  entries.push(lines.join('\n'));
+  entries.push(render(type, mark, icon.hex));
 }
 
 writeFileSync(
   'src/utils/brandLogos.ts',
   `// Generated file — do not edit by hand.
 //
-// The brand marks drawn in the middle of a generated QR code, taken from
-// the simple-icons package at build time so the app doesn't ship three
-// thousand icons to use fifteen.
+// The brand marks drawn in the middle of a generated QR code. Taken at
+// build time from @iconify-json/logos (gilbarbara's SVG Logos — the real,
+// full-colour marks) with simple-icons filling the gaps and supplying each
+// brand's documented hex, so the app ships a few kilobytes rather than
+// five thousand icons.
 //
-// Path data is CC0; the marks are the brands' own trademarks, drawn here
+// Both sets are CC0; the marks are the brands' own trademarks, drawn here
 // only on a code that points at that brand's service.
 //
 // Regenerate with:
 //   node scripts/generateBrandLogos.mjs
 import type { QrContentType } from './classifyQrContent';
 
-/** One filled shape of a mark. Drawn on a 24×24 grid, like every
- *  simple-icon, unless the mark carries a transform of its own. */
+/** One filled shape of a mark, on the 24×24 grid the mark's transform maps
+ *  its own artboard onto. */
 export interface BrandLogoPart {
   d: string;
-  /** A hex colour, or the literal 'gradient' for the mark's own. */
+  /** A colour, or '@' followed by the id of one of the mark's gradients. */
   fill: string;
-  transform?: string;
 }
 
-/** Left as coordinates rather than an angle because that is what
- *  react-native-svg's LinearGradient takes; 0–1 across the shape's box. */
+/** Coordinates rather than an angle because that is what
+ *  react-native-svg's LinearGradient takes; 0–1 across the filled shape. */
 export interface BrandLogoGradient {
+  id: string;
   x1: number;
   y1: number;
   x2: number;
@@ -196,9 +254,9 @@ export interface BrandLogoGradient {
 
 export interface BrandLogo {
   parts: BrandLogoPart[];
-  /** Applied to the whole mark, for art drawn on a box other than 24×24. */
+  /** Maps the artwork's own box onto the 24 grid, centred and undistorted. */
   transform?: string;
-  gradient?: BrandLogoGradient;
+  gradients?: BrandLogoGradient[];
   /** The brand's own colour, used as the code's colour by default. */
   color: string;
 }
@@ -215,8 +273,5 @@ export function brandLogoFor(type: QrContentType): BrandLogo | null {
 `
 );
 
-const coloured = entries.filter((entry) => entry.split('d:').length > 2 || entry.includes('gradient:')).length;
-console.log(`Wrote ${entries.length} brand marks, ${coloured} of them multi-colour.`);
-if (missing.length > 0) {
-  console.log(`No mark available for: ${missing.join(', ')}`);
-}
+console.log(summary.join('\n'));
+console.log(`\nWrote ${entries.length} brand marks.`);

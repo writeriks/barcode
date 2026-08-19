@@ -170,19 +170,28 @@ export function buildVCardContent(fields: VCardFormFields): string | null {
 }
 
 /**
- * A place, as an Apple Maps link.
+ * A place, as a Google Maps link.
  *
- * `geo:` is the obvious encoding and the wrong one here: iOS registers no
+ * `geo:` is the obvious encoding and the wrong one: iOS registers no
  * handler for it, so a code holding one is scanned by the Camera app and
- * simply does nothing. This app is for iOS, and a QR that opens Maps is
- * the point of a location code — so it encodes the link that does that.
- * Scanned `geo:` codes are still understood; see classifyQrContent.
+ * does nothing at all.
+ *
+ * Google's link rather than Apple's, even though this app is an iPhone
+ * app, because the phone that scans the code isn't the phone that made it.
+ * On iOS this opens the Google Maps app when it's installed and the map's
+ * web page when it isn't; on Android it opens Google Maps. An Apple Maps
+ * link is the better of the two on an iPhone and a web page everywhere
+ * else, and a code meant to be handed to other people can't assume whose
+ * pocket it lands in. This is the documented cross-platform form.
+ *
+ * Scanned `geo:` and Apple Maps codes are still understood; see
+ * classifyQrContent.
  */
 export function buildLocationContent(fields: { latitude: string; longitude: string }): string | null {
   const latitude = fields.latitude.trim();
   const longitude = fields.longitude.trim();
   if (!latitude || !longitude || Number.isNaN(Number(latitude)) || Number.isNaN(Number(longitude))) return null;
-  return `https://maps.apple.com/?ll=${latitude},${longitude}&q=${latitude},${longitude}`;
+  return `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
 }
 
 export interface MeCardFormFields {

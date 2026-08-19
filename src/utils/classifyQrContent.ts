@@ -46,8 +46,17 @@ const APPSTORE_LINK_PATTERN = /^https?:\/\/apps\.apple\.com\//i;
 // "Drive" label covers both without lying about where the link goes.
 const DRIVE_LINK_PATTERN = /^https?:\/\/(drive|docs)\.google\.com\//i;
 const DROPBOX_LINK_PATTERN = /^https?:\/\/([a-z0-9-]+\.)?dropbox\.com\//i;
-/** What this app now generates for a place — see buildLocationContent. */
-const MAPS_LINK_PATTERN = /^https?:\/\/maps\.apple\.com\/\?/i;
+/**
+ * A place, as a link. Google's is what this app generates (see
+ * buildLocationContent) and covers both its own URL shapes and the short
+ * links people share; Apple's is here because a scanned code may hold one,
+ * and because this app briefly generated them.
+ *
+ * Checked after DRIVE_LINK_PATTERN, which claims drive/docs.google.com and
+ * doesn't overlap with these.
+ */
+const MAPS_LINK_PATTERN =
+  /^https?:\/\/((www\.)?google\.[a-z.]{2,}\/maps|maps\.google\.[a-z.]{2,}\/|goo\.gl\/maps\/|maps\.app\.goo\.gl\/|maps\.apple\.com\/\?)/i;
 
 /** Local, network-free classification of a decoded QR string — enough to
  * pick the right primary action (Open link / Open email / Call number),
@@ -130,11 +139,13 @@ export function resolveQrOpenUri(data: string, type: QrContentType): string | nu
       // platforms' Linking.openURL reliably recognize.
       return trimmed.toLowerCase().startsWith('smsto:') ? `sms:${trimmed.slice(6)}` : trimmed;
     case 'location': {
-      // Codes this app makes are already Apple Maps links. A scanned one
-      // may well be a geo: URI, which is an Android convention iOS doesn't
-      // resolve, so that gets translated to the same kind of link.
+      // A map link opens itself. A geo: URI can't: it's an Android
+      // convention, and iOS registers no handler for it, so it becomes a
+      // link — Apple's, unlike the ones this app writes, because here the
+      // device is known to be an iPhone and Apple Maps is the one map app
+      // that is certainly on it.
       const match = trimmed.match(GEO_URI_PATTERN);
-      if (match) return `https://maps.apple.com/?ll=${match[1]},${match[2]}`;
+      if (match) return `https://maps.apple.com/?ll=${match[1]},${match[2]}&q=${match[1]},${match[2]}`;
       return MAPS_LINK_PATTERN.test(trimmed) ? trimmed : null;
     }
     case 'wifi':

@@ -167,15 +167,30 @@ export function parseZoomFields(content: string): ZoomFields {
   return { meetingId, password: params.pwd ?? '' };
 }
 
-/** Reads back both encodings: the Apple Maps link this app writes now,
- *  and the `geo:` URI it used to write (and still recognizes when scanned
- *  from elsewhere). */
+/**
+ * Pulls a pair of coordinates back out of a location code.
+ *
+ * Every shape the app might be handed: the Google Maps link it writes now,
+ * Google's other two spellings (the `q=` one older generators emit and the
+ * `@lat,lng,zoom` one a browser's address bar produces), the Apple Maps
+ * link it wrote briefly, and the `geo:` URI it wrote before that. A short
+ * link — goo.gl, maps.app.goo.gl — hides its coordinates behind a redirect
+ * and yields nothing, which leaves the form empty rather than wrong.
+ */
+const LOCATION_PATTERNS = [
+  /^geo:(-?[\d.]+),(-?[\d.]+)/i,
+  /^https?:\/\/[^/]*google\.[a-z.]{2,}\/maps\S*[?&]query=(-?[\d.]+),(-?[\d.]+)/i,
+  /^https?:\/\/[^/]*google\.[a-z.]{2,}\/[^?]*\?(?:[^#]*&)?q=(-?[\d.]+),(-?[\d.]+)/i,
+  /^https?:\/\/[^/]*google\.[a-z.]{2,}\/maps\/[^?]*@(-?[\d.]+),(-?[\d.]+)/i,
+  /^https?:\/\/maps\.apple\.com\/\?(?:[^#]*&)?ll=(-?[\d.]+),(-?[\d.]+)/i,
+];
+
 export function parseLocationFields(content: string): LocationFields {
-  const match =
-    content.match(/^geo:(-?[\d.]+),(-?[\d.]+)/i) ??
-    content.match(/^https?:\/\/maps\.apple\.com\/\?(?:[^#]*&)?ll=(-?[\d.]+),(-?[\d.]+)/i);
-  if (!match) return { ...defaultLocationFields };
-  return { latitude: match[1], longitude: match[2] };
+  for (const pattern of LOCATION_PATTERNS) {
+    const match = content.match(pattern);
+    if (match) return { latitude: match[1], longitude: match[2] };
+  }
+  return { ...defaultLocationFields };
 }
 
 export function parseUpiFields(content: string): UpiFields {

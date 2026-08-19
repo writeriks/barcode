@@ -40,6 +40,14 @@ const premiumTestingEnabled = !isEasBuild && process.env.EXPO_PUBLIC_PREMIUM_TES
 // Keep these in sync with the same keys in locales/*.json — those are the
 // translations, and iOS prefers them over these whenever the device's
 // language has a file.
+//
+// Never a straight double quote in any of them. These reach Info.plist,
+// which is XML and would cope — but their translations reach
+// InfoPlist.strings, which Expo writes as `KEY = "value";` with no
+// escaping at all (@expo/config-plugins/build/ios/Locales.js, line 80).
+// One `"` in a value closes the string early, the file stops parsing, and
+// the build fails in CopyStringsFile. Typographic quotes are what these
+// languages set anyway.
 const PERMISSIONS = {
   camera:
     'Blippo uses the camera to scan barcodes, QR codes and paper documents. For example, point it at a ' +
@@ -48,7 +56,7 @@ const PERMISSIONS = {
     'Blippo opens a photo you pick so it can read a barcode or QR code that is already in it — a ticket, ' +
     'a boarding pass, or a Wi-Fi code someone sent you as a picture.',
   photoLibraryAdd:
-    'Blippo saves a scanned page or a QR code image to your photos when you choose "Save Image" while ' +
+    'Blippo saves a scanned page or a QR code image to your photos when you choose “Save Image” while ' +
     'sharing it.',
   faceId:
     'Blippo uses Face ID to unlock the app, so your saved scans and documents stay private if someone ' +

@@ -36,10 +36,16 @@ const key = (slug) => `si${slug.charAt(0).toUpperCase()}${slug.slice(1)}`;
 const iconFor = (slug) => icons[key(slug)];
 
 /**
- * Google Drive's own six-piece geometry, which is the whole point of it —
- * the mark is three colours meeting at two folds, and a single-colour
- * silhouette of it is just a triangle. Drawn on Drive's 87.3×80 box; the
- * transform below maps that onto the 24 grid everything else uses.
+ * Drive's six-piece geometry — the whole point of this mark, since it is
+ * three colours meeting at two folds and a single-colour silhouette of it
+ * is just a triangle. On Drive's own 87.3×80 box; the transform below maps
+ * that onto the 24 grid everything else uses.
+ *
+ * Reproduced rather than taken from a file: it was written out here and
+ * then checked by rendering it against the real logo, not downloaded from
+ * Google. It draws correctly — wrong path data would be visibly wrong
+ * rather than subtly off — but nobody has diffed it against the official
+ * asset. Replace it with that asset if exactness ever matters.
  */
 const DRIVE_PARTS = [
   ['#0066da', 'm6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z'],
@@ -81,7 +87,9 @@ const OVERRIDES = {
       { d: path, fill: '#000000' },
     ],
   }),
-  // The same glyph, in the gradient it is actually printed in.
+  // The same simple-icons glyph, filled with a gradient instead of a flat
+  // colour. The stops are the widely-used approximation of Instagram's
+  // gradient, not a specification of it.
   instagram: (path) => ({
     parts: [{ d: path, fill: 'gradient' }],
     gradient: {
@@ -100,7 +108,8 @@ const OVERRIDES = {
   }),
   // simple-icons draws the "A" alone; the App Store's mark is that "A"
   // reversed out of the blue tile, and the tile is most of what people
-  // recognise.
+  // recognise. The tile, its corner radius and the two gradient stops were
+  // all set by eye against the real icon.
   appstore: (path) => ({
     parts: [
       { d: SQUIRCLE, fill: 'gradient' },

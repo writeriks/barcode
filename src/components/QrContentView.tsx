@@ -8,6 +8,7 @@ import { captureAnalyticsEvent } from '../services/analytics';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { classifyQrContent, parseOtpAuth, resolveQrOpenUri, type QrContentType } from '../utils/classifyQrContent';
+import { preferredMapUri } from '../utils/mapLinks';
 import { QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
 import { inspectUrl } from '../utils/urlSafety';
 import { fonts } from '../theme/fonts';
@@ -109,9 +110,12 @@ export function QrContentView({ data, onCopied }: Props) {
   const handleOpen = async () => {
     if (!openUri) return;
     captureAnalyticsEvent('qr_action', { action: 'open', contentType: type });
-    const supported = await Linking.canOpenURL(openUri);
+    // A place opens in whichever map app this phone actually has, which
+    // isn't something the link inside the code can know — see mapLinks.
+    const target = type === 'location' ? await preferredMapUri(data, openUri) : openUri;
+    const supported = await Linking.canOpenURL(target);
     if (supported) {
-      Linking.openURL(openUri);
+      Linking.openURL(target);
     }
   };
 

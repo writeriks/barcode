@@ -139,11 +139,10 @@ export function resolveQrOpenUri(data: string, type: QrContentType): string | nu
       // platforms' Linking.openURL reliably recognize.
       return trimmed.toLowerCase().startsWith('smsto:') ? `sms:${trimmed.slice(6)}` : trimmed;
     case 'location': {
-      // A map link opens itself. A geo: URI can't: it's an Android
-      // convention, and iOS registers no handler for it, so it becomes a
-      // link — Apple's, unlike the ones this app writes, because here the
-      // device is known to be an iPhone and Apple Maps is the one map app
-      // that is certainly on it.
+      // Whether there is a place to open at all. Which map app it opens in
+      // is decided at the moment of tapping, by preferredMapUri — this
+      // only has to name a URL iOS can resolve, which rules out a bare
+      // geo: URI (an Android convention no iOS app registers for).
       const match = trimmed.match(GEO_URI_PATTERN);
       if (match) return `https://maps.apple.com/?ll=${match[1]},${match[2]}&q=${match[1]},${match[2]}`;
       return MAPS_LINK_PATTERN.test(trimmed) ? trimmed : null;

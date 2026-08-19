@@ -98,6 +98,12 @@ const config: ExpoConfig = {
       // out of the share sheet on a scanned page or a QR image, which is
       // an ordinary thing to do.
       NSPhotoLibraryAddUsageDescription: PERMISSIONS.photoLibraryAdd,
+      // The one scheme the app is allowed to ask about. Linking.canOpenURL
+      // answers `false` for any custom scheme not listed here — not "no
+      // idea", just a flat no — so without this, the check in
+      // src/utils/mapLinks.ts would decide Google Maps is missing on every
+      // phone and always fall back to Apple Maps. Keep the two in step.
+      LSApplicationQueriesSchemes: ['comgooglemaps'],
     },
   },
   android: {

@@ -19,6 +19,7 @@ import { defaultVCardFields, type VCardFields } from '../components/qrForms/VCar
 import { defaultWifiFields, type WifiFields } from '../components/qrForms/WifiForm';
 import { defaultZoomFields, type ZoomFields } from '../components/qrForms/ZoomForm';
 import { COUNTRY_CALLING_CODES, type CountryCallingCode } from './countryCallingCodes';
+import { extractCoordinates } from './mapLinks';
 
 function decodeSafely(value: string): string {
   try {
@@ -167,30 +168,10 @@ export function parseZoomFields(content: string): ZoomFields {
   return { meetingId, password: params.pwd ?? '' };
 }
 
-/**
- * Pulls a pair of coordinates back out of a location code.
- *
- * Every shape the app might be handed: the Google Maps link it writes now,
- * Google's other two spellings (the `q=` one older generators emit and the
- * `@lat,lng,zoom` one a browser's address bar produces), the Apple Maps
- * link it wrote briefly, and the `geo:` URI it wrote before that. A short
- * link — goo.gl, maps.app.goo.gl — hides its coordinates behind a redirect
- * and yields nothing, which leaves the form empty rather than wrong.
- */
-const LOCATION_PATTERNS = [
-  /^geo:(-?[\d.]+),(-?[\d.]+)/i,
-  /^https?:\/\/[^/]*google\.[a-z.]{2,}\/maps\S*[?&]query=(-?[\d.]+),(-?[\d.]+)/i,
-  /^https?:\/\/[^/]*google\.[a-z.]{2,}\/[^?]*\?(?:[^#]*&)?q=(-?[\d.]+),(-?[\d.]+)/i,
-  /^https?:\/\/[^/]*google\.[a-z.]{2,}\/maps\/[^?]*@(-?[\d.]+),(-?[\d.]+)/i,
-  /^https?:\/\/maps\.apple\.com\/\?(?:[^#]*&)?ll=(-?[\d.]+),(-?[\d.]+)/i,
-];
-
+/** A short link hides its coordinates behind a redirect, so the form is
+ *  left empty rather than filled in wrong. */
 export function parseLocationFields(content: string): LocationFields {
-  for (const pattern of LOCATION_PATTERNS) {
-    const match = content.match(pattern);
-    if (match) return { latitude: match[1], longitude: match[2] };
-  }
-  return { ...defaultLocationFields };
+  return extractCoordinates(content) ?? { ...defaultLocationFields };
 }
 
 export function parseUpiFields(content: string): UpiFields {

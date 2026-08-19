@@ -2,23 +2,33 @@ import { useCallback, useEffect, useRef } from 'react';
 import { ADMOB_INTERSTITIAL_UNIT_ID } from '../config/adsEnv';
 import { areAdsEnabled } from '../services/ads/adsEnabled';
 import { isExpoGo } from '../services/ads/environment';
-import { canShowInterstitialForScan, recordInterstitialShown } from '../services/ads/interstitialSchedule';
+import {
+  canShowInterstitial,
+  loadInterstitialSchedule,
+  recordInterstitialShown,
+  recordScan,
+} from '../services/ads/interstitialSchedule';
 import type { InterstitialAd as InterstitialAdType } from 'react-native-google-mobile-ads';
 
 const RETRY_DELAY_MS = 30_000;
 
 /**
- * Preloads an interstitial video ad and exposes `maybeShowForScan`, meant
- * to be called once per completed scan — it shows (and queues the next
- * preload) only on the rare scan interstitialSchedule allows, which is a
- * handful of times a day at most and never in a first session. Otherwise
- * it's a no-op. Built on the library's plain InterstitialAd class rather than
+ * Preloads an interstitial video ad and exposes two calls: `countScan`,
+ * for the moment a scan completes, and `maybeShowOnLeavingResult`, for the
+ * moment the user is done with the answer and heading back to the camera.
+ *
+ * They are separate because the ad belongs at the second moment, not the
+ * first. Covering a result the instant it appears is what made this feel
+ * like the app was working for the advertiser; showing it as the user
+ * leaves costs them nothing they were still looking at. How often is
+ * interstitialSchedule's business. Built on the library's plain
+ * InterstitialAd class rather than
  * its React hook, since the hook requires a static import — this stays
  * dynamically imported so it never touches the native module under Expo Go.
  *
  * Fails gracefully: if a load errors (bad/missing unit ID, no fill, no
- * network), maybeShowForScan just stays a no-op — the scan flow is never
- * blocked on an ad — and a retry is scheduled after a short delay.
+ * network), maybeShowOnLeavingResult just stays a no-op — the scan flow is
+ * never blocked on an ad — and a retry is scheduled after a short delay.
  */
 export function useScanInterstitial() {
   const adRef = useRef<InterstitialAdType | null>(null);
@@ -62,6 +72,7 @@ export function useScanInterstitial() {
 
   useEffect(() => {
     mountedRef.current = true;
+    void loadInterstitialSchedule();
     loadNextAd();
     return () => {
       mountedRef.current = false;
@@ -69,15 +80,15 @@ export function useScanInterstitial() {
     };
   }, [loadNextAd]);
 
-  const maybeShowForScan = useCallback(() => {
+  const maybeShowOnLeavingResult = useCallback(() => {
     if (isExpoGo() || !areAdsEnabled()) return;
-    if (!canShowInterstitialForScan()) return;
+    if (!canShowInterstitial()) return;
     // Nothing loaded is not a missed turn: the schedule is only spent once
-    // an ad is genuinely on screen, so the next scan gets to ask again.
+    // an ad is genuinely on screen, so the next result gets to ask again.
     if (!adRef.current || !isLoadedRef.current) return;
     adRef.current.show();
     recordInterstitialShown();
   }, []);
 
-  return { maybeShowForScan };
+  return { countScan: recordScan, maybeShowOnLeavingResult };
 }

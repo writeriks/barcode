@@ -43,7 +43,7 @@ function analyticsResultValue(status: LookupResult['status']): string {
  * view when the already-active Scanner tab is re-tapped. */
 export function ScannerFlowScreen({ navigation }: Props) {
   const [screen, setScreen] = useState<Screen>({ name: 'scanner' });
-  const { maybeShowForScan } = useScanInterstitial();
+  const { countScan, maybeShowOnLeavingResult } = useScanInterstitial();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const lastMethodRef = useRef<ScanMethod>('camera');
@@ -78,7 +78,7 @@ export function ScannerFlowScreen({ navigation }: Props) {
       setScreen({ name: 'loading', barcode });
       const result = await lookupProduct(barcode);
       setScreen({ name: 'result', result });
-      maybeShowForScan();
+      countScan();
       captureAnalyticsEvent('scan_completed', { kind: 'barcode', method, result: analyticsResultValue(result.status) });
 
       if (result.status === 'found' || result.status === 'incomplete') {
@@ -94,7 +94,7 @@ export function ScannerFlowScreen({ navigation }: Props) {
         addHistoryEntry({ kind: 'product', barcode, timestamp: Date.now(), status: 'not-found' });
       }
     },
-    [maybeShowForScan]
+    [countScan]
   );
 
   // In batch mode the camera never leaves the scanner view, so a barcode's
@@ -147,12 +147,12 @@ export function ScannerFlowScreen({ navigation }: Props) {
       }
 
       setScreen({ name: 'qr-result', data });
-      maybeShowForScan();
+      countScan();
       recordSuccessfulScan();
       captureAnalyticsEvent('scan_completed', { kind: 'qr', method, result: 'found' });
       addHistoryEntry({ kind: 'qr', data, timestamp: Date.now(), contentType: classifyQrContent(data) });
     },
-    [runLookup, maybeShowForScan, isBatchMode, handleBatchScanned]
+    [runLookup, countScan, isBatchMode, handleBatchScanned]
   );
 
   const handleDocumentScanned = useCallback((pageTexts: string[], imageUris: string[]) => {
@@ -168,7 +168,14 @@ export function ScannerFlowScreen({ navigation }: Props) {
     addHistoryEntry({ kind: 'document', pageTexts, imageUris, timestamp });
   }, []);
 
-  const goToScanner = useCallback(() => setScreen({ name: 'scanner' }), []);
+  // Where the ad goes, if one is due at all: the user has read the result
+  // and asked for the camera back, so there is nothing on screen they are
+  // still using. Putting it here rather than on the result's arrival is
+  // what keeps a scanner feeling like a scanner.
+  const goToScanner = useCallback(() => {
+    maybeShowOnLeavingResult();
+    setScreen({ name: 'scanner' });
+  }, [maybeShowOnLeavingResult]);
 
   // ScannerScreen is deliberately edge-to-edge (it's a camera viewfinder),
   // but the result screens below it have no navigation header of their own

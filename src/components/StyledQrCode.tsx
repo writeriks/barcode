@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
-import Svg, { G, Path, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Defs, G, LinearGradient, Path, Rect, Stop, Text as SvgText } from 'react-native-svg';
+import type { BrandLogo } from '../utils/brandLogos';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -24,8 +25,7 @@ interface Props {
   caption?: string;
   /** Drawn over the middle of the code. Ignored unless the content fitted
    *  at level 'H' — see the note on the constant below. */
-  logoPath?: string;
-  logoColor?: string;
+  logo?: BrandLogo | null;
   getRef?: (ref: QrSvgRef | null) => void;
 }
 
@@ -55,12 +55,18 @@ const CAPTION_BAND = 0.16;
  * code from before that guard existed would otherwise take the screen down
  * with it.
  */
-export function StyledQrCode({ value, size, color, caption, logoPath, logoColor, getRef }: Props) {
+export function StyledQrCode({ value, size, color, caption, logo, getRef }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const matrix = useMemo(() => buildQrMatrix(value), [value]);
   const trimmedCaption = caption?.trim();
+  // A gradient is referenced by id, and this component is on screen twice
+  // whenever a code is being shared — once visibly, once off-screen at
+  // export size. Two identical ids would have one of them win both. The
+  // stripping is because React's ids carry punctuation that a URL
+  // reference can't.
+  const gradientId = `qr-brand-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
 
   if (!matrix) {
     return (
@@ -85,7 +91,7 @@ export function StyledQrCode({ value, size, color, caption, logoPath, logoColor,
   // correction, and only 'H' carries enough of it. Long content drops to a
   // weaker level, and there the logo has to go — a code that looks right
   // and doesn't scan is worse than one without a logo.
-  const showLogo = Boolean(logoPath) && matrix.level === 'H';
+  const showLogo = Boolean(logo) && matrix.level === 'H';
 
   return (
     <Svg
@@ -94,6 +100,27 @@ export function StyledQrCode({ value, size, color, caption, logoPath, logoColor,
       viewBox={`0 0 ${codeSpan} ${codeSpan + captionSpan}`}
       ref={getRef as never}
     >
+      {/* At the root rather than beside the shape that uses it: a Defs
+          nested in a group is legal SVG but not something every
+          react-native-svg version resolves the same way. Its coordinates
+          are fractions of the filled shape's own box, so where it is
+          declared makes no difference to how it lands. */}
+      {showLogo && logo?.gradient ? (
+        <Defs>
+          <LinearGradient
+            id={gradientId}
+            x1={logo.gradient.x1}
+            y1={logo.gradient.y1}
+            x2={logo.gradient.x2}
+            y2={logo.gradient.y2}
+          >
+            {logo.gradient.stops.map((stop) => (
+              <Stop key={stop.offset} offset={stop.offset} stopColor={stop.color} />
+            ))}
+          </LinearGradient>
+        </Defs>
+      ) : null}
+
       <Rect x={0} y={0} width={codeSpan} height={codeSpan + captionSpan} fill={colors.cream} />
       <Path
         d={matrix.path}
@@ -105,7 +132,7 @@ export function StyledQrCode({ value, size, color, caption, logoPath, logoColor,
           build the native view tree, and a fragment is not a node that walk
           knows about — on screen it happened to work, in the captured PNG
           the logo went missing. */}
-      {showLogo ? (
+      {showLogo && logo ? (
         <G>
           {/* The plate is the paper colour rather than white so it
               disappears into the code's background instead of sitting on
@@ -118,13 +145,23 @@ export function StyledQrCode({ value, size, color, caption, logoPath, logoColor,
             rx={plateSpan * 0.22}
             fill={colors.cream}
           />
-          <Path
-            d={logoPath}
-            fill={logoColor ?? color ?? DEFAULT_QR_COLOR}
-            // Brand marks are drawn on a 24-unit grid; scale that onto the
-            // plate and move it to the middle of the code.
+          {/* Brand marks are drawn on a 24-unit grid; scale that onto the
+              plate and move it to the middle of the code. A mark whose art
+              came on a different box carries its own transform inside. */}
+          <G
             transform={`translate(${centre - logoSpan / 2} ${centre - logoSpan / 2}) scale(${logoSpan / 24})`}
-          />
+          >
+            <G transform={logo.transform}>
+              {logo.parts.map((part, index) => (
+                <Path
+                  key={index}
+                  d={part.d}
+                  transform={part.transform}
+                  fill={part.fill === 'gradient' ? `url(#${gradientId})` : part.fill}
+                />
+              ))}
+            </G>
+          </G>
         </G>
       ) : null}
 

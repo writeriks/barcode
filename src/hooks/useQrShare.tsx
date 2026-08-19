@@ -132,8 +132,7 @@ export function useQrShare(onUnavailable?: () => void) {
             size={SHARE_SIZE}
             color={pending.appearance?.color}
             caption={pending.appearance?.caption}
-            logoPath={logo?.path}
-            logoColor={logo?.color}
+            logo={logo}
             getRef={(instance) => {
               svgRef.current = instance;
             }}

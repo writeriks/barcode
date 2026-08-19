@@ -618,8 +618,7 @@ export function MyCodesScreen({ navigation }: Props) {
                 size={220}
                 color={viewing.color}
                 caption={viewing.caption}
-                logoPath={viewing.logo ? brandLogoFor(codeTypeOf(viewing))?.path : undefined}
-                logoColor={viewing.logo ? brandLogoFor(codeTypeOf(viewing))?.color : undefined}
+                logo={viewing.logo ? brandLogoFor(codeTypeOf(viewing)) : null}
               />
             </View>
             <Text style={styles.viewerLabel}>{viewing.label}</Text>
@@ -808,8 +807,7 @@ export function MyCodesScreen({ navigation }: Props) {
                 size={104}
                 color={appearance.color}
                 caption={appearance.caption}
-                logoPath={appearance.logo ? brandLogoFor(type)?.path : undefined}
-                logoColor={appearance.logo ? brandLogoFor(type)?.color : undefined}
+                logo={appearance.logo ? brandLogoFor(type) : null}
               />
             </View>
           ) : null

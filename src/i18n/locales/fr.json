@@ -28,7 +28,7 @@
     "galleryTitle": "{{count}} page(s)",
     "deletePagesTitle": "Supprimer les pages sélectionnées ?",
     "deletePagesBody": "Cette action est irréversible.",
-    "freeScansLeft": "Il vous reste {{count}} scans gratuits",
+    "freeScansLeft": "Il vous reste {{count}} scans gratuits ce mois-ci",
     "shareFailed": "Impossible de partager ce scan",
     "pageMissing": "Le fichier de cette page est introuvable",
     "tabPage": "Page",
@@ -418,7 +418,7 @@
     "purchaseFailedBody": "Nous n'avons pas pu finaliser cet achat. Veuillez réessayer.",
     "loadingButton": "Chargement…",
     "planUnavailable": "Indisponible",
-    "titleDocumentScans": "Vous avez utilisé vos scans gratuits",
+    "titleDocumentScans": "Vous avez utilisé vos scans gratuits du mois",
     "titleHistory": "Votre historique est plein",
     "titleSettings": "Débloquez tous les réglages",
     "titleQrTypes": "Débloquez tous les types de QR"

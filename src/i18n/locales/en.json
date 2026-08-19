@@ -28,7 +28,7 @@
     "galleryTitle": "{{count}} pages",
     "deletePagesTitle": "Delete selected pages?",
     "deletePagesBody": "This can't be undone.",
-    "freeScansLeft": "{{count}} free scans left",
+    "freeScansLeft": "{{count}} free scans left this month",
     "shareFailed": "Couldn't share this scan",
     "pageMissing": "This page's file is missing",
     "tabPage": "Page",
@@ -418,7 +418,7 @@
     "purchaseFailedBody": "We couldn't complete that purchase. Please try again.",
     "loadingButton": "Loading…",
     "planUnavailable": "Unavailable",
-    "titleDocumentScans": "You have used your free scans",
+    "titleDocumentScans": "You have used this month's free scans",
     "titleHistory": "Your history is full",
     "titleSettings": "Unlock every setting",
     "titleQrTypes": "Unlock every QR type"

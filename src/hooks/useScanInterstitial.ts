@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { ADMOB_INTERSTITIAL_UNIT_ID } from '../config/adsEnv';
 import { areAdsEnabled } from '../services/ads/adsEnabled';
 import { isExpoGo } from '../services/ads/environment';
-import { shouldShowInterstitialForScan } from '../services/ads/interstitialSchedule';
+import { canShowInterstitialForScan, recordInterstitialShown } from '../services/ads/interstitialSchedule';
 import type { InterstitialAd as InterstitialAdType } from 'react-native-google-mobile-ads';
 
 const RETRY_DELAY_MS = 30_000;
@@ -10,8 +10,9 @@ const RETRY_DELAY_MS = 30_000;
 /**
  * Preloads an interstitial video ad and exposes `maybeShowForScan`, meant
  * to be called once per completed scan — it shows (and queues the next
- * preload) only on every Nth scan per interstitialSchedule, otherwise it's
- * a no-op. Built on the library's plain InterstitialAd class rather than
+ * preload) only on the rare scan interstitialSchedule allows, which is a
+ * handful of times a day at most and never in a first session. Otherwise
+ * it's a no-op. Built on the library's plain InterstitialAd class rather than
  * its React hook, since the hook requires a static import — this stays
  * dynamically imported so it never touches the native module under Expo Go.
  *
@@ -70,10 +71,12 @@ export function useScanInterstitial() {
 
   const maybeShowForScan = useCallback(() => {
     if (isExpoGo() || !areAdsEnabled()) return;
-    if (!shouldShowInterstitialForScan()) return;
-    if (adRef.current && isLoadedRef.current) {
-      adRef.current.show();
-    }
+    if (!canShowInterstitialForScan()) return;
+    // Nothing loaded is not a missed turn: the schedule is only spent once
+    // an ad is genuinely on screen, so the next scan gets to ask again.
+    if (!adRef.current || !isLoadedRef.current) return;
+    adRef.current.show();
+    recordInterstitialShown();
   }, []);
 
   return { maybeShowForScan };

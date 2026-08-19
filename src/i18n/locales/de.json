@@ -28,7 +28,7 @@
     "galleryTitle": "{{count}} Seiten",
     "deletePagesTitle": "Ausgewählte Seiten löschen?",
     "deletePagesBody": "Dies kann nicht rückgängig gemacht werden.",
-    "freeScansLeft": "Noch {{count}} kostenlose Scans",
+    "freeScansLeft": "Diesen Monat noch {{count}} kostenlose Scans",
     "shareFailed": "Scan konnte nicht geteilt werden",
     "pageMissing": "Die Datei dieser Seite fehlt",
     "tabPage": "Seite",
@@ -418,7 +418,7 @@
     "purchaseFailedBody": "Der Kauf konnte nicht abgeschlossen werden. Bitte versuche es erneut.",
     "loadingButton": "Wird geladen…",
     "planUnavailable": "Nicht verfügbar",
-    "titleDocumentScans": "Du hast deine Gratis-Scans verbraucht",
+    "titleDocumentScans": "Du hast deine kostenlosen Scans für diesen Monat aufgebraucht",
     "titleHistory": "Dein Verlauf ist voll",
     "titleSettings": "Alle Einstellungen freischalten",
     "titleQrTypes": "Alle QR-Typen freischalten"

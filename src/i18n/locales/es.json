@@ -28,7 +28,7 @@
     "galleryTitle": "{{count}} páginas",
     "deletePagesTitle": "¿Eliminar las páginas seleccionadas?",
     "deletePagesBody": "Esta acción no se puede deshacer.",
-    "freeScansLeft": "Te quedan {{count}} escaneos gratis",
+    "freeScansLeft": "Te quedan {{count}} escaneos gratis este mes",
     "shareFailed": "No se pudo compartir este escaneo",
     "pageMissing": "Falta el archivo de esta página",
     "tabPage": "Página",
@@ -418,7 +418,7 @@
     "purchaseFailedBody": "No pudimos completar la compra. Inténtalo de nuevo.",
     "loadingButton": "Cargando…",
     "planUnavailable": "No disponible",
-    "titleDocumentScans": "Has usado tus escaneos gratuitos",
+    "titleDocumentScans": "Has usado tus escaneos gratis de este mes",
     "titleHistory": "Tu historial está lleno",
     "titleSettings": "Desbloquea todos los ajustes",
     "titleQrTypes": "Desbloquea todos los tipos de QR"

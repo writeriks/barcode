@@ -28,7 +28,7 @@
     "galleryTitle": "Strony: {{count}}",
     "deletePagesTitle": "Usunąć zaznaczone strony?",
     "deletePagesBody": "Tej operacji nie można cofnąć.",
-    "freeScansLeft": "Pozostało darmowych skanów: {{count}}",
+    "freeScansLeft": "W tym miesiącu zostało {{count}} darmowych skanów",
     "shareFailed": "Nie udało się udostępnić tego skanu",
     "pageMissing": "Brak pliku tej strony",
     "tabPage": "Strona",
@@ -418,7 +418,7 @@
     "purchaseFailedBody": "Nie udało się zrealizować zakupu. Spróbuj ponownie.",
     "loadingButton": "Ładowanie…",
     "planUnavailable": "Niedostępne",
-    "titleDocumentScans": "Wykorzystałeś darmowe skany",
+    "titleDocumentScans": "Wykorzystano darmowe skany w tym miesiącu",
     "titleHistory": "Twoja historia jest pełna",
     "titleSettings": "Odblokuj wszystkie ustawienia",
     "titleQrTypes": "Odblokuj wszystkie typy kodów QR"

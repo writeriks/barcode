@@ -28,7 +28,7 @@
     "galleryTitle": "{{count}} sayfa",
     "deletePagesTitle": "Seçili sayfalar silinsin mi?",
     "deletePagesBody": "Bu işlem geri alınamaz.",
-    "freeScansLeft": "{{count}} ücretsiz tarama hakkın kaldı",
+    "freeScansLeft": "Bu ay {{count}} ücretsiz tarama hakkın kaldı",
     "shareFailed": "Bu tarama paylaşılamadı",
     "pageMissing": "Bu sayfanın dosyası bulunamadı",
     "tabPage": "Sayfa",
@@ -418,7 +418,7 @@
     "purchaseFailedBody": "Satın alma tamamlanamadı. Lütfen tekrar dene.",
     "loadingButton": "Yükleniyor…",
     "planUnavailable": "Kullanılamıyor",
-    "titleDocumentScans": "Ücretsiz taramalarını kullandın",
+    "titleDocumentScans": "Bu ayki ücretsiz taramalarını kullandın",
     "titleHistory": "Geçmişin doldu",
     "titleSettings": "Tüm ayarların kilidini aç",
     "titleQrTypes": "Tüm QR türlerinin kilidini aç"

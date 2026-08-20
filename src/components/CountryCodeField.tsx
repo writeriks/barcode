@@ -8,8 +8,14 @@ import type { ColorTheme } from '../theme/colors';
 import { COUNTRY_CALLING_CODES, type CountryCallingCode } from '../utils/countryCallingCodes';
 import { localizedCountryName } from '../utils/countryNames';
 
-/** Tall enough for a few countries either side of the selected one. */
-const WHEEL_HEIGHT = 190;
+/**
+ * Tall enough for a couple of countries either side of the selected one.
+ *
+ * 216 is also the height the picker gives itself when nothing says
+ * otherwise, and matching it is not a coincidence — see the note on
+ * `wheelItem` below for why the two heights have to agree.
+ */
+const WHEEL_HEIGHT = 216;
 
 interface FieldProps {
   label: string;
@@ -148,6 +154,14 @@ export function CountryCodePanel({ value, onChange }: PanelProps) {
           // iOS-only styling; on Android the same component is a dropdown
           // opening the system list, which is that platform's convention
           // and needs none of this.
+          // Named itemStyle, but the library puts it on the native picker
+          // rather than on the rows (PickerIOS.ios.js: style={[styles.
+          // pickerIOS, itemStyle]}), so a height here sizes the wheel
+          // itself. Setting it to a third of the container is what left a
+          // 63pt picker sitting in a 216pt hole with one country in it.
+          // Row height isn't settable from JS at all — the native side
+          // derives it from the font (RNCPicker.mm, rowHeightForComponent),
+          // which is what fontSize below is really controlling.
           itemStyle={styles.wheelItem}
           selectionColor={colors.panelLine}
           dropdownIconColor={colors.text}
@@ -228,8 +242,11 @@ function createStyles(colors: ColorTheme) {
       height: WHEEL_HEIGHT,
     },
     wheelItem: {
+      // Same height as the container it sits in, so the wheel fills it.
+      height: WHEEL_HEIGHT,
+      // Drives the row height natively: roughly the line height plus 20,
+      // so about 40pt a row and five rows in view.
       fontSize: 17,
-      height: WHEEL_HEIGHT / 3,
       color: colors.text,
     },
     empty: {

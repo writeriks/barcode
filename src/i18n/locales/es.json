@@ -422,7 +422,11 @@
     "wifiSecurityWep": "WEP",
     "wifiSecurityOpen": "Sin cifrado",
     "addToCalendar": "Añadir al calendario",
-    "addToContacts": "Añadir a contactos"
+    "addToContacts": "Añadir a contactos",
+    "calendarDeniedTitle": "El acceso al calendario está desactivado",
+    "calendarDeniedBody": "Blippo necesita acceso al calendario para abrir la pantalla de nuevo evento. Puedes activarlo en Ajustes.",
+    "calendarDeniedOpen": "Abrir Ajustes",
+    "calendarDeniedDismiss": "Ahora no"
   },
   "paywall": {
     "title": "Desbloquea Blippo Premium",

@@ -64,6 +64,14 @@ const PERMISSIONS = {
   tracking:
     'This identifier is used to show ads that are more relevant to you. Your scans and documents are ' +
     'never shared.',
+  // iOS asks for full calendar access here rather than the lighter
+  // add-only kind, because expo-calendar treats the write-only grant as a
+  // refusal and calls requestFullAccessToEvents (see its
+  // CalendarPermissionsRequester). So the wording has to be about what the
+  // app does with the access, not about what the prompt happens to say.
+  calendar:
+    'Blippo adds an event from a scanned QR code to your calendar. It shows you the event first and ' +
+    'you confirm it in the calendar’s own screen — nothing already in your calendar is read.',
 } as const;
 
 const config: ExpoConfig = {
@@ -179,6 +187,12 @@ const config: ExpoConfig = {
       'expo-local-authentication',
       {
         faceIDPermission: PERMISSIONS.faceId,
+      },
+    ],
+    [
+      'expo-calendar',
+      {
+        calendarPermission: PERMISSIONS.calendar,
       },
     ],
   ],

@@ -5,7 +5,9 @@
     "NSUserTrackingUsageDescription": "Bu tanımlayıcı sana daha uygun reklamlar göstermek için kullanılır. Taramaların ve dökümanların hiçbir zaman paylaşılmaz.",
     "NSPhotoLibraryUsageDescription": "Blippo, seçtiğin fotoğrafı açarak içindeki barkodu veya QR kodu okur — bir bilet, biniş kartı ya da birinin resim olarak gönderdiği Wi-Fi kodu gibi.",
     "NSPhotoLibraryAddUsageDescription": "Blippo, paylaşırken «Görseli Kaydet» seçtiğinde taranan sayfayı veya QR kod görselini fotoğraflarına kaydeder.",
-    "NSFaceIDUsageDescription": "Blippo, uygulamayı açmak için Face ID kullanır; böylece iPhone’unu başkası eline aldığında kayıtlı taramaların ve dökümanların gizli kalır."
+    "NSFaceIDUsageDescription": "Blippo, uygulamayı açmak için Face ID kullanır; böylece iPhone’unu başkası eline aldığında kayıtlı taramaların ve dökümanların gizli kalır.",
+    "NSCalendarsUsageDescription": "Blippo, okuttuğun QR koddaki etkinliği takvimine ekler. Etkinliği önce sana gösterir, onayı takvimin kendi ekranında verirsin — takvimindeki hiçbir şey okunmaz.",
+    "NSCalendarsFullAccessUsageDescription": "Blippo, okuttuğun QR koddaki etkinliği takvimine ekler. Etkinliği önce sana gösterir, onayı takvimin kendi ekranında verirsin — takvimindeki hiçbir şey okunmaz."
   },
   "android": {
     "app_name": "Blippo"

@@ -5,7 +5,9 @@
     "NSUserTrackingUsageDescription": "Cet identifiant sert à afficher des publicités plus pertinentes pour vous. Vos scans et documents ne sont jamais partagés.",
     "NSPhotoLibraryUsageDescription": "Blippo ouvre une photo que vous choisissez afin d’y lire un code-barres ou un QR code déjà présent — un billet, une carte d’embarquement ou un code Wi-Fi qu’on vous a envoyé en image.",
     "NSPhotoLibraryAddUsageDescription": "Blippo enregistre une page scannée ou l’image d’un QR code dans vos photos lorsque vous choisissez « Enregistrer l’image » au moment du partage.",
-    "NSFaceIDUsageDescription": "Blippo utilise Face ID pour déverrouiller l’app, afin que vos scans et documents enregistrés restent privés si quelqu’un d’autre prend votre iPhone."
+    "NSFaceIDUsageDescription": "Blippo utilise Face ID pour déverrouiller l’app, afin que vos scans et documents enregistrés restent privés si quelqu’un d’autre prend votre iPhone.",
+    "NSCalendarsUsageDescription": "Blippo ajoute à votre calendrier un événement issu d’un code QR scanné. L’événement vous est d’abord montré et vous le confirmez dans l’écran du calendrier lui-même — rien de ce qui s’y trouve déjà n’est lu.",
+    "NSCalendarsFullAccessUsageDescription": "Blippo ajoute à votre calendrier un événement issu d’un code QR scanné. L’événement vous est d’abord montré et vous le confirmez dans l’écran du calendrier lui-même — rien de ce qui s’y trouve déjà n’est lu."
   },
   "android": {
     "app_name": "Blippo"

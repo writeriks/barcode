@@ -422,7 +422,11 @@
     "wifiSecurityWep": "WEP",
     "wifiSecurityOpen": "Şifresiz",
     "addToCalendar": "Takvime ekle",
-    "addToContacts": "Rehbere ekle"
+    "addToContacts": "Rehbere ekle",
+    "calendarDeniedTitle": "Takvim erişimi kapalı",
+    "calendarDeniedBody": "Yeni etkinlik ekranını açmak için Blippo’nun takvim erişimine ihtiyacı var. Ayarlar’dan açabilirsin.",
+    "calendarDeniedOpen": "Ayarları aç",
+    "calendarDeniedDismiss": "Şimdi değil"
   },
   "paywall": {
     "title": "Blippo Premium'un Kilidini Aç",

@@ -2,12 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useQrShare } from '../hooks/useQrShare';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { captureAnalyticsEvent } from '../services/analytics';
-import { shareStructuredFile, toCalendarFile, toContactFile } from '../services/structuredQrHandoff';
+import { addEventToCalendar, shareStructuredFile, toContactFile } from '../services/structuredQrHandoff';
 import { classifyQrContent, parseOtpAuth, resolveQrOpenUri, type QrContentType } from '../utils/classifyQrContent';
 import { findCountryByRegionCode } from '../utils/countryCallingCodes';
 import { getDeviceRegionCode } from '../utils/locale';
@@ -145,15 +145,27 @@ export function QrContentView({ data, onCopied }: Props) {
     onCopied?.();
   };
 
-  // Handing the payload to iOS as a file it recognises, rather than asking
-  // for calendar or contacts permission to write it ourselves. See
-  // services/structuredQrHandoff.
+  // An event opens the calendar's own new-event screen; a contact still
+  // goes out as a file. See services/structuredQrHandoff for why the two
+  // differ.
   const handleAddToDevice = async () => {
-    const title = details?.title ?? '';
     captureAnalyticsEvent('qr_action', { action: 'add_to_device', contentType: type });
-    const file = type === 'event' ? toCalendarFile(data, title) : toContactFile(data, type, title);
+    if (type === 'event') {
+      const result = await addEventToCalendar(data);
+      // A refusal is the one outcome worth saying something about: the
+      // screen simply not appearing looks like the button is broken.
+      // Everything else the user has already seen happen in front of them.
+      if (result === 'denied') {
+        Alert.alert(t('qr.calendarDeniedTitle'), t('qr.calendarDeniedBody'), [
+          { text: t('qr.calendarDeniedDismiss'), style: 'cancel' },
+          { text: t('qr.calendarDeniedOpen'), onPress: () => Linking.openSettings() },
+        ]);
+      }
+      return;
+    }
+    const file = toContactFile(data, type, details?.title ?? '');
     if (!file) return;
-    await shareStructuredFile(file, type === 'event' ? 'event' : 'contact');
+    await shareStructuredFile(file);
   };
 
   const handleShare = () => {

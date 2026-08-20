@@ -422,7 +422,11 @@
     "wifiSecurityWep": "WEP",
     "wifiSecurityOpen": "Keine Verschlüsselung",
     "addToCalendar": "Zum Kalender",
-    "addToContacts": "Zu Kontakten"
+    "addToContacts": "Zu Kontakten",
+    "calendarDeniedTitle": "Kalenderzugriff ist aus",
+    "calendarDeniedBody": "Blippo braucht Kalenderzugriff, um den Termin-Bildschirm zu öffnen. Du kannst ihn in den Einstellungen aktivieren.",
+    "calendarDeniedOpen": "Einstellungen öffnen",
+    "calendarDeniedDismiss": "Jetzt nicht"
   },
   "paywall": {
     "title": "Blippo Premium freischalten",

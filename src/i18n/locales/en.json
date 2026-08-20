@@ -422,7 +422,11 @@
     "wifiSecurityWep": "WEP",
     "wifiSecurityOpen": "No encryption",
     "addToCalendar": "Add to Calendar",
-    "addToContacts": "Add to Contacts"
+    "addToContacts": "Add to Contacts",
+    "calendarDeniedTitle": "Calendar access is off",
+    "calendarDeniedBody": "Blippo needs calendar access to open the new event screen. You can turn it on in Settings.",
+    "calendarDeniedOpen": "Open Settings",
+    "calendarDeniedDismiss": "Not now"
   },
   "paywall": {
     "title": "Unlock Blippo Premium",

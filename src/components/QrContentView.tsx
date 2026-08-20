@@ -4,10 +4,14 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useQrShare } from '../hooks/useQrShare';
-import { captureAnalyticsEvent } from '../services/analytics';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
+import { captureAnalyticsEvent } from '../services/analytics';
+import { shareStructuredFile, toCalendarFile, toContactFile } from '../services/structuredQrHandoff';
 import { classifyQrContent, parseOtpAuth, resolveQrOpenUri, type QrContentType } from '../utils/classifyQrContent';
+import { findCountryByRegionCode } from '../utils/countryCallingCodes';
+import { getDeviceRegionCode } from '../utils/locale';
+import { describeQrContent } from '../utils/structuredQrDetails';
 import { preferredMapUri } from '../utils/mapLinks';
 import { QR_TYPE_ICON, QR_TYPE_LABEL_KEY } from '../utils/qrTypeMeta';
 import { inspectUrl } from '../utils/urlSafety';
@@ -83,6 +87,15 @@ const OPEN_LABEL_KEY: Record<QrContentType, string> = {
   dropbox: 'qr.openLink',
 };
 
+/** Types this app can hand to iOS as a file it recognises. Wi-Fi is not
+ *  one of them: iOS exposes no way to join a network from an app, so the
+ *  most useful thing there is the password, which the card shows. */
+const HANDOFF_LABEL_KEY: Partial<Record<QrContentType, string>> = {
+  event: 'qr.addToCalendar',
+  vcard: 'qr.addToContacts',
+  mecard: 'qr.addToContacts',
+};
+
 const SECRET_MASK = '•••• •••• •••• ••••';
 
 interface Props {
@@ -94,7 +107,7 @@ interface Props {
  * decoded value, and type-aware actions. Used both by the live scan result
  * and by the read-only History detail view. */
 export function QrContentView({ data, onCopied }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const type = classifyQrContent(data);
@@ -106,6 +119,13 @@ export function QrContentView({ data, onCopied }: Props) {
   // device. See utils/urlSafety.ts for why it never says "safe".
   const urlWarnings = useMemo(() => inspectUrl(data), [data]);
   const { shareQr, qrRenderer } = useQrShare();
+  // Structured payloads — an event, a contact, a network — read as a card
+  // of fields rather than as the raw text they are encoded in.
+  const details = useMemo(
+    () => describeQrContent(data, type, i18n.language, findCountryByRegionCode(getDeviceRegionCode()) ?? null),
+    [data, type, i18n.language]
+  );
+  const [areSecretsRevealed, setSecretsRevealed] = useState(false);
 
   const handleOpen = async () => {
     if (!openUri) return;
@@ -123,6 +143,17 @@ export function QrContentView({ data, onCopied }: Props) {
     captureAnalyticsEvent('qr_action', { action: otpInfo ? 'copy_secret' : 'copy', contentType: type });
     await Clipboard.setStringAsync(otpInfo ? otpInfo.secret : data);
     onCopied?.();
+  };
+
+  // Handing the payload to iOS as a file it recognises, rather than asking
+  // for calendar or contacts permission to write it ourselves. See
+  // services/structuredQrHandoff.
+  const handleAddToDevice = async () => {
+    const title = details?.title ?? '';
+    captureAnalyticsEvent('qr_action', { action: 'add_to_device', contentType: type });
+    const file = type === 'event' ? toCalendarFile(data, title) : toContactFile(data, type, title);
+    if (!file) return;
+    await shareStructuredFile(file, type === 'event' ? 'event' : 'contact');
   };
 
   const handleShare = () => {
@@ -164,6 +195,36 @@ export function QrContentView({ data, onCopied }: Props) {
             </Pressable>
           </View>
         </View>
+      ) : details ? (
+        <View style={styles.contentCard}>
+          {details.title ? <Text style={styles.detailTitle}>{details.title}</Text> : null}
+          {details.rows.map((detail) => {
+            const [key, count] = detail.value.split('|');
+            const isKey = detail.labelKey === 'qr.eventReminder' || detail.value.startsWith('qr.');
+            const shown = isKey ? t(key, { count: Number(count) }) : detail.value;
+            const hidden = detail.secret && !areSecretsRevealed;
+            return (
+              <View key={detail.labelKey} style={styles.detailRow}>
+                <Text style={styles.contentLabel}>{t(detail.labelKey)}</Text>
+                <View style={styles.detailValueRow}>
+                  <Text style={styles.detailValue} selectable={!hidden}>
+                    {hidden ? SECRET_MASK : shown}
+                  </Text>
+                  {detail.secret ? (
+                    <Pressable onPress={() => setSecretsRevealed((prev) => !prev)} hitSlop={8}>
+                      <Ionicons
+                        name={areSecretsRevealed ? 'eye-off-outline' : 'eye-outline'}
+                        size={17}
+                        color={colors.text}
+                        style={styles.otpRevealIcon}
+                      />
+                    </Pressable>
+                  ) : null}
+                </View>
+              </View>
+            );
+          })}
+        </View>
       ) : (
         <Pressable
           onPress={handleCopy}
@@ -193,6 +254,14 @@ export function QrContentView({ data, onCopied }: Props) {
 
       <View style={styles.actions}>
         {openUri ? <PillButton title={t(OPEN_LABEL_KEY[type])} onPress={handleOpen} variant="punch" /> : null}
+        {HANDOFF_LABEL_KEY[type] ? (
+          <PillButton
+            title={t(HANDOFF_LABEL_KEY[type] as string)}
+            onPress={handleAddToDevice}
+            variant="punch"
+            icon={type === 'event' ? 'calendar-outline' : 'person-add-outline'}
+          />
+        ) : null}
         <View style={styles.actionRow}>
           <PillButton
             title={t(otpInfo ? 'qr.copySecret' : 'qr.copy')}
@@ -312,6 +381,27 @@ function createStyles(colors: ColorTheme) {
       color: colors.text,
       opacity: 0.6,
       marginTop: 2,
+    },
+    detailTitle: {
+      fontFamily: fonts.displayBold,
+      fontSize: 17,
+      color: colors.text,
+      marginBottom: 4,
+    },
+    detailRow: {
+      gap: 2,
+      marginTop: 10,
+    },
+    detailValueRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    detailValue: {
+      flex: 1,
+      fontSize: 14.5,
+      lineHeight: 20,
+      color: colors.text,
     },
     otpDivider: {
       height: 1,

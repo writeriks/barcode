@@ -227,6 +227,29 @@ export function parseWifiFields(content: string): WifiFields {
   return { ssid: raw.S ?? '', networkType, password: raw.P ?? '', hidden: raw.H === 'true' };
 }
 
+/**
+ * What kind of number a TEL line holds.
+ *
+ * vCard says this two ways and this app only understood one of them. 2.1
+ * writes the type as a bare parameter, `TEL;CELL:`, which is what the
+ * generator here emits; 3.0 and 4.0 — and therefore iOS, and most other
+ * generators — write `TEL;TYPE=CELL:`, sometimes several at once and
+ * sometimes comma-joined. Matching only the bare form meant every phone
+ * number in a contact code from anywhere else was read and then dropped,
+ * silently, both on screen and when reopening a saved code to edit it.
+ */
+function telKinds(params: string[]): Set<string> {
+  const kinds = new Set<string>();
+  for (const param of params) {
+    for (const part of param.replace(/^TYPE=/i, '').split(',')) {
+      const kind = part.trim().toUpperCase();
+      // MOBILE is not in any spec but plenty of exporters write it.
+      kinds.add(kind === 'MOBILE' ? 'CELL' : kind);
+    }
+  }
+  return kinds;
+}
+
 export function parseVCardFields(content: string, defaultCountry: CountryCallingCode | null): VCardFields {
   const result = defaultVCardFields(defaultCountry);
   if (!content.includes('BEGIN:VCARD')) return result;
@@ -234,7 +257,7 @@ export function parseVCardFields(content: string, defaultCountry: CountryCalling
   for (const line of content.split(/\r?\n/)) {
     const colonIndex = line.indexOf(':');
     if (colonIndex === -1) continue;
-    const [key, param] = line.slice(0, colonIndex).split(';');
+    const [key, ...params] = line.slice(0, colonIndex).split(';');
     const value = line.slice(colonIndex + 1);
 
     switch (key) {
@@ -258,10 +281,17 @@ export function parseVCardFields(content: string, defaultCountry: CountryCalling
         break;
       case 'TEL': {
         const { country, number } = splitDialCode(value, defaultCountry);
-        if (param === 'HOME') Object.assign(result, { homeCountry: country, homeNumber: number });
-        else if (param === 'CELL') Object.assign(result, { mobileCountry: country, mobileNumber: number });
-        else if (param === 'WORK') Object.assign(result, { officeCountry: country, officeNumber: number });
-        else if (param === 'FAX') Object.assign(result, { faxCountry: country, faxNumber: number });
+        const kinds = telKinds(params);
+        // FAX first: a fax line is often also tagged WORK, and reading it
+        // as the office number would lose both.
+        if (kinds.has('FAX')) Object.assign(result, { faxCountry: country, faxNumber: number });
+        else if (kinds.has('CELL')) Object.assign(result, { mobileCountry: country, mobileNumber: number });
+        else if (kinds.has('WORK')) Object.assign(result, { officeCountry: country, officeNumber: number });
+        else if (kinds.has('HOME')) Object.assign(result, { homeCountry: country, homeNumber: number });
+        // An untyped number still belongs somewhere. Mobile first, because
+        // that is what a bare TEL almost always is now.
+        else if (!result.mobileNumber) Object.assign(result, { mobileCountry: country, mobileNumber: number });
+        else if (!result.homeNumber) Object.assign(result, { homeCountry: country, homeNumber: number });
         break;
       }
       case 'EMAIL':

@@ -20,9 +20,18 @@ const SCANS_DIRECTORY = 'DocumentScans';
  * stored path down to its last segment and put today's directory back in
  * front of it. Entries written by any earlier version heal on read without
  * needing a migration.
+ *
+ * Must never throw — `getHistory` used to remap inside a catch that
+ * returned `[]` for the *whole* log, so one bad page URI hid every
+ * barcode and QR as well. A path we can't rebuild is returned as-is.
  */
 export function resolveDocumentScanUri(storedUri: string): string {
+  if (typeof storedUri !== 'string' || storedUri.length === 0) return storedUri;
   const fileName = storedUri.split('/').pop();
   if (!fileName) return storedUri;
-  return new File(Paths.document, SCANS_DIRECTORY, fileName).uri;
+  try {
+    return new File(Paths.document, SCANS_DIRECTORY, fileName).uri;
+  } catch {
+    return storedUri;
+  }
 }

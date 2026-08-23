@@ -124,7 +124,7 @@ function entryDisplayName(entry: ScanHistoryEntry, t: (key: string) => string): 
   if (entry.label) return entry.label;
   if (entry.kind === 'qr') return entry.data;
   if (entry.kind === 'document') {
-    return entry.pageTexts.find((text) => text.trim().length > 0) || t('document.noTextFound');
+    return (entry.pageTexts ?? []).find((text) => text.trim().length > 0) || t('document.noTextFound');
   }
   return entry.product?.productName ?? entry.barcode;
 }
@@ -134,7 +134,7 @@ function matchesSearch(entry: ScanHistoryEntry, query: string): boolean {
   // not only by whatever it was scanned as.
   if (entry.label?.toLowerCase().includes(query)) return true;
   if (entry.kind === 'qr') return entry.data.toLowerCase().includes(query);
-  if (entry.kind === 'document') return entry.pageTexts.some((text) => text.toLowerCase().includes(query));
+  if (entry.kind === 'document') return (entry.pageTexts ?? []).some((text) => text.toLowerCase().includes(query));
   const haystack = [entry.barcode, entry.product?.productName, entry.product?.brands]
     .filter(Boolean)
     .join(' ')
@@ -700,7 +700,7 @@ export function HistoryScreen({ navigation }: Props) {
       <ShareFormatSheet
         visible={sharingEntries !== null}
         pageCount={(sharingEntries ?? []).reduce(
-          (total, entry) => total + (entry.kind === 'document' ? entry.imageUris.length : 0),
+          (total, entry) => total + (entry.kind === 'document' ? (entry.imageUris?.length ?? 0) : 0),
           0
         )}
         onClose={() => setSharingEntries(null)}

@@ -3,6 +3,7 @@ import { File } from 'expo-file-system';
 import { isPremium, isPremiumResolved } from '../premium/premiumState';
 import { resolveDocumentScanUri } from '../utils/documentScanPaths';
 import { isDuplicateScansEnabled, isHistorySavingEnabled } from './historyPreference';
+import { normalizeHistoryEntries } from './scanHistoryNormalize';
 import type { ScanHistoryEntry } from '../types/history';
 
 const STORAGE_KEY = '@beep/scan_history';
@@ -12,7 +13,10 @@ export const PREMIUM_MAX_ENTRIES = 100;
 function isSameScan(a: ScanHistoryEntry, b: ScanHistoryEntry): boolean {
   if (a.kind === 'product' && b.kind === 'product') return a.barcode === b.barcode;
   if (a.kind === 'qr' && b.kind === 'qr') return a.data === b.data;
-  if (a.kind === 'document' && b.kind === 'document') return a.pageTexts.join('\n') === b.pageTexts.join('\n');
+  // Documents have no stable identity the way a barcode or a QR payload
+  // does. Comparing OCR text treated two blank pages — or two photos of
+  // the same letter — as one scan, so the second capture was dropped
+  // whenever "save duplicate scans" was off.
   return false;
 }
 
@@ -28,26 +32,40 @@ function entryMatchesKey(entry: ScanHistoryEntry, key: HistoryEntryKey): boolean
   return entry.kind === key.kind && entry.timestamp === key.timestamp;
 }
 
-export async function getHistory(): Promise<ScanHistoryEntry[]> {
+function withResolvedDocumentUris(entry: ScanHistoryEntry): ScanHistoryEntry {
+  if (entry.kind !== 'document') return entry;
+  return { ...entry, imageUris: entry.imageUris.map(resolveDocumentScanUri) };
+}
+
+/** The log as it sits on disk — no path rewriting. Writers must go
+ * through this; remapping in `getHistory` used to live inside a catch
+ * that returned `[]`, so one bad document URI made the next save replace
+ * the entire history with just the new scan. */
+async function readStoredHistory(): Promise<ScanHistoryEntry[]> {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
   if (!raw) return [];
   try {
-    const parsed = JSON.parse(raw) as Record<string, unknown>[];
-    // Entries saved before the product/qr split have no `kind` — treat them as product entries.
-    const entries = parsed.map((entry) =>
-      entry.kind ? entry : { ...entry, kind: 'product' }
-    ) as ScanHistoryEntry[];
-    // A document's page URIs are re-pointed at the current app container
-    // here, in the one place every reader goes through — the paths stored
-    // with the entry were only ever valid for the install that wrote them.
-    return entries.map((entry) =>
-      entry.kind === 'document'
-        ? { ...entry, imageUris: entry.imageUris.map(resolveDocumentScanUri) }
-        : entry
-    );
+    return normalizeHistoryEntries(JSON.parse(raw));
   } catch {
     return [];
   }
+}
+
+async function persistHistory(entries: ScanHistoryEntry[]): Promise<void> {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  } catch (error) {
+    console.warn('[Blippo] failed to persist scan history', error);
+  }
+}
+
+export async function getHistory(): Promise<ScanHistoryEntry[]> {
+  const entries = await readStoredHistory();
+  // A document's page URIs are re-pointed at the current app container
+  // here, in the one place every *reader* goes through — the paths stored
+  // with the entry were only ever valid for the install that wrote them.
+  // Writers stay on the stored paths so a remap failure cannot wipe the log.
+  return entries.map(withResolvedDocumentUris);
 }
 
 /** Prepends the newest scan and caps the log at FREE_MAX_ENTRIES (or
@@ -58,7 +76,7 @@ export async function getHistory(): Promise<ScanHistoryEntry[]> {
 export async function addHistoryEntry(entry: ScanHistoryEntry): Promise<void> {
   if (!(await isHistorySavingEnabled())) return;
 
-  const existing = await getHistory();
+  const existing = await readStoredHistory();
   if (!(await isDuplicateScansEnabled()) && existing.some((e) => isSameScan(e, entry))) return;
 
   // Trimming is destructive, so an unresolved premium state gets the
@@ -66,7 +84,7 @@ export async function addHistoryEntry(entry: ScanHistoryEntry): Promise<void> {
   // answers must never cut a paying user's log down to the free cap.
   const useFreeCap = isPremiumResolved() && !isPremium();
   const next = [entry, ...existing].slice(0, useFreeCap ? FREE_MAX_ENTRIES : PREMIUM_MAX_ENTRIES);
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  await persistHistory(next);
 }
 
 export async function clearHistory(): Promise<void> {
@@ -74,11 +92,11 @@ export async function clearHistory(): Promise<void> {
 }
 
 export async function setEntriesFolder(keys: HistoryEntryKey[], folderId: string | null): Promise<void> {
-  const existing = await getHistory();
+  const existing = await readStoredHistory();
   const next = existing.map((entry) =>
     keys.some((key) => entryMatchesKey(entry, key)) ? { ...entry, folderId: folderId ?? undefined } : entry
   );
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  await persistHistory(next);
 }
 
 export async function setEntryFolder(
@@ -94,25 +112,25 @@ export async function setEntryFolder(
  * it again, falling back to that derived name. */
 export async function renameHistoryEntry(key: HistoryEntryKey, label: string): Promise<void> {
   const trimmed = label.trim();
-  const existing = await getHistory();
+  const existing = await readStoredHistory();
   const next = existing.map((entry) =>
     entryMatchesKey(entry, key) ? { ...entry, label: trimmed || undefined } : entry
   );
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  await persistHistory(next);
 }
 
 /** Unfiles every entry in a folder that's about to be deleted — the
  * entries themselves stay, only the folder reference is cleared. */
 export async function clearFolderFromEntries(folderId: string): Promise<void> {
-  const existing = await getHistory();
+  const existing = await readStoredHistory();
   const next = existing.map((entry) => (entry.folderId === folderId ? { ...entry, folderId: undefined } : entry));
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  await persistHistory(next);
 }
 
 export async function deleteHistoryEntries(keys: HistoryEntryKey[]): Promise<void> {
-  const existing = await getHistory();
+  const existing = await readStoredHistory();
   const next = existing.filter((entry) => !keys.some((key) => entryMatchesKey(entry, key)));
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  await persistHistory(next);
 }
 
 export async function deleteHistoryEntry(kind: ScanHistoryEntry['kind'], timestamp: number): Promise<void> {
@@ -125,7 +143,7 @@ export async function deleteHistoryEntry(kind: ScanHistoryEntry['kind'], timesta
  * entry's remaining page count so the caller can decide how to navigate
  * (collapse to the single-page Detail view, or close out entirely). */
 export async function removeDocumentPages(timestamp: number, pageIndexes: number[]): Promise<number> {
-  const existing = await getHistory();
+  const existing = await readStoredHistory();
   const entry = existing.find((e) => e.kind === 'document' && e.timestamp === timestamp) as
     | Extract<ScanHistoryEntry, { kind: 'document' }>
     | undefined;
@@ -137,7 +155,7 @@ export async function removeDocumentPages(timestamp: number, pageIndexes: number
   entry.imageUris.forEach((uri, index) => {
     if (removeSet.has(index)) {
       try {
-        new File(uri).delete();
+        new File(resolveDocumentScanUri(uri)).delete();
       } catch {
         // Best-effort — a file that's already missing shouldn't block removing the page's record.
       }
@@ -157,6 +175,6 @@ export async function removeDocumentPages(timestamp: number, pageIndexes: number
       ? { ...e, imageUris: keptImageUris, pageTexts: keptPageTexts }
       : e
   );
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  await persistHistory(next);
   return keptImageUris.length;
 }

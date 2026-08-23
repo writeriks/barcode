@@ -34,7 +34,7 @@ import type { ScanKind, ScanMethod } from '../types/scan';
 
 interface Props {
   onScanned: (data: string, kind: ScanKind, method: ScanMethod) => void;
-  onDocumentScanned: (pageTexts: string[], imageUris: string[]) => void;
+  onDocumentScanned: (pageTexts: string[], imageUris: string[]) => void | Promise<void>;
   /** When set, the camera stays live after a scan instead of the parent
    * navigating away — used for scanning several codes back to back. */
   batchMode?: boolean;
@@ -243,7 +243,7 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
       const pageTexts = await Promise.all(pageUris.map((uri) => recognizeTextAsync(uri)));
       if (!isPremium) setRemainingFreeScans(await consumeFreeScan());
       playScanFeedback();
-      onDocumentScanned(pageTexts, pageUris);
+      await onDocumentScanned(pageTexts, pageUris);
     } catch {
       Alert.alert(t('scanner.documentScanFailed'));
     } finally {

@@ -83,7 +83,7 @@ export function ScannerFlowScreen({ navigation }: Props) {
 
       if (result.status === 'found' || result.status === 'incomplete') {
         recordSuccessfulScan();
-        addHistoryEntry({
+        await addHistoryEntry({
           kind: 'product',
           barcode,
           timestamp: Date.now(),
@@ -91,7 +91,7 @@ export function ScannerFlowScreen({ navigation }: Props) {
           product: result.product,
         });
       } else if (result.status === 'not-found') {
-        addHistoryEntry({ kind: 'product', barcode, timestamp: Date.now(), status: 'not-found' });
+        await addHistoryEntry({ kind: 'product', barcode, timestamp: Date.now(), status: 'not-found' });
       }
     },
     [countScan]
@@ -109,9 +109,9 @@ export function ScannerFlowScreen({ navigation }: Props) {
       batch: true,
     });
     if (result.status === 'found' || result.status === 'incomplete') {
-      addHistoryEntry({ kind: 'product', barcode, timestamp, status: result.status, product: result.product });
+      await addHistoryEntry({ kind: 'product', barcode, timestamp, status: result.status, product: result.product });
     } else if (result.status === 'not-found') {
-      addHistoryEntry({ kind: 'product', barcode, timestamp, status: 'not-found' });
+      await addHistoryEntry({ kind: 'product', barcode, timestamp, status: 'not-found' });
     }
   }, []);
 
@@ -121,10 +121,10 @@ export function ScannerFlowScreen({ navigation }: Props) {
       const timestamp = Date.now();
       if (kind === 'qr') {
         captureAnalyticsEvent('scan_completed', { kind: 'qr', method, result: 'found', batch: true });
-        addHistoryEntry({ kind: 'qr', data, timestamp, contentType: classifyQrContent(data) });
+        void addHistoryEntry({ kind: 'qr', data, timestamp, contentType: classifyQrContent(data) });
         return;
       }
-      runBatchBarcodeLookup(data, method, timestamp);
+      void runBatchBarcodeLookup(data, method, timestamp);
     },
     [runBatchBarcodeLookup]
   );
@@ -135,14 +135,14 @@ export function ScannerFlowScreen({ navigation }: Props) {
   }, [navigation]);
 
   const handleScanned = useCallback(
-    (data: string, kind: ScanKind, method: ScanMethod) => {
+    async (data: string, kind: ScanKind, method: ScanMethod) => {
       if (isBatchMode) {
         handleBatchScanned(data, kind, method);
         return;
       }
 
       if (kind === 'barcode') {
-        runLookup(data, method);
+        await runLookup(data, method);
         return;
       }
 
@@ -150,12 +150,12 @@ export function ScannerFlowScreen({ navigation }: Props) {
       countScan();
       recordSuccessfulScan();
       captureAnalyticsEvent('scan_completed', { kind: 'qr', method, result: 'found' });
-      addHistoryEntry({ kind: 'qr', data, timestamp: Date.now(), contentType: classifyQrContent(data) });
+      await addHistoryEntry({ kind: 'qr', data, timestamp: Date.now(), contentType: classifyQrContent(data) });
     },
     [runLookup, countScan, isBatchMode, handleBatchScanned]
   );
 
-  const handleDocumentScanned = useCallback((pageTexts: string[], imageUris: string[]) => {
+  const handleDocumentScanned = useCallback(async (pageTexts: string[], imageUris: string[]) => {
     const timestamp = Date.now();
     setScreen({ name: 'document-result', pageTexts, imageUris, timestamp });
     recordSuccessfulScan();
@@ -165,7 +165,7 @@ export function ScannerFlowScreen({ navigation }: Props) {
       method: 'document_camera',
       result: hasAnyText ? 'found' : 'not_found',
     });
-    addHistoryEntry({ kind: 'document', pageTexts, imageUris, timestamp });
+    await addHistoryEntry({ kind: 'document', pageTexts, imageUris, timestamp });
   }, []);
 
   // Where the ad goes, if one is due at all: the user has read the result

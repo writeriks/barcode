@@ -53,11 +53,12 @@ export function SettingsScreen({
   appLockEnabled,
   onAppLockChanged,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const tabBarHeight = useBottomTabBarHeight();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { isPremium, setPremium, openPaywall } = usePremium();
+  const { isPremium, isCancelled, expirationDate, devOverride, setPremium, openPaywall, refreshPremium } =
+    usePremium();
   const [showPrivacyRow, setShowPrivacyRow] = useState(false);
   const [vibrateEnabled, setVibrateEnabledState] = useState(true);
   const [beepEnabled, setBeepEnabledState] = useState(true);
@@ -134,9 +135,16 @@ export function SettingsScreen({
   const currentLanguageLabel =
     currentOverride === null ? t('settings.systemDefault') : LANGUAGE_NATIVE_NAMES[currentOverride];
 
-  const handleManageSubscription = () => {
+  const handleManageSubscription = async () => {
     captureAnalyticsEvent('manage_subscription_opened');
-    showManageSubscriptions();
+    try {
+      await showManageSubscriptions();
+    } finally {
+      // The sheet is Apple's; cancellation is written there, not here.
+      // Drop the SDK cache so Settings can show cancelled / expired
+      // instead of the pre-sheet "Premium active" snapshot.
+      await refreshPremium();
+    }
   };
 
   const openLink = (url: string) => {
@@ -203,10 +211,28 @@ export function SettingsScreen({
 
         <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>{t('settings.premiumSection')}</Text>
         <PremiumPromoCard
-          isPremium={isPremium}
-          title={isPremium ? t('settings.premiumActive') : t('settings.premiumUpgrade')}
+          status={isPremium ? (isCancelled ? 'cancelled' : 'active') : 'free'}
+          title={
+            !isPremium
+              ? t('settings.premiumUpgrade')
+              : isCancelled
+                ? t('settings.premiumCancelled')
+                : t('settings.premiumActive')
+          }
           description={
-            isPremium ? t('settings.premiumActiveDescription') : t('settings.premiumUpgradeDescription')
+            !isPremium
+              ? t('settings.premiumUpgradeDescription')
+              : isCancelled
+                ? expirationDate
+                  ? t('settings.premiumCancelledDescription', {
+                      date: new Date(expirationDate).toLocaleDateString(i18n.language, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      }),
+                    })
+                  : t('settings.premiumCancelledDescriptionNoDate')
+                : t('settings.premiumActiveDescription')
           }
           cta={t('settings.premiumUpgrade')}
           onPress={isPremium ? handleManageSubscription : () => openPaywall('general')}
@@ -218,7 +244,7 @@ export function SettingsScreen({
             <ToggleRow
               label={t('settings.premiumDevToggle')}
               description={t('settings.premiumDevToggleDescription')}
-              value={isPremium}
+              value={devOverride}
               onValueChange={setPremium}
               colors={colors}
               styles={styles}
@@ -369,7 +395,7 @@ export function SettingsScreen({
 type Styles = ReturnType<typeof createStyles>;
 
 function PremiumPromoCard({
-  isPremium,
+  status,
   title,
   description,
   cta,
@@ -377,7 +403,7 @@ function PremiumPromoCard({
   colors,
   styles,
 }: {
-  isPremium: boolean;
+  status: 'free' | 'active' | 'cancelled';
   title: string;
   description: string;
   cta: string;
@@ -385,6 +411,8 @@ function PremiumPromoCard({
   colors: ColorTheme;
   styles: Styles;
 }) {
+  const isActive = status === 'active';
+  const isCancelled = status === 'cancelled';
   return (
     <Pressable
       onPress={onPress}
@@ -392,16 +420,23 @@ function PremiumPromoCard({
       accessibilityLabel={title}
       style={({ pressed }) => [
         styles.premiumCard,
-        isPremium && styles.premiumCardActive,
+        isActive && styles.premiumCardActive,
+        isCancelled && styles.premiumCardCancelled,
         pressed && styles.rowPressed,
       ]}
     >
       <View style={styles.premiumCardHeader}>
-        <View style={[styles.premiumBadge, isPremium && styles.premiumBadgeActive]}>
+        <View
+          style={[
+            styles.premiumBadge,
+            isActive && styles.premiumBadgeActive,
+            isCancelled && styles.premiumBadgeCancelled,
+          ]}
+        >
           <Ionicons
-            name={isPremium ? 'checkmark-circle' : 'sparkles'}
+            name={isActive ? 'checkmark-circle' : isCancelled ? 'time-outline' : 'sparkles'}
             size={22}
-            color={isPremium ? colors.mint : colors.citrus}
+            color={isActive ? colors.mint : colors.citrus}
           />
         </View>
         <View style={styles.premiumCardText}>
@@ -409,11 +444,11 @@ function PremiumPromoCard({
           <Text style={styles.premiumCardDescription}>{description}</Text>
         </View>
       </View>
-      {isPremium ? null : (
+      {status === 'free' ? (
         <View style={styles.premiumCta} pointerEvents="none">
           <Text style={styles.premiumCtaText}>{cta}</Text>
         </View>
-      )}
+      ) : null}
     </Pressable>
   );
 }
@@ -576,6 +611,11 @@ function createStyles(colors: ColorTheme) {
       shadowColor: colors.mint,
       shadowOpacity: 0.16,
     },
+    premiumCardCancelled: {
+      borderColor: colors.citrus,
+      shadowColor: colors.citrus,
+      shadowOpacity: 0.16,
+    },
     premiumCardHeader: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -593,6 +633,9 @@ function createStyles(colors: ColorTheme) {
     },
     premiumBadgeActive: {
       borderColor: colors.mint,
+    },
+    premiumBadgeCancelled: {
+      borderColor: colors.citrus,
     },
     premiumCardText: {
       flex: 1,

@@ -5,8 +5,10 @@ import * as Speech from 'expo-speech';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Image, Modal, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomBannerAd } from '../components/BottomBannerAd';
+import { ZoomableImage } from '../components/ZoomableImage';
 import { KeyInformationRow } from '../components/KeyInformationRow';
 import { ShareFormatSheet, type ShareFormat } from '../components/ShareFormatSheet';
 import { captureAnalyticsEvent } from '../services/analytics';
@@ -318,8 +320,11 @@ export function DocumentResultScreen({
 
       {imageUri ? (
         <Modal visible={isFullscreenOpen} animationType="fade" onRequestClose={() => setIsFullscreenOpen(false)}>
-          <View style={styles.fullscreenScreen}>
-            <Image source={{ uri: imageUri }} style={styles.fullscreenImage} resizeMode="contain" />
+          {/* A Modal sits outside the app's root gesture handler, so pinch
+              wouldn't fire without its own root. Remounting the image when
+              the viewer opens also resets zoom from the last visit. */}
+          <GestureHandlerRootView style={styles.fullscreenScreen}>
+            {isFullscreenOpen ? <ZoomableImage uri={imageUri} /> : null}
             <Pressable
               onPress={handleSaveToDevice}
               hitSlop={10}
@@ -336,7 +341,7 @@ export function DocumentResultScreen({
             >
               <Ionicons name="close" size={22} color={colors.cream} />
             </Pressable>
-          </View>
+          </GestureHandlerRootView>
         </Modal>
       ) : null}
     </View>
@@ -588,16 +593,11 @@ function createStyles(colors: ColorTheme) {
     fullscreenScreen: {
       flex: 1,
       backgroundColor: '#000',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    fullscreenImage: {
-      width: '100%',
-      height: '100%',
     },
     fullscreenClose: {
       position: 'absolute',
       right: 16,
+      zIndex: 2,
       width: 36,
       height: 36,
       borderRadius: 18,
@@ -608,6 +608,7 @@ function createStyles(colors: ColorTheme) {
     fullscreenSave: {
       position: 'absolute',
       left: 16,
+      zIndex: 2,
       width: 36,
       height: 36,
       borderRadius: 18,

@@ -3,18 +3,19 @@
 //   node scripts/generateAppIcon.mjs
 //
 // Writes assets/icon.png, the three Android adaptive-icon layers and the
-// web favicon, all from the same mark and from the app's own two colours,
-// so a change to the palette is one edit here rather than five files
-// redrawn by hand.
+// web favicon, all from the same mark and from the app's own colours, so
+// a change to the palette is one edit here rather than five files redrawn
+// by hand.
 //
 // The mark is a QR code with its top-right finder pattern replaced by
 // barcode bars — the two things the app reads, in one shape. It is
 // deliberately not a scannable code: a finder pattern is structural, and
 // removing one is what makes this a logo rather than a QR nobody meant to
-// publish.
+// publish. Four punch-pink corner brackets sit around it as a scanner
+// viewfinder — the same frame the camera uses.
 //
-// Needs Chromium to rasterise and Python's Pillow to resize. Both are
-// present in the dev container; neither is a dependency of the app.
+// Needs Python's cairosvg (to rasterise) and Pillow (to resize). Neither
+// is a dependency of the app.
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -23,16 +24,8 @@ import QRCode from 'qrcode';
 
 /** Mirrors src/theme/colors.ts. */
 const MINT = '#2fe6b8';
+const PUNCH = '#ff3e7f';
 const BACKGROUND = '#231a3a';
-
-const CHROME =
-  process.env.CHROME_PATH ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
-
-/** Chromium refuses to open a window below roughly a hundred pixels and
- *  screenshots the corner of a larger page instead, which comes out as
- *  plain background. Anything smaller than this is rendered big and scaled
- *  down afterwards. */
-const MIN_RENDER = 512;
 
 const qr = QRCode.create('https://blippo.app', { errorCorrectionLevel: 'H' });
 const SIZE = qr.modules.size;
@@ -54,7 +47,7 @@ const BARS = [
   { x: 6.55, width: 1.25, height: 6.55 },
 ];
 
-function markSvg(size, { background, colour, inset }) {
+function markGroup(size, colour, inset) {
   let cells = '';
   for (let y = 0; y < SIZE; y++) {
     for (let x = 0; x < SIZE; x++) {
@@ -68,11 +61,53 @@ function markSvg(size, { background, colour, inset }) {
     bars += `<rect x="${x}" y="0.20" width="${bar.width}" height="${bar.height}" rx="${(bar.width / 2).toFixed(3)}"/>`;
   }
   const span = size * (1 - inset * 2);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  ${background ? `<rect width="${size}" height="${size}" fill="${background}"/>` : ''}
-  <g fill="${colour}" shape-rendering="crispEdges" transform="translate(${size * inset} ${size * inset}) scale(${span / SIZE})">
+  return `<g fill="${colour}" shape-rendering="crispEdges" transform="translate(${size * inset} ${size * inset}) scale(${span / SIZE})">
     ${cells}${bars}
-  </g>
+  </g>`;
+}
+
+/** Four L-shaped corners — a camera viewfinder around the mark. */
+function frameGroup(size, colour, { pad, arm, stroke }) {
+  const p = (size * pad).toFixed(2);
+  const a = (size * arm).toFixed(2);
+  const w = (size * stroke).toFixed(2);
+  const far = (size * (1 - pad)).toFixed(2);
+  const pPlus = (size * pad + size * arm).toFixed(2);
+  const farMinus = (size * (1 - pad) - size * arm).toFixed(2);
+  const paths = [
+    `M ${pPlus} ${p} H ${p} V ${pPlus}`,
+    `M ${farMinus} ${p} H ${far} V ${pPlus}`,
+    `M ${p} ${farMinus} V ${far} H ${pPlus}`,
+    `M ${far} ${farMinus} V ${far} H ${farMinus}`,
+  ];
+  return `<g fill="none" stroke="${colour}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">
+    ${paths.map((d) => `<path d="${d}"/>`).join('')}
+  </g>`;
+}
+
+function glowFilter(id, blur) {
+  return `<filter id="${id}" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur in="SourceGraphic" stdDeviation="${blur}" result="blur"/>
+    <feMerge>
+      <feMergeNode in="blur"/>
+      <feMergeNode in="SourceGraphic"/>
+    </feMerge>
+  </filter>`;
+}
+
+function iconSvg(size, { background, markColour, frameColour, markInset, frame, glow }) {
+  const defs = glow
+    ? `<defs>${glowFilter('markGlow', size * 0.006)}${glowFilter('frameGlow', size * 0.012)}</defs>`
+    : '';
+  const mark = `<g ${glow ? 'filter="url(#markGlow)"' : ''}>${markGroup(size, markColour, markInset)}</g>`;
+  const frameLayer = frame
+    ? `<g ${glow ? 'filter="url(#frameGlow)"' : ''}>${frameGroup(size, frameColour, frame)}</g>`
+    : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+  ${defs}
+  ${background ? `<rect width="${size}" height="${size}" fill="${background}"/>` : ''}
+  ${mark}
+  ${frameLayer}
 </svg>`;
 }
 
@@ -82,12 +117,16 @@ function markSvg(size, { background, colour, inset }) {
  * Twenty-nine modules across forty-eight pixels is under a pixel and a
  * half each, which resolves to a smudge. So it keeps the two ideas the
  * mark is made of — a finder pattern and the bars — at a size where both
- * survive.
+ * survive, plus the four corner ticks so it still reads as a scanner.
  */
 function faviconSvg(size) {
   const unit = size / 16;
   const bar = (x, width) =>
     `<rect x="${(x * unit).toFixed(2)}" y="${(3 * unit).toFixed(2)}" width="${(width * unit).toFixed(2)}" height="${(10 * unit).toFixed(2)}" rx="${((width * unit) / 2).toFixed(2)}"/>`;
+  const tick = (d) => `<path d="${d}" fill="none" stroke="${PUNCH}" stroke-width="${0.9 * unit}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const p = 1.1 * unit;
+  const a = 2.4 * unit;
+  const far = size - p;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
   <rect width="${size}" height="${size}" fill="${BACKGROUND}"/>
   <g fill="${MINT}">
@@ -95,35 +134,30 @@ function faviconSvg(size) {
     <rect x="${5.25 * unit}" y="${5.25 * unit}" width="${1.5 * unit}" height="${1.5 * unit}"/>
     ${bar(10.6, 1)}${bar(12.4, 1.6)}
   </g>
+  ${tick(`M ${p + a} ${p} H ${p} V ${p + a}`)}
+  ${tick(`M ${far - a} ${p} H ${far} V ${p + a}`)}
+  ${tick(`M ${p} ${far - a} V ${far} H ${p + a}`)}
+  ${tick(`M ${far} ${far - a} V ${far} H ${far - a}`)}
 </svg>`;
 }
 
 const work = mkdtempSync(join(tmpdir(), 'blippo-icon-'));
 
-function rasterise(name, svg, size, { transparent = false } = {}) {
-  const renderAt = Math.max(size, MIN_RENDER);
-  const page = join(work, `${name}.html`);
+/** Rasterise SVG with cairosvg. Chromium is the historical renderer, but
+ *  headless Chrome in this environment waits indefinitely on screenshot;
+ *  Cairo draws the same SVG without a browser. */
+function rasterise(name, svg, size) {
+  const svgPath = join(work, `${name}.svg`);
   const shot = join(work, `${name}.png`);
-  writeFileSync(
-    page,
-    `<!doctype html><meta charset="utf-8"><style>html,body{margin:0;padding:0;background:${
-      transparent ? 'transparent' : BACKGROUND
-    }}</style>${svg.replace(/width="\d+" height="\d+"/, `width="${renderAt}" height="${renderAt}"`)}`
-  );
-  execFileSync(CHROME, [
-    '--headless',
-    '--no-sandbox',
-    '--disable-gpu',
-    '--hide-scrollbars',
-    '--force-device-scale-factor=1',
-    `--window-size=${renderAt},${renderAt}`,
-    ...(transparent ? ['--default-background-color=00000000'] : []),
-    `--screenshot=${shot}`,
-    `file://${page}`,
-    // Chromium in a container has no session bus and says so, at length,
-    // for every launch. None of it bears on the screenshot.
-  ], { stdio: 'ignore' });
-  return { shot, renderAt };
+  writeFileSync(svgPath, svg);
+  execFileSync('python3', [
+    '-c',
+    [
+      'import cairosvg',
+      `cairosvg.svg2png(url=${JSON.stringify(svgPath)}, write_to=${JSON.stringify(shot)}, output_width=${size}, output_height=${size})`,
+    ].join('\n'),
+  ]);
+  return { shot };
 }
 
 /** Resize and, for the iOS icon, drop the alpha channel — App Store
@@ -143,11 +177,21 @@ function finish(shot, out, size, { flatten = false } = {}) {
   ]);
 }
 
+const iosFrame = { pad: 0.1, arm: 0.155, stroke: 0.03 };
+const androidFrame = { pad: 0.2, arm: 0.135, stroke: 0.034 };
+
 const jobs = [
   {
     out: 'assets/icon.png',
     size: 1024,
-    svg: markSvg(1024, { background: BACKGROUND, colour: MINT, inset: 0.165 }),
+    svg: iconSvg(1024, {
+      background: BACKGROUND,
+      markColour: MINT,
+      frameColour: PUNCH,
+      markInset: 0.2,
+      frame: iosFrame,
+      glow: true,
+    }),
     flatten: true,
   },
   {
@@ -155,22 +199,35 @@ const jobs = [
     // foreground sits further in than the iOS icon does.
     out: 'assets/android-icon-foreground.png',
     size: 512,
-    svg: markSvg(512, { background: null, colour: MINT, inset: 0.26 }),
+    svg: iconSvg(512, {
+      background: null,
+      markColour: MINT,
+      frameColour: PUNCH,
+      markInset: 0.28,
+      frame: androidFrame,
+      glow: true,
+    }),
     transparent: true,
   },
   {
     out: 'assets/android-icon-monochrome.png',
     size: 432,
-    svg: markSvg(432, { background: null, colour: '#ffffff', inset: 0.26 }),
+    svg: iconSvg(432, {
+      background: null,
+      markColour: '#ffffff',
+      frameColour: '#ffffff',
+      markInset: 0.28,
+      frame: androidFrame,
+      glow: false,
+    }),
     transparent: true,
   },
   { out: 'assets/favicon.png', size: 48, svg: faviconSvg(512), flatten: true },
 ];
 
 for (const job of jobs) {
-  const { shot } = rasterise(job.out.replace(/\W/g, '_'), job.svg, job.size, {
-    transparent: job.transparent,
-  });
+  const renderSize = Math.max(job.size, 512);
+  const { shot } = rasterise(job.out.replace(/\W/g, '_'), job.svg, renderSize);
   finish(shot, job.out, job.size, { flatten: job.flatten });
   console.log(`${job.out} — ${job.size}x${job.size}`);
 }

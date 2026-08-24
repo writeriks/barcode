@@ -119,7 +119,7 @@ const config: ExpoConfig = {
     // match the package name registered in your Google Play Console.
     package: 'com.writeriks.beep',
     adaptiveIcon: {
-      backgroundColor: '#1b1330',
+      backgroundColor: '#231a3a',
       foregroundImage: './assets/android-icon-foreground.png',
       backgroundImage: './assets/android-icon-background.png',
       monochromeImage: './assets/android-icon-monochrome.png',

@@ -79,6 +79,22 @@ interface PlanDisplay {
 }
 
 /**
+ * A twelfth of the yearly price, in the same units as the monthly one.
+ *
+ * RevenueCat offers `pricePerMonth` ready-made but types it nullable, and
+ * a null there would silently take both the per-month line and the saving
+ * off the screen. Dividing the yearly price is the same arithmetic and
+ * always available, so the store's value is preferred and this is the
+ * fallback rather than the other way round.
+ */
+function annualPerMonthPrice(annual: PurchasesPackage | null): number | null {
+  if (!annual) return null;
+  const provided = annual.product.pricePerMonth;
+  if (provided) return provided;
+  return annual.product.price > 0 ? annual.product.price / 12 : null;
+}
+
+/**
  * What the yearly plan saves against paying monthly, as a whole percent,
  * or null when it can't be worked out honestly.
  *
@@ -86,13 +102,42 @@ interface PlanDisplay {
  * typed into a translation file is right until the day a price changes or
  * someone opens the app in a currency where the two products aren't
  * priced proportionally, and then it is a false claim on a purchase
- * screen.
+ * screen. At $4.99 a month against $39.99 a year this reads 33%.
+ *
+ * Nothing is claimed unless both prices are known and the yearly one is
+ * genuinely cheaper — an offering priced the other way round shows no
+ * badge rather than a negative saving.
  */
 function annualSavingPercent(monthly: PurchasesPackage | null, annual: PurchasesPackage | null): number | null {
   const monthlyPrice = monthly?.product.price ?? 0;
-  const annualPerMonth = annual?.product.pricePerMonth ?? null;
+  const annualPerMonth = annualPerMonthPrice(annual);
   if (!monthlyPrice || !annualPerMonth || annualPerMonth >= monthlyPrice) return null;
   return Math.round((1 - annualPerMonth / monthlyPrice) * 100);
+}
+
+/**
+ * The yearly plan's monthly equivalent, as text.
+ *
+ * Prefers the string the store already localised. Formatting money by hand
+ * gets the separators, the symbol's side and the digit count wrong in
+ * about half the world, so it is only done when RevenueCat has no string
+ * of its own — and then through Intl with the product's own currency
+ * code, not by gluing a symbol onto a number.
+ */
+function annualPerMonthLabel(annual: PurchasesPackage | null, locale: string): string | null {
+  if (!annual) return null;
+  if (annual.product.pricePerMonthString) return annual.product.pricePerMonthString;
+  const perMonth = annualPerMonthPrice(annual);
+  if (!perMonth) return null;
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: annual.product.currencyCode,
+    }).format(perMonth);
+  } catch {
+    // An unknown currency code shouldn't cost the whole row.
+    return null;
+  }
 }
 
 function buildPlans(offering: PurchasesOffering | null): PlanDisplay[] {
@@ -118,7 +163,7 @@ function buildPlans(offering: PurchasesOffering | null): PlanDisplay[] {
  * price/length per plan, an auto-renewal notice, Restore Purchases, and
  * working Privacy Policy/Terms links. */
 export function PaywallScreen({ visible, reason, onClose, onPurchased }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const benefits = useMemo(() => {
@@ -151,6 +196,10 @@ export function PaywallScreen({ visible, reason, onClose, onPurchased }: Props) 
   const savingPercent = useMemo(
     () => annualSavingPercent(offering?.monthly ?? null, offering?.annual ?? null),
     [offering]
+  );
+  const perMonthLabel = useMemo(
+    () => annualPerMonthLabel(offering?.annual ?? null, i18n.language),
+    [offering, i18n.language]
   );
   const selectedPlanDisplay = plans.find((plan) => plan.id === selectedPlan) ?? plans[0];
 
@@ -246,9 +295,9 @@ export function PaywallScreen({ visible, reason, onClose, onPurchased }: Props) 
                     <>
                       <Text style={styles.planPrice}>{plan.pkg.product.priceString}</Text>
                       <Text style={styles.planUnit}>{t(plan.unitKey)}</Text>
-                      {plan.id === 'annual' && plan.pkg.product.pricePerMonthString ? (
+                      {plan.id === 'annual' && perMonthLabel ? (
                         <Text style={styles.planSubLabel}>
-                          {t('paywall.perMonthEquivalent', { price: plan.pkg.product.pricePerMonthString })}
+                          {t('paywall.perMonthEquivalent', { price: perMonthLabel })}
                         </Text>
                       ) : null}
                       {plan.id === 'annual' && savingPercent !== null ? (

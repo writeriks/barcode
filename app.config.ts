@@ -72,6 +72,14 @@ const PERMISSIONS = {
   calendar:
     'Blippo adds an event from a scanned QR code to your calendar. It shows you the event first and ' +
     'you confirm it in the calendar’s own screen — nothing already in your calendar is read.',
+  // Contacts has no add-only grant the way iOS 17 gave calendars one —
+  // CNContactStore asks for the whole address book or nothing — so the
+  // wording has to earn a permission that is wider than what the app does
+  // with it. The app never reads a contact; it fills in the new-contact
+  // sheet and the user saves it.
+  contacts:
+    'Blippo adds a person from a scanned contact code to your contacts. It fills in the new-contact ' +
+    'screen and you save it yourself — your existing contacts are not read or sent anywhere.',
 } as const;
 
 const config: ExpoConfig = {
@@ -193,6 +201,12 @@ const config: ExpoConfig = {
       'expo-calendar',
       {
         calendarPermission: PERMISSIONS.calendar,
+      },
+    ],
+    [
+      'expo-contacts',
+      {
+        contactsPermission: PERMISSIONS.contacts,
       },
     ],
   ],

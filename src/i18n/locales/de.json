@@ -428,8 +428,10 @@
     "addToContacts": "Zu Kontakten",
     "calendarDeniedTitle": "Kalenderzugriff ist aus",
     "calendarDeniedBody": "Blippo braucht Kalenderzugriff, um den Termin-Bildschirm zu öffnen. Du kannst ihn in den Einstellungen aktivieren.",
-    "calendarDeniedOpen": "Einstellungen öffnen",
-    "calendarDeniedDismiss": "Jetzt nicht"
+    "contactsDeniedTitle": "Kontaktzugriff ist aus",
+    "contactsDeniedBody": "Blippo braucht Kontaktzugriff, um den Bildschirm für den neuen Kontakt zu öffnen. Du kannst ihn in den Einstellungen aktivieren.",
+    "permissionDeniedOpen": "Einstellungen öffnen",
+    "permissionDeniedDismiss": "Jetzt nicht"
   },
   "paywall": {
     "title": "Blippo Premium freischalten",

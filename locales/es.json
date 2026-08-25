@@ -7,7 +7,8 @@
     "NSPhotoLibraryAddUsageDescription": "Blippo guarda una página escaneada o la imagen de un código QR en tus fotos cuando eliges «Guardar imagen» al compartirla.",
     "NSFaceIDUsageDescription": "Blippo usa Face ID para desbloquear la app, de modo que tus escaneos y documentos guardados sigan siendo privados si otra persona coge tu iPhone.",
     "NSCalendarsUsageDescription": "Blippo añade a tu calendario un evento de un código QR escaneado. Primero te muestra el evento y lo confirmas en la pantalla del propio calendario: no se lee nada de lo que ya tienes en él.",
-    "NSCalendarsFullAccessUsageDescription": "Blippo añade a tu calendario un evento de un código QR escaneado. Primero te muestra el evento y lo confirmas en la pantalla del propio calendario: no se lee nada de lo que ya tienes en él."
+    "NSCalendarsFullAccessUsageDescription": "Blippo añade a tu calendario un evento de un código QR escaneado. Primero te muestra el evento y lo confirmas en la pantalla del propio calendario: no se lee nada de lo que ya tienes en él.",
+    "NSContactsUsageDescription": "Blippo añade a tus contactos una persona de un código de contacto escaneado. Rellena la pantalla de contacto nuevo y tú decides guardarlo: tus contactos actuales no se leen ni se envían a ninguna parte."
   },
   "android": {
     "app_name": "Blippo"

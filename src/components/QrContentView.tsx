@@ -7,7 +7,7 @@ import { useQrShare } from '../hooks/useQrShare';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { captureAnalyticsEvent } from '../services/analytics';
-import { addEventToCalendar, shareStructuredFile, toContactFile } from '../services/structuredQrHandoff';
+import { addContactToDevice, addEventToCalendar } from '../services/structuredQrHandoff';
 import { classifyQrContent, parseOtpAuth, resolveQrOpenUri, type QrContentType } from '../utils/classifyQrContent';
 import { findCountryByRegionCode } from '../utils/countryCallingCodes';
 import { getDeviceRegionCode } from '../utils/locale';
@@ -87,9 +87,10 @@ const OPEN_LABEL_KEY: Record<QrContentType, string> = {
   dropbox: 'qr.openLink',
 };
 
-/** Types this app can hand to iOS as a file it recognises. Wi-Fi is not
- *  one of them: iOS exposes no way to join a network from an app, so the
- *  most useful thing there is the password, which the card shows. */
+/** Types iOS has a screen for, so the app can hand the payload over
+ *  instead of only showing it. Wi-Fi is not one of them: iOS exposes no way
+ *  to join a network from an app, so the most useful thing there is the
+ *  password, which the card shows. */
 const HANDOFF_LABEL_KEY: Partial<Record<QrContentType, string>> = {
   event: 'qr.addToCalendar',
   vcard: 'qr.addToContacts',
@@ -121,9 +122,10 @@ export function QrContentView({ data, onCopied }: Props) {
   const { shareQr, qrRenderer } = useQrShare();
   // Structured payloads — an event, a contact, a network — read as a card
   // of fields rather than as the raw text they are encoded in.
+  const deviceCountry = useMemo(() => findCountryByRegionCode(getDeviceRegionCode()) ?? null, []);
   const details = useMemo(
-    () => describeQrContent(data, type, i18n.language, findCountryByRegionCode(getDeviceRegionCode()) ?? null),
-    [data, type, i18n.language]
+    () => describeQrContent(data, type, i18n.language, deviceCountry),
+    [data, type, i18n.language, deviceCountry]
   );
   const [areSecretsRevealed, setSecretsRevealed] = useState(false);
 
@@ -145,27 +147,30 @@ export function QrContentView({ data, onCopied }: Props) {
     onCopied?.();
   };
 
-  // An event opens the calendar's own new-event screen; a contact still
-  // goes out as a file. See services/structuredQrHandoff for why the two
-  // differ.
+  // A refusal is the one outcome worth saying something about: the screen
+  // simply not appearing looks like the button is broken. Everything else
+  // the user has already seen happen in front of them.
+  const showDenied = (titleKey: string, bodyKey: string) => {
+    Alert.alert(t(titleKey), t(bodyKey), [
+      { text: t('qr.permissionDeniedDismiss'), style: 'cancel' },
+      { text: t('qr.permissionDeniedOpen'), onPress: () => Linking.openSettings() },
+    ]);
+  };
+
+  // An event opens the calendar's own new-event screen, a contact opens
+  // Contacts' own new-contact screen. Both are filled in and neither is
+  // saved by the app — see services/structuredQrHandoff.
   const handleAddToDevice = async () => {
     captureAnalyticsEvent('qr_action', { action: 'add_to_device', contentType: type });
     if (type === 'event') {
-      const result = await addEventToCalendar(data);
-      // A refusal is the one outcome worth saying something about: the
-      // screen simply not appearing looks like the button is broken.
-      // Everything else the user has already seen happen in front of them.
-      if (result === 'denied') {
-        Alert.alert(t('qr.calendarDeniedTitle'), t('qr.calendarDeniedBody'), [
-          { text: t('qr.calendarDeniedDismiss'), style: 'cancel' },
-          { text: t('qr.calendarDeniedOpen'), onPress: () => Linking.openSettings() },
-        ]);
+      if ((await addEventToCalendar(data)) === 'denied') {
+        showDenied('qr.calendarDeniedTitle', 'qr.calendarDeniedBody');
       }
       return;
     }
-    const file = toContactFile(data, type, details?.title ?? '');
-    if (!file) return;
-    await shareStructuredFile(file);
+    if ((await addContactToDevice(data, type, deviceCountry)) === 'denied') {
+      showDenied('qr.contactsDeniedTitle', 'qr.contactsDeniedBody');
+    }
   };
 
   const handleShare = () => {

@@ -428,8 +428,10 @@
     "addToContacts": "Rehbere ekle",
     "calendarDeniedTitle": "Takvim erişimi kapalı",
     "calendarDeniedBody": "Yeni etkinlik ekranını açmak için Blippo’nun takvim erişimine ihtiyacı var. Ayarlar’dan açabilirsin.",
-    "calendarDeniedOpen": "Ayarları aç",
-    "calendarDeniedDismiss": "Şimdi değil"
+    "contactsDeniedTitle": "Rehber erişimi kapalı",
+    "contactsDeniedBody": "Yeni kişi ekranını açmak için Blippo’nun rehber erişimine ihtiyacı var. Ayarlar’dan açabilirsin.",
+    "permissionDeniedOpen": "Ayarları aç",
+    "permissionDeniedDismiss": "Şimdi değil"
   },
   "paywall": {
     "title": "Blippo Premium'un Kilidini Aç",

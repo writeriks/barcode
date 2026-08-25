@@ -7,7 +7,8 @@
     "NSPhotoLibraryAddUsageDescription": "Blippo, paylaşırken «Görseli Kaydet» seçtiğinde taranan sayfayı veya QR kod görselini fotoğraflarına kaydeder.",
     "NSFaceIDUsageDescription": "Blippo, uygulamayı açmak için Face ID kullanır; böylece iPhone’unu başkası eline aldığında kayıtlı taramaların ve dökümanların gizli kalır.",
     "NSCalendarsUsageDescription": "Blippo, okuttuğun QR koddaki etkinliği takvimine ekler. Etkinliği önce sana gösterir, onayı takvimin kendi ekranında verirsin — takvimindeki hiçbir şey okunmaz.",
-    "NSCalendarsFullAccessUsageDescription": "Blippo, okuttuğun QR koddaki etkinliği takvimine ekler. Etkinliği önce sana gösterir, onayı takvimin kendi ekranında verirsin — takvimindeki hiçbir şey okunmaz."
+    "NSCalendarsFullAccessUsageDescription": "Blippo, okuttuğun QR koddaki etkinliği takvimine ekler. Etkinliği önce sana gösterir, onayı takvimin kendi ekranında verirsin — takvimindeki hiçbir şey okunmaz.",
+    "NSContactsUsageDescription": "Blippo, okuttuğun kartvizit kodundaki kişiyi rehberine ekler. Yeni kişi ekranını doldurur, kaydetme kararını sen verirsin — rehberindeki kişiler okunmaz, hiçbir yere gönderilmez."
   },
   "android": {
     "app_name": "Blippo"

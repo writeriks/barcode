@@ -1,6 +1,13 @@
 import type { QrContentType } from './classifyQrContent';
 import type { CountryCallingCode } from './countryCallingCodes';
-import { parseEventFields, parseMeCardFields, parseVCardFields, parseWifiFields } from './qrContentParsers';
+import {
+  joinDialledNumber,
+  parseEventFields,
+  parseMeCardFields,
+  parseVCardFields,
+  parseWifiFields,
+  splitMeCardName,
+} from './qrContentParsers';
 
 export interface QrDetailRow {
   labelKey: string;
@@ -114,10 +121,10 @@ function describeVCard(data: string, defaultCountry: CountryCallingCode | null):
     rows: compact([
       row('qr.contactJobTitle', fields.jobTitle),
       row('qr.contactCompany', name ? fields.company : ''),
-      row('qr.contactMobile', joinNumber(fields.mobileCountry?.dialCode, fields.mobileNumber)),
-      row('qr.contactPhone', joinNumber(fields.homeCountry?.dialCode, fields.homeNumber)),
-      row('qr.contactOffice', joinNumber(fields.officeCountry?.dialCode, fields.officeNumber)),
-      row('qr.contactFax', joinNumber(fields.faxCountry?.dialCode, fields.faxNumber)),
+      row('qr.contactMobile', joinDialledNumber(fields.mobileCountry?.dialCode, fields.mobileNumber)),
+      row('qr.contactPhone', joinDialledNumber(fields.homeCountry?.dialCode, fields.homeNumber)),
+      row('qr.contactOffice', joinDialledNumber(fields.officeCountry?.dialCode, fields.officeNumber)),
+      row('qr.contactFax', joinDialledNumber(fields.faxCountry?.dialCode, fields.faxNumber)),
       row('qr.contactEmail', fields.email),
       row('qr.contactWebsite', fields.website),
       row('qr.contactAddress', address),
@@ -127,22 +134,19 @@ function describeVCard(data: string, defaultCountry: CountryCallingCode | null):
 
 function describeMeCard(data: string, defaultCountry: CountryCallingCode | null): QrDetails {
   const fields = parseMeCardFields(data, defaultCountry);
+  // Read as a name rather than shown as written, so `N:Doe,John` reads the
+  // way the same card reads once it is in Contacts.
+  const { firstName, lastName } = splitMeCardName(fields.name);
   return {
-    title: fields.name.trim() || fields.company.trim() || null,
+    title: [firstName, lastName].filter(Boolean).join(' ') || fields.company.trim() || null,
     rows: compact([
       row('qr.contactCompany', fields.name ? fields.company : ''),
-      row('qr.contactPhone', joinNumber(fields.country?.dialCode, fields.number)),
+      row('qr.contactPhone', joinDialledNumber(fields.country?.dialCode, fields.number)),
       row('qr.contactEmail', fields.email),
       row('qr.contactWebsite', fields.website),
       row('qr.contactAddress', fields.address),
     ]),
   };
-}
-
-function joinNumber(dialCode: string | undefined, number: string): string {
-  const digits = number.trim();
-  if (!digits) return '';
-  return dialCode ? `${dialCode} ${digits}` : digits;
 }
 
 const WIFI_SECURITY_LABEL: Record<string, string> = {

@@ -7,7 +7,8 @@
     "NSPhotoLibraryAddUsageDescription": "Blippo saves a scanned page or a QR code image to your photos when you choose “Save Image” while sharing it.",
     "NSFaceIDUsageDescription": "Blippo uses Face ID to unlock the app, so your saved scans and documents stay private if someone else picks up your iPhone.",
     "NSCalendarsUsageDescription": "Blippo adds an event from a scanned QR code to your calendar. It shows you the event first and you confirm it in the calendar’s own screen — nothing already in your calendar is read.",
-    "NSCalendarsFullAccessUsageDescription": "Blippo adds an event from a scanned QR code to your calendar. It shows you the event first and you confirm it in the calendar’s own screen — nothing already in your calendar is read."
+    "NSCalendarsFullAccessUsageDescription": "Blippo adds an event from a scanned QR code to your calendar. It shows you the event first and you confirm it in the calendar’s own screen — nothing already in your calendar is read.",
+    "NSContactsUsageDescription": "Blippo adds a person from a scanned contact code to your contacts. It fills in the new-contact screen and you save it yourself — your existing contacts are not read or sent anywhere."
   },
   "android": {
     "app_name": "Blippo"

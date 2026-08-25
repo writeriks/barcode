@@ -1,41 +1,34 @@
 import * as Calendar from 'expo-calendar';
-import { File, Paths } from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
+import * as Contacts from 'expo-contacts';
 import type { QrContentType } from '../utils/classifyQrContent';
-import { buildVCardContent } from '../utils/qrContentBuilders';
-import { parseEventFields, parseMeCardFields } from '../utils/qrContentParsers';
+import type { CountryCallingCode } from '../utils/countryCallingCodes';
+import {
+  joinDialledNumber,
+  parseEventFields,
+  parseMeCardFields,
+  parseVCardFields,
+  splitMeCardName,
+} from '../utils/qrContentParsers';
 
 /**
- * Hands a scanned event to the calendar, and a scanned contact to a file.
+ * Hands a scanned event to the calendar and a scanned contact to Contacts.
  *
- * The event used to go through a file too, on the reasoning that iOS knows
- * what an .ics is and would offer to add it. It does know — the share
- * sheet even draws the little calendar page with the right date on it —
- * but Calendar registers no share extension, so the sheet offers AirDrop,
- * Messages, Mail and Save to Files and no way to actually add the event.
- * The file was a dead end dressed as a destination.
+ * Both used to go out as a file — an .ics, a .vcf — on the reasoning that
+ * iOS knows those formats and would offer to add them. It does know them:
+ * the share sheet even draws the little calendar page with the right date
+ * on it. But neither Calendar nor Contacts registers a share extension, so
+ * the sheet offers AirDrop, Messages, Mail and Save to Files and no way to
+ * actually add anything. The file was a dead end dressed as a destination.
  *
- * So events go through EventKit, by way of the system's own new-event
- * screen: the app fills it in, the user sees it and confirms. The price is
- * a full calendar permission, because expo-calendar counts iOS 17's
- * add-only grant as a refusal. It is more than this feature needs and it
- * is the only route that works.
+ * So both now go through the system's own screens: the app fills one in,
+ * the user sees it and saves it. Nothing is written without that.
  *
- * Contacts still go through a file, and carry the same caveat: Contacts
- * has no share extension either, so the sheet can save or send the .vcf
- * but not add it. Fixing that means expo-contacts and a second permission,
- * which hasn't been decided.
+ * The price is two permissions that are wider than what the app does with
+ * them — expo-calendar counts iOS 17's add-only calendar grant as a
+ * refusal, and contacts has never had an add-only grant at all. That is
+ * the cost of the only route that works, and it is why neither prompt is
+ * raised until someone actually taps the button.
  */
-
-/** Sanitised for a filename and short enough to read in the share sheet,
- *  because the filename is the title iOS shows above the preview. */
-function safeFileName(title: string, fallback: string, extension: string): string {
-  const cleaned = title
-    .replace(/[^\p{L}\p{N} _-]/gu, '')
-    .trim()
-    .slice(0, 40);
-  return `${cleaned || fallback}.${extension}`;
-}
 
 /** An event with no end time still needs one; an hour is what a calendar
  *  assumes when a person makes an event by hand. */
@@ -81,59 +74,126 @@ export async function addEventToCalendar(content: string): Promise<AddEventResul
 }
 
 /**
- * A scanned contact as a .vcf file.
+ * Contacts labels its fields with these rather than with words.
  *
- * MECARD is converted rather than passed through: it is its own format,
- * and iOS has never read it. Going through the app's own parser and vCard
- * builder means a MECARD code lands in Contacts with the same fields a
- * vCard would.
+ * `_$!<Home>!$_` and friends are the Contacts framework's own label
+ * constants, and they are what makes a number show up as Cep on a Turkish
+ * phone and Mobile on an English one. expo-contacts takes a label already
+ * translated into the device's language and maps it back to a constant, so
+ * passing the English word would work on an English phone and leave a
+ * literal "mobile" as a custom label on every other one. The constants go
+ * through its mapping untouched (see decodeLabel in the module's
+ * Serialization.swift) and land where they belong in every language.
  */
-export function toContactFile(content: string, type: QrContentType, title: string): File | null {
-  let body = content.trim();
+const LABEL = {
+  home: '_$!<Home>!$_',
+  work: '_$!<Work>!$_',
+  mobile: '_$!<Mobile>!$_',
+  workFax: '_$!<WorkFAX>!$_',
+  homePage: '_$!<HomePage>!$_',
+} as const;
+
+export type AddContactResult = 'shown' | 'denied' | 'unreadable';
+
+function phone(label: string, dialCode: string | undefined, number: string): Contacts.PhoneNumber | null {
+  const dialled = joinDialledNumber(dialCode, number);
+  return dialled ? { label, number: dialled } : null;
+}
+
+function compact<T>(values: (T | null)[]): T[] | undefined {
+  const kept = values.filter((value): value is T => value !== null);
+  return kept.length ? kept : undefined;
+}
+
+function toContact(content: string, type: QrContentType, defaultCountry: CountryCallingCode | null): Contacts.Contact | null {
   if (type === 'mecard') {
-    const fields = parseMeCardFields(body, null);
-    const converted = buildVCardContent({
-      version: '3.0',
-      title: '',
-      firstName: fields.name,
-      lastName: '',
-      homeDialCode: fields.country?.dialCode ?? '',
-      homeNumber: fields.number,
-      mobileDialCode: '',
-      mobileNumber: '',
-      email: fields.email,
-      website: fields.website,
-      company: fields.company,
-      jobTitle: '',
-      // MECARD has no office or fax field to carry over.
-      officeDialCode: '',
-      officeNumber: '',
-      faxDialCode: '',
-      faxNumber: '',
-      address: fields.address,
-      city: '',
-      state: '',
-      postCode: '',
-      country: '',
-    });
-    if (!converted) return null;
-    body = converted;
+    const fields = parseMeCardFields(content, defaultCountry);
+    const { firstName, lastName } = splitMeCardName(fields.name);
+    if (!firstName && !lastName && !fields.company.trim()) return null;
+    return {
+      contactType: Contacts.ContactTypes.Person,
+      name: [firstName, lastName].filter(Boolean).join(' '),
+      firstName,
+      lastName,
+      company: fields.company.trim(),
+      // MECARD has no way to say what kind of number it carries.
+      phoneNumbers: compact([phone(LABEL.mobile, fields.country?.dialCode, fields.number)]),
+      emails: fields.email.trim() ? [{ label: LABEL.home, email: fields.email.trim() }] : undefined,
+      urlAddresses: fields.website.trim() ? [{ label: LABEL.homePage, url: fields.website.trim() }] : undefined,
+      // One free-text line; there are no separate city or postcode fields
+      // to fill from, so it goes in as the street.
+      addresses: fields.address.trim() ? [{ label: LABEL.home, street: fields.address.trim() }] : undefined,
+    };
   }
 
-  const file = new File(Paths.cache, safeFileName(title, 'contact', 'vcf'));
-  file.create({ overwrite: true });
-  file.write(body);
-  return file;
+  const fields = parseVCardFields(content, defaultCountry);
+  const firstName = fields.firstName.trim();
+  const lastName = fields.lastName.trim();
+  const company = fields.company.trim();
+  if (!firstName && !lastName && !company) return null;
+
+  const address = [fields.address, fields.city, fields.state, fields.postCode, fields.country]
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return {
+    // A card with no person on it is a company card, and Contacts has a
+    // shape for exactly that — it shows the organisation as the name.
+    contactType: firstName || lastName ? Contacts.ContactTypes.Person : Contacts.ContactTypes.Company,
+    name: [firstName, lastName].filter(Boolean).join(' ') || company,
+    firstName,
+    lastName,
+    // vCard's N carries the prefix — Dr., Prof. — in its fourth part.
+    namePrefix: fields.title.trim(),
+    company,
+    jobTitle: fields.jobTitle.trim(),
+    phoneNumbers: compact([
+      phone(LABEL.mobile, fields.mobileCountry?.dialCode, fields.mobileNumber),
+      phone(LABEL.home, fields.homeCountry?.dialCode, fields.homeNumber),
+      phone(LABEL.work, fields.officeCountry?.dialCode, fields.officeNumber),
+      phone(LABEL.workFax, fields.faxCountry?.dialCode, fields.faxNumber),
+    ]),
+    emails: fields.email.trim() ? [{ label: LABEL.work, email: fields.email.trim() }] : undefined,
+    urlAddresses: fields.website.trim() ? [{ label: LABEL.homePage, url: fields.website.trim() }] : undefined,
+    addresses: address.length
+      ? [
+          {
+            label: LABEL.work,
+            street: fields.address.trim(),
+            city: fields.city.trim(),
+            region: fields.state.trim(),
+            postalCode: fields.postCode.trim(),
+            country: fields.country.trim(),
+          },
+        ]
+      : undefined,
+  };
 }
 
 /**
- * Puts the contact file in front of the user.
+ * Opens the system's new-contact screen, filled in from a scanned card.
  *
- * The UTI is what tells iOS what the file is; without it the sheet treats
- * it as anonymous data and offers only the file-moving apps. With it, the
- * sheet at least previews the contact — though Contacts itself is not a
- * destination there, which is the open question noted at the top.
+ * The same bargain the calendar makes: the app fills the fields in, the
+ * screen is iOS's own, and the user is the one who taps Done. The promise
+ * resolves when that screen closes and says nothing about which button
+ * closed it, so the result stops at 'shown' — the user watched what
+ * happened and does not need telling.
+ *
+ * MECARD is read by the app's own parser rather than handed over as-is:
+ * it is a format of its own and iOS has never understood it, so a MECARD
+ * code lands in Contacts with the same fields a vCard would.
  */
-export async function shareStructuredFile(file: File): Promise<void> {
-  await Sharing.shareAsync(file.uri, { UTI: 'public.vcard', mimeType: 'text/vcard' });
+export async function addContactToDevice(
+  content: string,
+  type: QrContentType,
+  defaultCountry: CountryCallingCode | null
+): Promise<AddContactResult> {
+  const contact = toContact(content, type, defaultCountry);
+  if (!contact) return 'unreadable';
+
+  const { granted } = await Contacts.requestPermissionsAsync();
+  if (!granted) return 'denied';
+
+  await Contacts.presentFormAsync(null, contact, { isNew: true });
+  return 'shown';
 }

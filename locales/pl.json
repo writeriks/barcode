@@ -7,7 +7,8 @@
     "NSPhotoLibraryAddUsageDescription": "Blippo zapisuje zeskanowaną stronę lub obraz kodu QR w Twoich zdjęciach, gdy podczas udostępniania wybierzesz «Zapisz obraz».",
     "NSFaceIDUsageDescription": "Blippo używa Face ID do odblokowania aplikacji, dzięki czemu zapisane skany i dokumenty pozostaną prywatne, jeśli ktoś inny weźmie Twojego iPhone’a.",
     "NSCalendarsUsageDescription": "Blippo dodaje do Twojego kalendarza wydarzenie z zeskanowanego kodu QR. Najpierw pokazuje Ci wydarzenie, a potwierdzasz je na ekranie samego kalendarza — nic, co już masz w kalendarzu, nie jest odczytywane.",
-    "NSCalendarsFullAccessUsageDescription": "Blippo dodaje do Twojego kalendarza wydarzenie z zeskanowanego kodu QR. Najpierw pokazuje Ci wydarzenie, a potwierdzasz je na ekranie samego kalendarza — nic, co już masz w kalendarzu, nie jest odczytywane."
+    "NSCalendarsFullAccessUsageDescription": "Blippo dodaje do Twojego kalendarza wydarzenie z zeskanowanego kodu QR. Najpierw pokazuje Ci wydarzenie, a potwierdzasz je na ekranie samego kalendarza — nic, co już masz w kalendarzu, nie jest odczytywane.",
+    "NSContactsUsageDescription": "Blippo dodaje do Twoich kontaktów osobę z zeskanowanego kodu kontaktowego. Wypełnia ekran nowego kontaktu, a Ty sam(a) go zapisujesz — Twoje dotychczasowe kontakty nie są odczytywane ani nigdzie wysyłane."
   },
   "android": {
     "app_name": "Blippo"

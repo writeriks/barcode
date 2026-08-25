@@ -428,8 +428,10 @@
     "addToContacts": "Añadir a contactos",
     "calendarDeniedTitle": "El acceso al calendario está desactivado",
     "calendarDeniedBody": "Blippo necesita acceso al calendario para abrir la pantalla de nuevo evento. Puedes activarlo en Ajustes.",
-    "calendarDeniedOpen": "Abrir Ajustes",
-    "calendarDeniedDismiss": "Ahora no"
+    "contactsDeniedTitle": "El acceso a los contactos está desactivado",
+    "contactsDeniedBody": "Blippo necesita acceso a los contactos para abrir la pantalla de nuevo contacto. Puedes activarlo en Ajustes.",
+    "permissionDeniedOpen": "Abrir Ajustes",
+    "permissionDeniedDismiss": "Ahora no"
   },
   "paywall": {
     "title": "Desbloquea Blippo Premium",

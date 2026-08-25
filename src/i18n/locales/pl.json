@@ -434,8 +434,10 @@
     "addToContacts": "Dodaj do kontaktów",
     "calendarDeniedTitle": "Dostęp do kalendarza jest wyłączony",
     "calendarDeniedBody": "Blippo potrzebuje dostępu do kalendarza, aby otworzyć ekran nowego wydarzenia. Możesz go włączyć w Ustawieniach.",
-    "calendarDeniedOpen": "Otwórz Ustawienia",
-    "calendarDeniedDismiss": "Nie teraz"
+    "contactsDeniedTitle": "Dostęp do kontaktów jest wyłączony",
+    "contactsDeniedBody": "Blippo potrzebuje dostępu do kontaktów, aby otworzyć ekran nowego kontaktu. Możesz go włączyć w Ustawieniach.",
+    "permissionDeniedOpen": "Otwórz Ustawienia",
+    "permissionDeniedDismiss": "Nie teraz"
   },
   "paywall": {
     "title": "Odblokuj Blippo Premium",

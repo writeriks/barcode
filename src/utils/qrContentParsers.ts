@@ -49,12 +49,35 @@ function splitQuery(value: string): [string, string] {
   return index === -1 ? [value, ''] : [value.slice(0, index), value.slice(index + 1)];
 }
 
-/** Matches a run of digits against the longest known dial code prefix —
+/**
+ * Matches a run of digits against the longest known dial code prefix —
  * dial codes are ambiguous by nature (+1, +7 are shared by several
  * countries), so this is a best-effort split good enough to pre-fill an
- * edit form the user can still correct via the country picker. */
-function splitDialCode(raw: string, defaultCountry: CountryCallingCode | null): { country: CountryCallingCode | null; number: string } {
-  const digits = raw.replace(/\D/g, '');
+ * edit form the user can still correct via the country picker.
+ *
+ * Only a number that says it is international gets split. This used to
+ * strip every non-digit first, the leading + included, and then match the
+ * prefix regardless — so a local number like 5551234 came out as Brazil
+ * (+55) and 51234, on screen and in the edit form both. A number without a
+ * + is a number in some national format, and there is nothing in it to say
+ * which country's.
+ */
+function isInternational(raw: string): boolean {
+  // 00 is the same statement dialled the old way, and cards still use it.
+  return /^\s*(\+|00)/.test(raw);
+}
+
+function splitDialCode(
+  raw: string,
+  defaultCountry: CountryCallingCode | null,
+  /** wa.me numbers are always international and never carry the +, so
+   *  that one caller has to say so. */
+  { assumeInternational = false }: { assumeInternational?: boolean } = {}
+): { country: CountryCallingCode | null; number: string } {
+  const allDigits = raw.replace(/\D/g, '');
+  if (!assumeInternational && !isInternational(raw)) return { country: defaultCountry, number: allDigits };
+
+  const digits = /^\s*00/.test(raw) ? allDigits.replace(/^00/, '') : allDigits;
   let best: CountryCallingCode | null = null;
   let bestLength = 0;
   for (const candidate of COUNTRY_CALLING_CODES) {
@@ -66,6 +89,22 @@ function splitDialCode(raw: string, defaultCountry: CountryCallingCode | null): 
   }
   if (!best) return { country: defaultCountry, number: digits };
   return { country: best, number: digits.slice(bestLength) };
+}
+
+/**
+ * The inverse: a dial code and a number, as one dialable string.
+ *
+ * A number starting with 0 is in its own country's national form — the 0
+ * is a trunk code, not part of the number — and putting a country code in
+ * front of that produces something no phone can dial. Whatever the payload
+ * wrote is left alone in that case; a phone reads a national number in the
+ * region it is in, which is the same guess a dial code would be making,
+ * without the risk of guessing out loud.
+ */
+export function joinDialledNumber(dialCode: string | undefined, number: string): string {
+  const digits = number.trim();
+  if (!digits || digits.startsWith('0')) return digits;
+  return dialCode ? `${dialCode} ${digits}` : digits;
 }
 
 /** Splits on an unescaped separator, keeping each part's escape sequences
@@ -135,12 +174,13 @@ function parsePhoneMessageFields(
   content: string,
   pattern: RegExp,
   bodyParam: string,
-  defaultCountry: CountryCallingCode | null
+  defaultCountry: CountryCallingCode | null,
+  assumeInternational = false
 ): PhoneMessageFields {
   const match = content.match(pattern);
   if (!match) return defaultPhoneMessageFields(defaultCountry);
   const [head, query] = splitQuery(match[1]);
-  const { country, number } = splitDialCode(head, defaultCountry);
+  const { country, number } = splitDialCode(head, defaultCountry, { assumeInternational });
   const params = parseQueryString(query);
   return { country, number, message: params[bodyParam] ?? '' };
 }
@@ -150,7 +190,9 @@ export function parseSmsFields(content: string, defaultCountry: CountryCallingCo
 }
 
 export function parseWhatsappFields(content: string, defaultCountry: CountryCallingCode | null): PhoneMessageFields {
-  return parsePhoneMessageFields(content, /^https:\/\/wa\.me\/(.+)$/i, 'text', defaultCountry);
+  // wa.me only ever carries a full international number, written without
+  // the + — the one place a bare run of digits does name its country.
+  return parsePhoneMessageFields(content, /^https:\/\/wa\.me\/(.+)$/i, 'text', defaultCountry, true);
 }
 
 /** The stored content is always a full URL (buildSocialProfileContent
@@ -210,6 +252,23 @@ export function parseMeCardFields(content: string, defaultCountry: CountryCallin
   return result;
 }
 
+/**
+ * MECARD writes the name as one field, and the convention when it holds
+ * both halves is `Surname,Given` — the same order vCard's N uses. Anything
+ * without a comma is left whole as the given name, which is where a single
+ * name belongs.
+ *
+ * Kept apart from the parsed field itself, which stays exactly as written
+ * so that reopening a saved code and saving it again writes the same code
+ * back.
+ */
+export function splitMeCardName(name: string): { firstName: string; lastName: string } {
+  const [lastName, firstName] = name.split(',');
+  return firstName === undefined
+    ? { firstName: name.trim(), lastName: '' }
+    : { firstName: firstName.trim(), lastName: lastName.trim() };
+}
+
 function extractWifiFields(body: string): Record<string, string> {
   const result: Record<string, string> = {};
   for (const segment of splitEscaped(body, ';')) {
@@ -254,6 +313,11 @@ export function parseVCardFields(content: string, defaultCountry: CountryCalling
   const result = defaultVCardFields(defaultCountry);
   if (!content.includes('BEGIN:VCARD')) return result;
 
+  // The display name, kept aside rather than used as it is read: N is the
+  // one that says which part is which, so it wins wherever both are
+  // present, and the line order in the card must not decide that.
+  let formattedName = '';
+
   for (const line of content.split(/\r?\n/)) {
     const colonIndex = line.indexOf(':');
     if (colonIndex === -1) continue;
@@ -273,6 +337,9 @@ export function parseVCardFields(content: string, defaultCountry: CountryCalling
         result.title = title ?? '';
         break;
       }
+      case 'FN':
+        formattedName = unescapeStructuredText(value);
+        break;
       case 'ORG':
         result.company = unescapeStructuredText(value);
         break;
@@ -310,6 +377,17 @@ export function parseVCardFields(content: string, defaultCountry: CountryCalling
         break;
       }
     }
+  }
+
+  // A card that only carries FN — plenty of generators write one — used to
+  // come out with no name at all, on screen and in the editor both. The
+  // last word is taken as the surname, which is the reading that is right
+  // more often than not and is only ever a guess: the card itself never
+  // said.
+  if (!result.firstName && !result.lastName && formattedName.trim()) {
+    const parts = formattedName.trim().split(/\s+/);
+    result.lastName = parts.length > 1 ? (parts.pop() as string) : '';
+    result.firstName = parts.join(' ');
   }
 
   return result;

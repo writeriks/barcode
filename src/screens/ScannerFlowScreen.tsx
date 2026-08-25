@@ -46,7 +46,7 @@ function analyticsResultValue(status: LookupResult['status']): string {
 export function ScannerFlowScreen({ navigation }: Props) {
   const [screen, setScreen] = useState<Screen>({ name: 'scanner' });
   const { countScan, maybeShowOnLeavingResult } = useScanInterstitial();
-  const { isPremium, openPaywall } = usePremium();
+  const { isPremium, isReady: isPremiumReady, openPaywall } = usePremium();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const lastMethodRef = useRef<ScanMethod>('camera');
@@ -187,7 +187,14 @@ export function ScannerFlowScreen({ navigation }: Props) {
    */
   const goToScanner = useCallback(() => {
     setScreen({ name: 'scanner' });
-    if (isPremium) {
+    // Unresolved counts as premium here, the same way premiumState says it
+    // should. Between launch and RevenueCat answering, `isPremium` reads
+    // false for everyone — and a first scan can easily land inside that
+    // window on a slow connection, which would put a purchase screen in
+    // front of someone who has already bought it. The pitch is only spent
+    // when it is actually shown, so waiting costs it nothing: the next
+    // result offers it again.
+    if (isPremium || !isPremiumReady) {
       maybeShowOnLeavingResult();
       return;
     }
@@ -199,7 +206,7 @@ export function ScannerFlowScreen({ navigation }: Props) {
       void setFirstRunPaywallShown();
       openPaywall('firstScan');
     });
-  }, [isPremium, maybeShowOnLeavingResult, openPaywall]);
+  }, [isPremium, isPremiumReady, maybeShowOnLeavingResult, openPaywall]);
 
   // ScannerScreen is deliberately edge-to-edge (it's a camera viewfinder),
   // but the result screens below it have no navigation header of their own

@@ -2,113 +2,107 @@
 //
 //   node scripts/generateAppIcon.mjs
 //
-// Writes assets/icon.png, the three Android adaptive-icon layers and the
-// web favicon, all from the same mark and from the app's own colours, so
-// a change to the palette is one edit here rather than five files redrawn
-// by hand.
+// The icon itself is artwork, not code: assets/icon-source.png is the
+// original and this script does not draw it. What it does is derive the
+// pieces the stores want in other shapes — the iOS icon at 1024 with no
+// alpha channel, the two Android adaptive layers on transparency, the web
+// favicon — so that replacing the artwork is one file swap and one command
+// rather than five images edited by hand.
 //
-// The mark is a QR code with its top-right finder pattern replaced by
-// barcode bars — the two things the app reads, in one shape. It is
-// deliberately not a scannable code: a finder pattern is structural, and
-// removing one is what makes this a logo rather than a QR nobody meant to
-// publish. Four punch-pink corner brackets sit around it as a scanner
-// viewfinder — the same frame the camera uses.
+// The mark is a QR code with its top-right corner replaced by barcode
+// bars — the two things the app reads, in one shape. It is deliberately
+// not scannable: a finder pattern is structural, and losing one is what
+// makes this a logo rather than a QR nobody meant to publish. Four
+// punch-pink corner brackets sit around it as a scanner viewfinder — the
+// same frame the camera uses.
 //
-// Needs Python's cairosvg (to rasterise) and Pillow (to resize). Neither
-// is a dependency of the app.
+// Needs Python's Pillow and numpy (to cut the artwork off its background)
+// and cairosvg (to rasterise the favicon). None is a dependency of the app.
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import QRCode from 'qrcode';
 
 /** Mirrors src/theme/colors.ts. */
 const MINT = '#2fe6b8';
 const PUNCH = '#ff3e7f';
 const BACKGROUND = '#231a3a';
 
-const qr = QRCode.create('https://blippo.app', { errorCorrectionLevel: 'H' });
-const SIZE = qr.modules.size;
-const isDark = (x, y) => qr.modules.data[y * SIZE + x] === 1;
+const SOURCE = 'assets/icon-source.png';
 
-/** The top-right finder pattern and its separator, plus a row beneath, so
- *  the bars sit above a clean band rather than straight on the code. */
-const ZONE = { x0: SIZE - 8, y0: 0, x1: SIZE - 1, y1: 8 };
-const inZone = (x, y) => x >= ZONE.x0 && x <= ZONE.x1 && y >= ZONE.y0 && y <= ZONE.y1;
-
-/** Widths and lengths vary the way a real barcode's do; an even comb reads
- *  as a hatch pattern instead. */
-const BARS = [
-  { x: 0.2, width: 0.6, height: 7.0 },
-  { x: 1.35, width: 0.6, height: 6.55 },
-  { x: 2.5, width: 0.6, height: 7.0 },
-  { x: 3.65, width: 1.25, height: 6.55 },
-  { x: 5.4, width: 0.6, height: 7.0 },
-  { x: 6.55, width: 1.25, height: 6.55 },
-];
-
-function markGroup(size, colour, inset) {
-  let cells = '';
-  for (let y = 0; y < SIZE; y++) {
-    for (let x = 0; x < SIZE; x++) {
-      // A hair over one unit so neighbouring modules meet without a seam.
-      if (isDark(x, y) && !inZone(x, y)) cells += `<rect x="${x}" y="${y}" width="1.03" height="1.03"/>`;
-    }
-  }
-  let bars = '';
-  for (const bar of BARS) {
-    const x = (ZONE.x0 + bar.x).toFixed(2);
-    bars += `<rect x="${x}" y="0.20" width="${bar.width}" height="${bar.height}" rx="${(bar.width / 2).toFixed(3)}"/>`;
-  }
-  const span = size * (1 - inset * 2);
-  return `<g fill="${colour}" shape-rendering="crispEdges" transform="translate(${size * inset} ${size * inset}) scale(${span / SIZE})">
-    ${cells}${bars}
-  </g>`;
+function python(...lines) {
+  execFileSync('python3', ['-c', lines.filter(Boolean).join('\n')], { stdio: ['ignore', 'inherit', 'inherit'] });
 }
 
-/** Four L-shaped corners — a camera viewfinder around the mark. */
-function frameGroup(size, colour, { pad, arm, stroke }) {
-  const p = (size * pad).toFixed(2);
-  const a = (size * arm).toFixed(2);
-  const w = (size * stroke).toFixed(2);
-  const far = (size * (1 - pad)).toFixed(2);
-  const pPlus = (size * pad + size * arm).toFixed(2);
-  const farMinus = (size * (1 - pad) - size * arm).toFixed(2);
-  const paths = [
-    `M ${pPlus} ${p} H ${p} V ${pPlus}`,
-    `M ${farMinus} ${p} H ${far} V ${pPlus}`,
-    `M ${p} ${farMinus} V ${far} H ${pPlus}`,
-    `M ${far} ${farMinus} V ${far} H ${farMinus}`,
-  ];
-  return `<g fill="none" stroke="${colour}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">
-    ${paths.map((d) => `<path d="${d}"/>`).join('')}
-  </g>`;
+/**
+ * The iOS icon: the artwork at 1024, flattened.
+ *
+ * App Store Connect rejects an icon that carries an alpha channel, even a
+ * fully opaque one, so the mode conversion is not cosmetic.
+ */
+function buildIosIcon(out, size) {
+  python(
+    'from PIL import Image',
+    `im = Image.open(${JSON.stringify(SOURCE)}).convert('RGB')`,
+    `im = im.resize((${size}, ${size}), Image.LANCZOS)`,
+    `im.save(${JSON.stringify(out)})`
+  );
 }
 
-function glowFilter(id, blur) {
-  return `<filter id="${id}" x="-50%" y="-50%" width="200%" height="200%">
-    <feGaussianBlur in="SourceGraphic" stdDeviation="${blur}" result="blur"/>
-    <feMerge>
-      <feMergeNode in="blur"/>
-      <feMergeNode in="SourceGraphic"/>
-    </feMerge>
-  </filter>`;
-}
-
-function iconSvg(size, { background, markColour, frameColour, markInset, frame, glow }) {
-  const defs = glow
-    ? `<defs>${glowFilter('markGlow', size * 0.006)}${glowFilter('frameGlow', size * 0.012)}</defs>`
-    : '';
-  const mark = `<g ${glow ? 'filter="url(#markGlow)"' : ''}>${markGroup(size, markColour, markInset)}</g>`;
-  const frameLayer = frame
-    ? `<g ${glow ? 'filter="url(#frameGlow)"' : ''}>${frameGroup(size, frameColour, frame)}</g>`
-    : '';
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  ${defs}
-  ${background ? `<rect width="${size}" height="${size}" fill="${background}"/>` : ''}
-  ${mark}
-  ${frameLayer}
-</svg>`;
+/**
+ * The Android layers: the same artwork, cut off its background.
+ *
+ * An adaptive icon is a foreground floating over a separately drawn
+ * background, so the purple has to come away and take the glow with it —
+ * which is why this measures how far each pixel has travelled from the
+ * background colour rather than thresholding brightness. Brightness alone
+ * would keep the mint and lose the punch pink, which is darker than it
+ * looks (its luminance is barely half the mint's).
+ *
+ * What is left is then unblended: a glow pixel is the mark's colour mixed
+ * into the background, so dividing the mix back out recovers the colour
+ * and lets the alpha channel carry the falloff. Without that the glow
+ * turns muddy over any background but the original.
+ *
+ * The launcher crops an adaptive icon to roughly its middle two thirds and
+ * may round it to a circle, so the artwork is cropped to what it actually
+ * draws and re-placed smaller than it sat in the square.
+ */
+function buildAndroidLayer(out, size, { colour = null, scale }) {
+  python(
+    'from PIL import Image',
+    'import numpy as np',
+    `im = Image.open(${JSON.stringify(SOURCE)}).convert('RGB')`,
+    'a = np.asarray(im).astype(np.float32)',
+    // The lightest corner of the background gradient: anything at or below
+    // this is background everywhere in the image.
+    'bg = np.array([37.0, 29.0, 60.0])',
+    'lift = (a - bg).max(axis=2)',
+    // Fully opaque well before the mark reaches full strength, so the marks
+    // stay solid and only the glow around them fades.
+    'alpha = np.clip((lift - 10.0) / 110.0, 0.0, 1.0)',
+    'safe = np.maximum(alpha, 1e-6)[..., None]',
+    'colour_out = np.clip((a - (1.0 - safe) * bg) / safe, 0.0, 255.0)',
+    colour
+      ? // The monochrome layer is a stencil: the system paints it itself,
+        // so only the alpha channel carries any information.
+        `colour_out = np.zeros_like(colour_out) + np.array([${[1, 3, 5]
+          .map((i) => parseInt(colour.slice(i, i + 2), 16))
+          .join(', ')}], dtype=np.float32)`
+      : '',
+    'rgba = np.dstack([colour_out, alpha * 255.0]).astype(np.uint8)',
+    "cut = Image.fromarray(rgba, 'RGBA')",
+    // Crop to what the artwork actually draws, glow included, so the
+    // margins in the source file do not decide the size on screen.
+    'ys, xs = np.nonzero(alpha > 0.02)',
+    'cut = cut.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))',
+    `span = int(${size} * ${scale})`,
+    'ratio = min(span / cut.width, span / cut.height)',
+    'cut = cut.resize((max(1, round(cut.width * ratio)), max(1, round(cut.height * ratio))), Image.LANCZOS)',
+    `canvas = Image.new('RGBA', (${size}, ${size}), (0, 0, 0, 0))`,
+    `canvas.paste(cut, ((${size} - cut.width) // 2, (${size} - cut.height) // 2), cut)`,
+    `canvas.save(${JSON.stringify(out)})`
+  );
 }
 
 /**
@@ -141,100 +135,40 @@ function faviconSvg(size) {
 </svg>`;
 }
 
-const work = mkdtempSync(join(tmpdir(), 'blippo-icon-'));
-
-/** Rasterise SVG with cairosvg. Chromium is the historical renderer, but
- *  headless Chrome in this environment waits indefinitely on screenshot;
- *  Cairo draws the same SVG without a browser. */
-function rasterise(name, svg, size) {
-  const svgPath = join(work, `${name}.svg`);
-  const shot = join(work, `${name}.png`);
-  writeFileSync(svgPath, svg);
-  execFileSync('python3', [
-    '-c',
-    [
-      'import cairosvg',
-      `cairosvg.svg2png(url=${JSON.stringify(svgPath)}, write_to=${JSON.stringify(shot)}, output_width=${size}, output_height=${size})`,
-    ].join('\n'),
-  ]);
-  return { shot };
+/** Cairo draws the SVG without a browser — headless Chrome, the historical
+ *  renderer here, waits indefinitely on screenshot in this environment. */
+function buildFavicon(out, size) {
+  const work = mkdtempSync(join(tmpdir(), 'blippo-icon-'));
+  const svgPath = join(work, 'favicon.svg');
+  const shot = join(work, 'favicon.png');
+  writeFileSync(svgPath, faviconSvg(512));
+  python(
+    'import cairosvg',
+    `cairosvg.svg2png(url=${JSON.stringify(svgPath)}, write_to=${JSON.stringify(shot)}, output_width=512, output_height=512)`
+  );
+  python(
+    'from PIL import Image',
+    `Image.open(${JSON.stringify(shot)}).resize((${size}, ${size}), Image.LANCZOS).convert('RGB').save(${JSON.stringify(out)})`
+  );
 }
 
-/** Resize and, for the iOS icon, drop the alpha channel — App Store
- *  Connect rejects an icon that has one, even a fully opaque one. */
-function finish(shot, out, size, { flatten = false } = {}) {
-  execFileSync('python3', [
-    '-c',
-    [
-      'from PIL import Image',
-      `im = Image.open(${JSON.stringify(shot)})`,
-      `im = im.resize((${size}, ${size}), Image.LANCZOS)`,
-      flatten ? "im = im.convert('RGB')" : '',
-      `im.save(${JSON.stringify(out)})`,
-    ]
-      .filter(Boolean)
-      .join('\n'),
-  ]);
-}
+buildIosIcon('assets/icon.png', 1024);
+console.log('assets/icon.png — 1024x1024');
 
-const iosFrame = { pad: 0.1, arm: 0.155, stroke: 0.03 };
-const androidFrame = { pad: 0.2, arm: 0.135, stroke: 0.034 };
+// 0.62 keeps the frame's corners inside the circle a launcher may mask the
+// icon to, which cuts at about two thirds of the layer.
+buildAndroidLayer('assets/android-icon-foreground.png', 512, { scale: 0.62 });
+console.log('assets/android-icon-foreground.png — 512x512');
 
-const jobs = [
-  {
-    out: 'assets/icon.png',
-    size: 1024,
-    svg: iconSvg(1024, {
-      background: BACKGROUND,
-      markColour: MINT,
-      frameColour: PUNCH,
-      markInset: 0.2,
-      frame: iosFrame,
-      glow: true,
-    }),
-    flatten: true,
-  },
-  {
-    // Adaptive icons are cropped to roughly the middle two thirds, so the
-    // foreground sits further in than the iOS icon does.
-    out: 'assets/android-icon-foreground.png',
-    size: 512,
-    svg: iconSvg(512, {
-      background: null,
-      markColour: MINT,
-      frameColour: PUNCH,
-      markInset: 0.28,
-      frame: androidFrame,
-      glow: true,
-    }),
-    transparent: true,
-  },
-  {
-    out: 'assets/android-icon-monochrome.png',
-    size: 432,
-    svg: iconSvg(432, {
-      background: null,
-      markColour: '#ffffff',
-      frameColour: '#ffffff',
-      markInset: 0.28,
-      frame: androidFrame,
-      glow: false,
-    }),
-    transparent: true,
-  },
-  { out: 'assets/favicon.png', size: 48, svg: faviconSvg(512), flatten: true },
-];
-
-for (const job of jobs) {
-  const renderSize = Math.max(job.size, 512);
-  const { shot } = rasterise(job.out.replace(/\W/g, '_'), job.svg, renderSize);
-  finish(shot, job.out, job.size, { flatten: job.flatten });
-  console.log(`${job.out} — ${job.size}x${job.size}`);
-}
+buildAndroidLayer('assets/android-icon-monochrome.png', 432, { colour: '#ffffff', scale: 0.62 });
+console.log('assets/android-icon-monochrome.png — 432x432');
 
 // The background layer is one flat colour; there is nothing to draw.
-execFileSync('python3', [
-  '-c',
-  `from PIL import Image\nImage.new('RGBA', (512, 512), (0x23, 0x1a, 0x3a, 255)).save('assets/android-icon-background.png')`,
-]);
+python(
+  'from PIL import Image',
+  `Image.new('RGBA', (512, 512), (0x23, 0x1a, 0x3a, 255)).save('assets/android-icon-background.png')`
+);
 console.log('assets/android-icon-background.png — 512x512');
+
+buildFavicon('assets/favicon.png', 48);
+console.log('assets/favicon.png — 48x48');

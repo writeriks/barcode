@@ -439,14 +439,12 @@
   },
   "paywall": {
     "title": "Odblokuj Blippo Premium",
-    "subtitle": "Usuń reklamy, dostosuj każde ustawienie i przechowuj więcej historii.",
+    "subtitle": "Usuń reklamy, personalizuj kody i skanuj dokumenty bez miesięcznego limitu.",
     "benefitScans": "Nieograniczone skanowanie dokumentów",
     "benefitNoAds": "Brak reklam w całej aplikacji",
     "benefitHistory": "Do 100 skanów w historii zamiast 30",
     "benefitSettings": "Dostosuj skanowanie seryjne, wibracje, dźwięk, historię i Blokadę aplikacji",
-    "unitWeek": "tydzień",
     "unitMonth": "miesiąc",
-    "perWeekEquivalent": "≈ {{price}}/tydzień",
     "bestValue": "NAJLEPSZA OFERTA",
     "continueButton": "Kontynuuj — {{price}}/{{unit}}",
     "autoRenewNotice": "Odnawia się automatycznie, jeśli nie zostanie anulowane. Możesz anulować w dowolnym momencie w ustawieniach konta App Store.",
@@ -467,7 +465,11 @@
     "titleSettings": "Odblokuj wszystkie ustawienia",
     "titleQrTypes": "Odblokuj wszystkie typy kodów QR",
     "titleCustomization": "Nadaj kodom swój styl",
-    "benefitCustomization": "Koloruj kody QR oraz dodawaj podpis i logo marki"
+    "benefitCustomization": "Koloruj kody QR oraz dodawaj podpis i logo marki",
+    "unitYear": "rok",
+    "perMonthEquivalent": "≈ {{price}}/mies.",
+    "savePercent": "Oszczędzasz {{percent}}%",
+    "titleFirstScan": "Oto Blippo, za darmo"
   },
   "a11y": {
     "add": "Dodaj",

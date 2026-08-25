@@ -433,14 +433,12 @@
   },
   "paywall": {
     "title": "Sblocca Blippo Premium",
-    "subtitle": "Rimuovi gli annunci, personalizza ogni impostazione e conserva più cronologia.",
+    "subtitle": "Togli la pubblicità, personalizza i tuoi codici e scansiona documenti senza limite mensile.",
     "benefitScans": "Scansioni di documenti illimitate",
     "benefitNoAds": "Nessun annuncio in nessuna parte dell'app",
     "benefitHistory": "Fino a 100 scansioni nella cronologia invece di 30",
     "benefitSettings": "Personalizza scansione a raffica, vibrazione, beep, cronologia e Blocco app",
-    "unitWeek": "settimana",
     "unitMonth": "mese",
-    "perWeekEquivalent": "≈ {{price}}/settimana",
     "bestValue": "MIGLIOR OFFERTA",
     "continueButton": "Continua — {{price}}/{{unit}}",
     "autoRenewNotice": "Si rinnova automaticamente salvo disdetta. Puoi annullare in qualsiasi momento dalle impostazioni del tuo account App Store.",
@@ -461,7 +459,11 @@
     "titleSettings": "Sblocca tutte le impostazioni",
     "titleQrTypes": "Sblocca tutti i tipi di QR",
     "titleCustomization": "Rendi tuoi i tuoi codici",
-    "benefitCustomization": "Colora i tuoi codici QR e aggiungi una didascalia e il logo del marchio"
+    "benefitCustomization": "Colora i tuoi codici QR e aggiungi una didascalia e il logo del marchio",
+    "unitYear": "anno",
+    "perMonthEquivalent": "≈ {{price}}/mese",
+    "savePercent": "Risparmi il {{percent}} %",
+    "titleFirstScan": "Questo è Blippo, gratis"
   },
   "a11y": {
     "add": "Aggiungi",

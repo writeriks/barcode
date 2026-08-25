@@ -24,6 +24,7 @@ interface Props {
  * changes, so the plans, the auto-renewal notice and the legal links Apple
  * requires are never affected by this. */
 const REASON_TITLE_KEY: Record<PaywallReason, string> = {
+  firstScan: 'paywall.titleFirstScan',
   documentScans: 'paywall.titleDocumentScans',
   history: 'paywall.titleHistory',
   settings: 'paywall.titleSettings',
@@ -35,6 +36,9 @@ const REASON_TITLE_KEY: Record<PaywallReason, string> = {
 /** The benefit that answers the reason gets pulled to the top of the list
  * — it's the one the user is standing in front of. */
 const REASON_LEAD_BENEFIT: Record<PaywallReason, string | null> = {
+  // Nothing leads: the user arrived without a complaint to answer, so the
+  // list stays in its own order of importance.
+  firstScan: null,
   documentScans: 'paywall.benefitScans',
   history: 'paywall.benefitHistory',
   settings: 'paywall.benefitSettings',
@@ -53,7 +57,14 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; labelKey: string }[] = [
   { icon: 'options-outline', labelKey: 'paywall.benefitSettings' },
 ];
 
-type PlanId = 'weekly' | 'monthly';
+/**
+ * Two lengths, not three. A weekly subscription on a barcode scanner is
+ * the shape that gets refunded and one-starred — it reads as a way to
+ * charge someone fifty pounds a year while showing them a small number.
+ * Monthly is the honest short commitment and yearly is where the app
+ * actually wants people, so those are the only two offered.
+ */
+type PlanId = 'monthly' | 'annual';
 
 // Deliberately no hardcoded fallback price — every price on this screen
 // comes from RevenueCat's live offering or isn't shown at all. A plan
@@ -67,19 +78,38 @@ interface PlanDisplay {
   pkg: PurchasesPackage | null;
 }
 
-function buildPlans(offering: PurchasesOffering | null): PlanDisplay[] {
-  const weeklyPkg = offering?.weekly ?? null;
-  const monthlyPkg = offering?.monthly ?? null;
+/**
+ * What the yearly plan saves against paying monthly, as a whole percent,
+ * or null when it can't be worked out honestly.
+ *
+ * Computed from the two live prices rather than written down. A number
+ * typed into a translation file is right until the day a price changes or
+ * someone opens the app in a currency where the two products aren't
+ * priced proportionally, and then it is a false claim on a purchase
+ * screen.
+ */
+function annualSavingPercent(monthly: PurchasesPackage | null, annual: PurchasesPackage | null): number | null {
+  const monthlyPrice = monthly?.product.price ?? 0;
+  const annualPerMonth = annual?.product.pricePerMonth ?? null;
+  if (!monthlyPrice || !annualPerMonth || annualPerMonth >= monthlyPrice) return null;
+  return Math.round((1 - annualPerMonth / monthlyPrice) * 100);
+}
 
+function buildPlans(offering: PurchasesOffering | null): PlanDisplay[] {
   return [
-    { id: 'weekly', unitKey: 'paywall.unitWeek', pkg: weeklyPkg },
-    { id: 'monthly', unitKey: 'paywall.unitMonth', badgeKey: 'paywall.bestValue', pkg: monthlyPkg },
+    { id: 'monthly', unitKey: 'paywall.unitMonth', pkg: offering?.monthly ?? null },
+    {
+      id: 'annual',
+      unitKey: 'paywall.unitYear',
+      badgeKey: 'paywall.bestValue',
+      pkg: offering?.annual ?? null,
+    },
   ];
 }
 
 /** The upgrade pitch, shown whenever a free user taps a premium-gated
  * toggle or hits the free history limit. Every price shown here comes
- * live from RevenueCat's current offering (weekly/monthly packages,
+ * live from RevenueCat's current offering (monthly/annual packages,
  * predefined package types — see the RevenueCat dashboard) — there is no
  * hardcoded fallback, so wherever the offering can't be fetched (Expo Go,
  * Android, no network, or the dashboard isn't configured yet) the plan
@@ -96,7 +126,9 @@ export function PaywallScreen({ visible, reason, onClose, onPurchased }: Props) 
     if (!lead) return BENEFITS;
     return [...BENEFITS].sort((a, b) => Number(b.labelKey === lead) - Number(a.labelKey === lead));
   }, [reason]);
-  const [selectedPlan, setSelectedPlan] = useState<PlanId>('monthly');
+  // Yearly, because it is the one being recommended and a preselected
+  // recommendation is the whole point of recommending it.
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>('annual');
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
   const [offeringsLoaded, setOfferingsLoaded] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
@@ -116,6 +148,10 @@ export function PaywallScreen({ visible, reason, onClose, onPurchased }: Props) 
   }, [visible]);
 
   const plans = useMemo(() => buildPlans(offering), [offering]);
+  const savingPercent = useMemo(
+    () => annualSavingPercent(offering?.monthly ?? null, offering?.annual ?? null),
+    [offering]
+  );
   const selectedPlanDisplay = plans.find((plan) => plan.id === selectedPlan) ?? plans[0];
 
   const handleContinue = async () => {
@@ -210,10 +246,13 @@ export function PaywallScreen({ visible, reason, onClose, onPurchased }: Props) 
                     <>
                       <Text style={styles.planPrice}>{plan.pkg.product.priceString}</Text>
                       <Text style={styles.planUnit}>{t(plan.unitKey)}</Text>
-                      {plan.id === 'monthly' && plan.pkg.product.pricePerWeekString ? (
+                      {plan.id === 'annual' && plan.pkg.product.pricePerMonthString ? (
                         <Text style={styles.planSubLabel}>
-                          {t('paywall.perWeekEquivalent', { price: plan.pkg.product.pricePerWeekString })}
+                          {t('paywall.perMonthEquivalent', { price: plan.pkg.product.pricePerMonthString })}
                         </Text>
+                      ) : null}
+                      {plan.id === 'annual' && savingPercent !== null ? (
+                        <Text style={styles.planSaving}>{t('paywall.savePercent', { percent: savingPercent })}</Text>
                       ) : null}
                     </>
                   ) : (
@@ -398,6 +437,14 @@ function createStyles(colors: ColorTheme) {
       fontSize: 11,
       color: colors.mintText,
       marginTop: 4,
+    },
+    // Louder than the per-month line above it: this is the number the
+    // plan is chosen on.
+    planSaving: {
+      fontFamily: fonts.displayBold,
+      fontSize: 11.5,
+      color: colors.citrusText,
+      marginTop: 3,
     },
     planLoading: {
       marginVertical: 8,

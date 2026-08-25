@@ -5,6 +5,8 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FadeSwitcher } from '../components/FadeSwitcher';
 import { useScanInterstitial } from '../hooks/useScanInterstitial';
+import { usePremium } from '../premium/PremiumContext';
+import { isFirstRunPaywallShown, setFirstRunPaywallShown } from '../services/firstRunPaywall';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { lookupProduct } from '../services/lookupProduct';
 import { recordSuccessfulScan } from '../services/reviewPrompt';
@@ -44,6 +46,7 @@ function analyticsResultValue(status: LookupResult['status']): string {
 export function ScannerFlowScreen({ navigation }: Props) {
   const [screen, setScreen] = useState<Screen>({ name: 'scanner' });
   const { countScan, maybeShowOnLeavingResult } = useScanInterstitial();
+  const { isPremium, openPaywall } = usePremium();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const lastMethodRef = useRef<ScanMethod>('camera');
@@ -168,14 +171,35 @@ export function ScannerFlowScreen({ navigation }: Props) {
     await addHistoryEntry({ kind: 'document', pageTexts, imageUris, timestamp });
   }, []);
 
-  // Where the ad goes, if one is due at all: the user has read the result
-  // and asked for the camera back, so there is nothing on screen they are
-  // still using. Putting it here rather than on the result's arrival is
-  // what keeps a scanner feeling like a scanner.
+  /**
+   * Leaving a result, which is where anything interrupting belongs.
+   *
+   * Two things can happen here and they are mutually exclusive. A new user
+   * gets the upgrade pitch once, on the way back from their very first
+   * result: they have just watched the app do the thing they installed it
+   * for, so the pitch is about something they have seen work rather than
+   * something described to them on a welcome screen. Everyone else may get
+   * an ad, on the schedule in interstitialSchedule.
+   *
+   * Never both. The first scan is well inside the ad's warm-up period
+   * anyway, but saying so here means the two can be tuned independently
+   * without ever stacking on one another.
+   */
   const goToScanner = useCallback(() => {
-    maybeShowOnLeavingResult();
     setScreen({ name: 'scanner' });
-  }, [maybeShowOnLeavingResult]);
+    if (isPremium) {
+      maybeShowOnLeavingResult();
+      return;
+    }
+    isFirstRunPaywallShown().then((shown) => {
+      if (shown) {
+        maybeShowOnLeavingResult();
+        return;
+      }
+      void setFirstRunPaywallShown();
+      openPaywall('firstScan');
+    });
+  }, [isPremium, maybeShowOnLeavingResult, openPaywall]);
 
   // ScannerScreen is deliberately edge-to-edge (it's a camera viewfinder),
   // but the result screens below it have no navigation header of their own

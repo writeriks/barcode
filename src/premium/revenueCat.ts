@@ -4,7 +4,7 @@ import { REVENUECAT_API_KEY_IOS } from '../config/revenueCatEnv';
 import { isExpoGo } from '../services/ads/environment';
 
 /** Must match the entitlement identifier configured in the RevenueCat
- * dashboard that the weekly/monthly products both grant — RevenueCat →
+ * dashboard that the monthly/yearly products both grant — RevenueCat →
  * Product catalog → Entitlements → "blippo Pro" (Product catalog →
  * Entitlements → Identifier field; not the "REST API Identifier" shown
  * further down that page, which is a different internal ID). */
@@ -95,7 +95,7 @@ export async function subscribeToPremiumChanges(
   return () => Purchases.removeCustomerInfoUpdateListener(listener);
 }
 
-/** The dashboard's current Offering — its `.weekly`/`.monthly` packages
+/** The dashboard's current Offering — its `.monthly`/`.annual` packages
  * are the predefined package types the paywall expects to be configured
  * with. Null under Expo Go, on Android, or if nothing's configured yet. */
 export async function fetchCurrentOffering(): Promise<PurchasesOffering | null> {

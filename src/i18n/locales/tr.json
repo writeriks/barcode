@@ -433,14 +433,12 @@
   },
   "paywall": {
     "title": "Blippo Premium'un Kilidini Aç",
-    "subtitle": "Reklamları kaldır, tüm ayarları özelleştir, daha fazla geçmiş sakla.",
+    "subtitle": "Reklamları kaldır, kodlarını özelleştir, dökümanları aylık sınır olmadan tara.",
     "benefitScans": "Sınırsız döküman tarama",
     "benefitNoAds": "Uygulamanın hiçbir yerinde reklam yok",
     "benefitHistory": "Geçmişinde 30 yerine 100 taramaya kadar yer",
     "benefitSettings": "Batch tarama, titreşim, bip sesi, geçmiş ve Uygulama Kilidi'ni özelleştir",
-    "unitWeek": "hafta",
     "unitMonth": "ay",
-    "perWeekEquivalent": "≈ {{price}}/hafta",
     "bestValue": "EN AVANTAJLI",
     "continueButton": "Devam Et — {{price}}/{{unit}}",
     "autoRenewNotice": "İptal edilmediği sürece otomatik yenilenir. İstediğin zaman App Store hesap ayarlarından iptal edebilirsin.",
@@ -461,7 +459,11 @@
     "titleSettings": "Tüm ayarların kilidini aç",
     "titleQrTypes": "Tüm QR türlerinin kilidini aç",
     "titleCustomization": "Kodlarını kendine ait yap",
-    "benefitCustomization": "QR kodlarını renklendir, alt yazı ve markanın logosunu ekle"
+    "benefitCustomization": "QR kodlarını renklendir, alt yazı ve markanın logosunu ekle",
+    "unitYear": "yıl",
+    "perMonthEquivalent": "≈ {{price}}/ay",
+    "savePercent": "%{{percent}} tasarruf",
+    "titleFirstScan": "Blippo bu, ücretsiz hâliyle"
   },
   "a11y": {
     "add": "Ekle",

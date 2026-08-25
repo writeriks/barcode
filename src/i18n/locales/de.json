@@ -433,14 +433,12 @@
   },
   "paywall": {
     "title": "Blippo Premium freischalten",
-    "subtitle": "Werbung entfernen, jede Einstellung anpassen und mehr Verlauf speichern.",
+    "subtitle": "Keine Werbung, eigene Codes und Dokumente ohne Monatslimit scannen.",
     "benefitScans": "Unbegrenzte Dokumentenscans",
     "benefitNoAds": "Keine Werbung, nirgendwo in der App",
     "benefitHistory": "Bis zu 100 Scans im Verlauf statt 30",
     "benefitSettings": "Passe Serienscan, Vibration, Signalton, Verlauf und App-Sperre an",
-    "unitWeek": "Woche",
     "unitMonth": "Monat",
-    "perWeekEquivalent": "≈ {{price}}/Woche",
     "bestValue": "BESTES ANGEBOT",
     "continueButton": "Weiter — {{price}}/{{unit}}",
     "autoRenewNotice": "Verlängert sich automatisch, sofern nicht gekündigt. Du kannst jederzeit in den App-Store-Kontoeinstellungen kündigen.",
@@ -461,7 +459,11 @@
     "titleSettings": "Alle Einstellungen freischalten",
     "titleQrTypes": "Alle QR-Typen freischalten",
     "titleCustomization": "Mach die Codes zu deinen",
-    "benefitCustomization": "Färbe deine QR-Codes und füge Bildtext und Markenlogo hinzu"
+    "benefitCustomization": "Färbe deine QR-Codes und füge Bildtext und Markenlogo hinzu",
+    "unitYear": "Jahr",
+    "perMonthEquivalent": "≈ {{price}}/Monat",
+    "savePercent": "{{percent}} % sparen",
+    "titleFirstScan": "Das ist Blippo, kostenlos"
   },
   "a11y": {
     "add": "Hinzufügen",

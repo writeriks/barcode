@@ -15,6 +15,9 @@ import {
 /** What sent the user here, so the pitch can lead with the thing they
  * were just stopped from doing rather than a generic headline. */
 export type PaywallReason =
+  // The one-off pitch on the way back from a new user's first result. It
+  // is the only reason the user did not go looking for.
+  | 'firstScan'
   | 'documentScans'
   | 'history'
   | 'settings'

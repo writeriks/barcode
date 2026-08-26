@@ -33,6 +33,10 @@ interface Props {
    *  error-correction level H, where a logo would cover modules the code
    *  can no longer rebuild. */
   canCarryLogo: boolean;
+  /** Free users. The generator form is itself a native Modal, so the
+   *  parent has to dismiss that sheet before presenting the paywall or
+   *  iOS swallows the second presentation. */
+  onLockedPress?: () => void;
 }
 
 /**
@@ -50,7 +54,7 @@ interface Props {
  * type instead. A locked social type taught people to use Link; a locked
  * palette has nothing to teach.
  */
-export function QrAppearanceSection({ type, value, onChange, isOpen, onToggle, canCarryLogo }: Props) {
+export function QrAppearanceSection({ type, value, onChange, isOpen, onToggle, canCarryLogo, onLockedPress }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const mode = useThemeMode();
@@ -68,7 +72,7 @@ export function QrAppearanceSection({ type, value, onChange, isOpen, onToggle, c
   return (
     <View style={styles.wrap}>
       <Pressable
-        onPress={isPremium ? onToggle : () => openPaywall('customization')}
+        onPress={isPremium ? onToggle : (onLockedPress ?? (() => openPaywall('customization')))}
         style={[styles.header, expanded && styles.headerOpen]}
         accessibilityRole="button"
         accessibilityState={{ expanded }}

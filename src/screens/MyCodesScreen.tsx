@@ -41,6 +41,7 @@ import { ZoomForm, defaultZoomFields, type ZoomFields } from '../components/qrFo
 import { useQrShare } from '../hooks/useQrShare';
 import { useToast } from '../hooks/useToast';
 import type { RootTabParamList } from '../navigation/types';
+import { usePremium } from '../premium/PremiumContext';
 import { captureAnalyticsEvent } from '../services/analytics';
 import { deleteMyCode, getMyCodes, saveMyCode, updateMyCode } from '../services/myCodes';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
@@ -377,6 +378,7 @@ export function MyCodesScreen({ navigation }: Props) {
   const mode = useThemeMode();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const placeholderColor = mode === 'light' ? 'rgba(36,25,51,0.35)' : 'rgba(255,246,233,0.4)';
+  const { openPaywall } = usePremium();
   const [codes, setCodes] = useState<MyCode[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [formSheetOpen, setFormSheetOpen] = useState(false);
@@ -435,6 +437,14 @@ export function MyCodesScreen({ navigation }: Props) {
       resetForm();
     }
   }, [editingId, resetForm]);
+
+  const handleAppearanceLocked = useCallback(() => {
+    handleCloseFormSheet();
+    // BottomSheet is a native Modal. Presenting the paywall in the same
+    // tick races the two presentations and the paywall silently never
+    // appears — same race as edit/share/delete from the code menu.
+    setTimeout(() => openPaywall('customization'), 300);
+  }, [handleCloseFormSheet, openPaywall]);
 
   // Re-tapping the already-active My Codes tab while viewing a code or
   // creating one should pop back to the list, not do nothing.
@@ -967,6 +977,7 @@ export function MyCodesScreen({ navigation }: Props) {
           onChange={setAppearance}
           isOpen={isAppearanceOpen}
           onToggle={() => setIsAppearanceOpen((open) => !open)}
+          onLockedPress={handleAppearanceLocked}
           // A logo covers modules only level H carries enough redundancy
           // to rebuild. Content long enough to drop below it loses the
           // option, and the section says why rather than going quiet.

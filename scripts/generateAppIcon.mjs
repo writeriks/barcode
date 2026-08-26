@@ -74,9 +74,13 @@ function buildAndroidLayer(out, size, { colour = null, scale }) {
     'import numpy as np',
     `im = Image.open(${JSON.stringify(SOURCE)}).convert('RGB')`,
     'a = np.asarray(im).astype(np.float32)',
-    // The lightest corner of the background gradient: anything at or below
-    // this is background everywhere in the image.
-    'bg = np.array([37.0, 29.0, 60.0])',
+    // Measured from the artwork rather than written down here, because the
+    // artwork is the thing that changes. The mark never reaches the edges,
+    // so a band around them is background by definition; the near-top of
+    // that band is the lightest the background gets anywhere, which is the
+    // level everything else has to clear.
+    'edge = np.concatenate([a[:24].reshape(-1, 3), a[-24:].reshape(-1, 3), a[:, :24].reshape(-1, 3), a[:, -24:].reshape(-1, 3)])',
+    'bg = np.percentile(edge, 99.0, axis=0)',
     'lift = (a - bg).max(axis=2)',
     // Fully opaque well before the mark reaches full strength, so the marks
     // stay solid and only the glow around them fades.

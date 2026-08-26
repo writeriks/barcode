@@ -250,9 +250,13 @@ export function PaywallScreen({ visible, reason, onClose, onPurchased }: Props) 
           </Pressable>
         </View>
 
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.badge}>
-            <Ionicons name="sparkles" size={26} color={colors.citrus} />
+            <Ionicons name="sparkles" size={20} color={colors.citrus} />
           </View>
           <Text style={styles.title}>{t(REASON_TITLE_KEY[reason])}</Text>
           <Text style={styles.subtitle}>{t('paywall.subtitle')}</Text>
@@ -261,57 +265,59 @@ export function PaywallScreen({ visible, reason, onClose, onPurchased }: Props) 
             {benefits.map((benefit) => (
               <View key={benefit.labelKey} style={styles.benefitRow}>
                 <View style={styles.benefitIconWrap}>
-                  <Ionicons name={benefit.icon} size={18} color={colors.mint} />
+                  <Ionicons name={benefit.icon} size={15} color={colors.mint} />
                 </View>
                 <Text style={styles.benefitText}>{t(benefit.labelKey)}</Text>
               </View>
             ))}
           </View>
-
-          <View style={styles.plans}>
-            {plans.map((plan) => {
-              const selected = plan.id === selectedPlan;
-              return (
-                <Pressable
-                  key={plan.id}
-                  onPress={() => setSelectedPlan(plan.id)}
-                  style={[styles.planCard, selected && styles.planCardSelected]}
-                >
-                  {plan.badgeKey ? (
-                    <View style={styles.planBadge}>
-                      <Text style={styles.planBadgeText}>{t(plan.badgeKey)}</Text>
-                    </View>
-                  ) : null}
-                  <View style={styles.planRadio}>
-                    <Ionicons
-                      name={selected ? 'radio-button-on' : 'radio-button-off'}
-                      size={20}
-                      color={selected ? colors.mint : colors.text}
-                    />
-                  </View>
-                  {!offeringsLoaded ? (
-                    <ActivityIndicator size="small" color={colors.text} style={styles.planLoading} />
-                  ) : plan.pkg ? (
-                    <>
-                      <Text style={styles.planPrice}>{plan.pkg.product.priceString}</Text>
-                      <Text style={styles.planUnit}>{t(plan.unitKey)}</Text>
-                      {plan.id === 'annual' && perMonthLabel ? (
-                        <Text style={styles.planSubLabel}>
-                          {t('paywall.perMonthEquivalent', { price: perMonthLabel })}
-                        </Text>
-                      ) : null}
-                      {plan.id === 'annual' && savingPercent !== null ? (
-                        <Text style={styles.planSaving}>{t('paywall.savePercent', { percent: savingPercent })}</Text>
-                      ) : null}
-                    </>
-                  ) : (
-                    <Text style={styles.planUnavailable}>{t('paywall.planUnavailable')}</Text>
-                  )}
-                </Pressable>
-              );
-            })}
-          </View>
         </ScrollView>
+
+        {/* Prices sit outside the scroller, next to the buy button, so a
+            short page-sheet never hides them behind the benefit list. */}
+        <View style={styles.plans}>
+          {plans.map((plan) => {
+            const selected = plan.id === selectedPlan;
+            return (
+              <Pressable
+                key={plan.id}
+                onPress={() => setSelectedPlan(plan.id)}
+                style={[styles.planCard, selected && styles.planCardSelected]}
+              >
+                {plan.badgeKey ? (
+                  <View style={styles.planBadge}>
+                    <Text style={styles.planBadgeText}>{t(plan.badgeKey)}</Text>
+                  </View>
+                ) : null}
+                <View style={styles.planRadio}>
+                  <Ionicons
+                    name={selected ? 'radio-button-on' : 'radio-button-off'}
+                    size={18}
+                    color={selected ? colors.mint : colors.text}
+                  />
+                </View>
+                {!offeringsLoaded ? (
+                  <ActivityIndicator size="small" color={colors.text} style={styles.planLoading} />
+                ) : plan.pkg ? (
+                  <>
+                    <Text style={styles.planPrice}>{plan.pkg.product.priceString}</Text>
+                    <Text style={styles.planUnit}>{t(plan.unitKey)}</Text>
+                    {plan.id === 'annual' && perMonthLabel ? (
+                      <Text style={styles.planSubLabel}>
+                        {t('paywall.perMonthEquivalent', { price: perMonthLabel })}
+                      </Text>
+                    ) : null}
+                    {plan.id === 'annual' && savingPercent !== null ? (
+                      <Text style={styles.planSaving}>{t('paywall.savePercent', { percent: savingPercent })}</Text>
+                    ) : null}
+                  </>
+                ) : (
+                  <Text style={styles.planUnavailable}>{t('paywall.planUnavailable')}</Text>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
 
         <View style={styles.footer}>
           <PillButton
@@ -361,7 +367,7 @@ function createStyles(colors: ColorTheme) {
       flexDirection: 'row',
       justifyContent: 'flex-end',
       paddingHorizontal: 16,
-      paddingTop: 12,
+      paddingTop: 8,
     },
     closeButton: {
       width: 36,
@@ -373,83 +379,95 @@ function createStyles(colors: ColorTheme) {
       alignItems: 'center',
       justifyContent: 'center',
     },
+    scroll: {
+      flex: 1,
+    },
     content: {
       alignItems: 'center',
-      paddingHorizontal: 28,
-      paddingTop: 8,
-      paddingBottom: 24,
-      gap: 6,
+      paddingHorizontal: 24,
+      paddingTop: 4,
+      paddingBottom: 12,
+      gap: 4,
     },
     badge: {
-      width: 64,
-      height: 64,
-      borderRadius: 32,
+      width: 44,
+      height: 44,
+      borderRadius: 22,
       borderWidth: 2,
       borderColor: colors.citrus,
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 10,
+      marginBottom: 6,
     },
     title: {
       fontFamily: fonts.displayBold,
-      fontSize: 24,
+      fontSize: 22,
       color: colors.text,
       textAlign: 'center',
     },
     subtitle: {
-      fontSize: 14,
-      lineHeight: 20,
+      fontSize: 13.5,
+      lineHeight: 19,
       color: colors.text,
       opacity: 0.7,
       textAlign: 'center',
       maxWidth: 300,
       marginTop: 4,
-      marginBottom: 20,
+      marginBottom: 12,
     },
     benefits: {
       width: '100%',
-      gap: 12,
-    },
-    benefitRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 14,
       backgroundColor: colors.panel,
       borderWidth: 1,
       borderColor: colors.panelLine,
       borderRadius: 16,
-      padding: 14,
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+    },
+    benefitRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      paddingVertical: 8,
     },
     benefitIconWrap: {
-      width: 34,
-      height: 34,
-      borderRadius: 17,
+      width: 26,
+      height: 26,
+      borderRadius: 13,
       backgroundColor: 'rgba(47,230,184,0.14)',
       alignItems: 'center',
       justifyContent: 'center',
     },
     benefitText: {
       flex: 1,
-      fontSize: 14,
+      fontSize: 13.5,
+      lineHeight: 18,
       color: colors.text,
     },
+    // Pinned above the buy button so the prices are on screen without
+    // scrolling — the five benefit cards used to push them below the fold
+    // on a page sheet.
     plans: {
       flexDirection: 'row',
+      alignItems: 'stretch',
       width: '100%',
-      gap: 12,
-      marginTop: 22,
+      gap: 10,
+      paddingHorizontal: 24,
+      paddingTop: 16,
+      paddingBottom: 4,
     },
     planCard: {
       flex: 1,
       alignItems: 'center',
+      justifyContent: 'center',
       backgroundColor: colors.panel,
       borderWidth: 1.5,
       borderColor: colors.panelLine,
-      borderRadius: 18,
-      paddingTop: 22,
-      paddingBottom: 16,
-      paddingHorizontal: 10,
-      gap: 4,
+      borderRadius: 16,
+      paddingTop: 18,
+      paddingBottom: 12,
+      paddingHorizontal: 8,
+      gap: 2,
     },
     planCardSelected: {
       borderColor: colors.mint,
@@ -505,10 +523,10 @@ function createStyles(colors: ColorTheme) {
       marginVertical: 8,
     },
     footer: {
-      paddingHorizontal: 28,
-      paddingBottom: 20,
-      paddingTop: 12,
-      gap: 10,
+      paddingHorizontal: 24,
+      paddingBottom: 16,
+      paddingTop: 8,
+      gap: 8,
       alignItems: 'stretch',
     },
     continueButton: {

@@ -108,6 +108,11 @@ const TYPE_FILTER_OPTIONS: { value: TypeFilterValue; labelKey: string; accent: P
   { value: 'document', labelKey: 'document.typeDocument', accent: 'citrus' },
 ];
 
+// BottomSheet is a native Modal. Presenting another Modal or Alert in the
+// same tick as dismissing it races the two presentations and the second
+// one silently never appears. Same delay as My Codes and QrShareSheet.
+const SHEET_DISMISS_MS = 300;
+
 function entryKey(entry: ScanHistoryEntry): string {
   return `${entry.kind}-${entry.timestamp}`;
 }
@@ -280,7 +285,7 @@ export function HistoryScreen({ navigation }: Props) {
 
   const handleOpenCreateFolder = () => {
     setIsAddMenuOpen(false);
-    setIsCreateFolderOpen(true);
+    setTimeout(() => setIsCreateFolderOpen(true), SHEET_DISMISS_MS);
   };
 
   const handleCreateFolder = async () => {
@@ -304,19 +309,21 @@ export function HistoryScreen({ navigation }: Props) {
   const handleDeleteAssigning = () => {
     if (!assigningKeys) return;
     const keys = assigningKeys;
-    Alert.alert(t('history.deleteEntryTitle'), t('history.deleteEntryBody'), [
-      { text: t('history.cancel'), style: 'cancel' },
-      {
-        text: t('history.delete'),
-        style: 'destructive',
-        onPress: async () => {
-          await deleteHistoryEntries(keys);
-          setAssigningKeys(null);
-          setSelectedKeys(new Set());
-          reload();
+    setAssigningKeys(null);
+    setTimeout(() => {
+      Alert.alert(t('history.deleteEntryTitle'), t('history.deleteEntryBody'), [
+        { text: t('history.cancel'), style: 'cancel' },
+        {
+          text: t('history.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            await deleteHistoryEntries(keys);
+            setSelectedKeys(new Set());
+            reload();
+          },
         },
-      },
-    ]);
+      ]);
+    }, SHEET_DISMISS_MS);
   };
 
   const handleRenameMenuEntry = () => {
@@ -327,7 +334,7 @@ export function HistoryScreen({ navigation }: Props) {
     // been renamed opens empty rather than pre-filling a whole QR URL or
     // a paragraph of OCR text for the user to delete first.
     setRenameValue(entry.label ?? '');
-    setRenamingEntry(entry);
+    setTimeout(() => setRenamingEntry(entry), SHEET_DISMISS_MS);
   };
 
   const handleSubmitRename = async () => {
@@ -343,8 +350,9 @@ export function HistoryScreen({ navigation }: Props) {
 
   const handleMoveMenuEntry = () => {
     if (!menuEntry) return;
-    setAssigningKeys([{ kind: menuEntry.kind, timestamp: menuEntry.timestamp }]);
+    const keys: HistoryEntryKey[] = [{ kind: menuEntry.kind, timestamp: menuEntry.timestamp }];
     setMenuEntry(null);
+    setTimeout(() => setAssigningKeys(keys), SHEET_DISMISS_MS);
   };
 
   const handleShareMenuEntry = () => {
@@ -352,11 +360,6 @@ export function HistoryScreen({ navigation }: Props) {
     const entry = menuEntry;
     captureAnalyticsEvent('history_entry_shared', { kind: entry.kind });
     setMenuEntry(null);
-    // BottomSheet is a native Modal — presenting the share sheet in the
-    // same tick as dismissing it races the two native presentations and
-    // the share sheet silently never appears. Deferring past the
-    // dismissal (a plain setTimeout since Modal's onDismiss is iOS-only,
-    // and this app also ships on Android) fixes it.
     setTimeout(() => {
       // A document shares as its pages or as a PDF of them — never as its
       // OCR text, the same rule as everywhere else. Which of the two is a
@@ -366,24 +369,26 @@ export function HistoryScreen({ navigation }: Props) {
         return;
       }
       Share.share({ message: entry.kind === 'qr' ? entry.data : entry.barcode });
-    }, 300);
+    }, SHEET_DISMISS_MS);
   };
 
   const handleDeleteMenuEntry = () => {
     if (!menuEntry) return;
     const key = { kind: menuEntry.kind, timestamp: menuEntry.timestamp };
     setMenuEntry(null);
-    Alert.alert(t('history.deleteEntryTitle'), t('history.deleteEntryBody'), [
-      { text: t('history.cancel'), style: 'cancel' },
-      {
-        text: t('history.delete'),
-        style: 'destructive',
-        onPress: async () => {
-          await deleteHistoryEntries([key]);
-          reload();
+    setTimeout(() => {
+      Alert.alert(t('history.deleteEntryTitle'), t('history.deleteEntryBody'), [
+        { text: t('history.cancel'), style: 'cancel' },
+        {
+          text: t('history.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            await deleteHistoryEntries([key]);
+            reload();
+          },
         },
-      },
-    ]);
+      ]);
+    }, SHEET_DISMISS_MS);
   };
 
   const handleToggleEditMode = () => {

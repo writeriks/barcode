@@ -15,7 +15,8 @@ import { amazonSearchUrl, googleSearchUrl } from '../utils/productSearchLinks';
 
 interface Props {
   barcode: string;
-  onScanAgain: () => void;
+  /** Live scan only. History reuses this screen and has nowhere to scan. */
+  onScanAgain?: () => void;
 }
 
 /** Shown only when Open Food Facts has no record at all for this barcode —
@@ -80,7 +81,9 @@ export function MissingProductScreen({ barcode, onScanAgain }: Props) {
           />
         </View>
 
-        <PillButton title={t('missing.scanAnother')} onPress={onScanAgain} variant="ghost" />
+        {onScanAgain ? (
+          <PillButton title={t('missing.scanAnother')} onPress={onScanAgain} variant="ghost" />
+        ) : null}
 
         <CopyableBarcode barcode={barcode} onCopied={() => showToast(t('qr.copied'))} />
       </View>

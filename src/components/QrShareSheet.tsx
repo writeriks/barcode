@@ -48,8 +48,9 @@ export function QrShareSheet({ visible, onClose, onConfirm }: Props) {
   const toggle = (key: keyof QrShareParts) => setParts((current) => ({ ...current, [key]: !current[key] }));
 
   const confirm = () => {
+    const chosen = parts;
     onClose();
-    setTimeout(() => onConfirm(parts), DISMISS_MS);
+    setTimeout(() => onConfirm(chosen), DISMISS_MS);
   };
 
   return (

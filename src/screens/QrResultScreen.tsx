@@ -12,7 +12,8 @@ import type { ColorTheme } from '../theme/colors';
 
 interface Props {
   data: string;
-  onScanAgain: () => void;
+  /** Live scan only. History reuses this screen and has nowhere to scan. */
+  onScanAgain?: () => void;
 }
 
 export function QrResultScreen({ data, onScanAgain }: Props) {
@@ -26,7 +27,9 @@ export function QrResultScreen({ data, onScanAgain }: Props) {
     <View style={[styles.screen, { paddingBottom: tabBarHeight }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <QrContentView data={data} onCopied={() => showToast(t('qr.copied'))} />
-        <PillButton title={t('qr.scanAgain')} onPress={onScanAgain} variant="ghost" />
+        {onScanAgain ? (
+          <PillButton title={t('qr.scanAgain')} onPress={onScanAgain} variant="ghost" />
+        ) : null}
       </ScrollView>
       <BottomBannerAd />
       <Toast message={toastMessage} bottom={tabBarHeight + BANNER_AD_RESERVED_HEIGHT + 16} />

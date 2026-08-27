@@ -9,9 +9,17 @@ import { classifyQrContent } from '../utils/classifyQrContent';
 import type { QrContentType } from '../utils/classifyQrContent';
 import { isQrEncodable } from '../utils/qrCapacity';
 
+// How many frames to wait for the off-screen SVG to attach its ref. One
+// is usually enough; a few more covers a layout that landed a frame late.
+const CAPTURE_FRAMES = 12;
+
 // Bigger than any QR the app displays: this one gets sent to other people
 // and may be scanned off their screen, so it wants the resolution.
 const SHARE_SIZE = 512;
+
+function shareText(content: string) {
+  void Share.share({ message: content });
+}
 
 interface ShareRequest {
   content: string;
@@ -46,6 +54,10 @@ export function useQrShare(onUnavailable?: () => void) {
   const [asking, setAsking] = useState<ShareRequest | null>(null);
   const [pending, setPending] = useState<PendingCapture | null>(null);
   const svgRef = useRef<QrSvgRef | null>(null);
+  // QrShareSheet closes first (so this Modal is gone before the system
+  // share sheet), which clears `asking`. The delayed onConfirm still
+  // needs the request that was on screen when Continue was pressed.
+  const askingRef = useRef<ShareRequest | null>(null);
 
   // Runs once the off-screen QR above has been through a render. React
   // attaches refs before effects, but the native view behind the ref is
@@ -55,17 +67,33 @@ export function useQrShare(onUnavailable?: () => void) {
   useEffect(() => {
     if (!pending) return;
     let cancelled = false;
+    let frames = 0;
+    let frame = 0;
 
-    const frame = requestAnimationFrame(() => {
-      const svg = svgRef.current;
+    const capture = { content: pending.content, parts: pending.parts };
+
+    const tryCapture = () => {
       if (cancelled) return;
-      if (!svg) {
-        setPending(null);
+      const svg = svgRef.current;
+      // Wait at least one extra frame after the ref appears so the native
+      // SVG has actually drawn. Keep retrying if the ref is late.
+      if (!svg || frames < 1) {
+        frames += 1;
+        if (frames >= CAPTURE_FRAMES) {
+          // Picture never appeared. Still share the value if they asked
+          // for it, rather than closing the sheet into silence.
+          if (capture.parts.text) shareText(capture.content);
+          setPending(null);
+          return;
+        }
+        frame = requestAnimationFrame(tryCapture);
         return;
       }
 
       svg.toDataURL(async (base64) => {
+        if (cancelled) return;
         try {
+          if (!base64) throw new Error('empty qr snapshot');
           const file = new File(Paths.cache, 'qr-code.png');
           file.create({ overwrite: true });
           file.write(base64, { encoding: 'base64' });
@@ -73,13 +101,17 @@ export function useQrShare(onUnavailable?: () => void) {
           // behaviour of Share.share's {message, url} — on Android the
           // message alone still goes out.
           await Share.share(
-            pending.parts.text ? { message: pending.content, url: file.uri } : { url: file.uri }
+            capture.parts.text ? { message: capture.content, url: file.uri } : { url: file.uri }
           );
+        } catch {
+          if (!cancelled && capture.parts.text) shareText(capture.content);
         } finally {
           if (!cancelled) setPending(null);
         }
       });
-    });
+    };
+
+    frame = requestAnimationFrame(tryCapture);
 
     return () => {
       cancelled = true;
@@ -89,20 +121,27 @@ export function useQrShare(onUnavailable?: () => void) {
 
   const shareQr = useCallback(
     (content: string, appearance?: QrAppearance, type?: QrContentType) => {
-      setAsking({ content, appearance, type });
+      const request = { content, appearance, type };
+      askingRef.current = request;
+      setAsking(request);
     },
     []
   );
 
+  const handleCloseSheet = useCallback(() => {
+    setAsking(null);
+  }, []);
+
   const handleConfirm = useCallback(
     (parts: QrShareParts) => {
-      const request = asking;
+      const request = askingRef.current;
+      askingRef.current = null;
       setAsking(null);
       if (!request) return;
 
       // Text alone needs no drawing, so it also can't be too long to draw.
       if (!parts.image) {
-        if (parts.text) void Share.share({ message: request.content });
+        if (parts.text) shareText(request.content);
         return;
       }
       // Content too big to draw would otherwise mount a renderer that never
@@ -113,7 +152,7 @@ export function useQrShare(onUnavailable?: () => void) {
       }
       setPending({ ...request, parts });
     },
-    [asking, onUnavailable]
+    [onUnavailable]
   );
 
   // The shared PNG has to be the picture the user approved, so it is drawn
@@ -124,7 +163,7 @@ export function useQrShare(onUnavailable?: () => void) {
 
   const qrRenderer = (
     <>
-      <QrShareSheet visible={asking !== null} onClose={() => setAsking(null)} onConfirm={handleConfirm} />
+      <QrShareSheet visible={asking !== null} onClose={handleCloseSheet} onConfirm={handleConfirm} />
       {pending ? (
         <View style={styles.offscreen} pointerEvents="none">
           <StyledQrCode

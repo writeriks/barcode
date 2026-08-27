@@ -16,7 +16,8 @@ import type { Product, ProductSource } from '../types/product';
 interface Props {
   product: Product;
   source: ProductSource;
-  onScanAgain: () => void;
+  /** Live scan only. History reuses this screen and has nowhere to scan. */
+  onScanAgain?: () => void;
 }
 
 const NUTRIMENT_ROWS: { key: string; labelKey: string; unitKey: string }[] = [
@@ -107,7 +108,9 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
           </View>
         ) : null}
 
-        <PillButton title={t('result.scanAnother')} onPress={onScanAgain} variant="punch" />
+        {onScanAgain ? (
+          <PillButton title={t('result.scanAnother')} onPress={onScanAgain} variant="punch" />
+        ) : null}
       </ScrollView>
       <BottomBannerAd />
       <Toast message={toastMessage} bottom={tabBarHeight + BANNER_AD_RESERVED_HEIGHT + 16} />

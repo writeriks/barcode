@@ -21,7 +21,11 @@ import { ScannerFlowScreen } from './src/screens/ScannerFlowScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import i18n, { isSupportedLanguage, type SupportedLanguage } from './src/i18n';
 import { getLanguageOverride, setLanguageOverride } from './src/i18n/languagePreference';
-import { isAppLockEnabled as getAppLockEnabled } from './src/services/appLock';
+import {
+  isAppLockEnabled as getAppLockEnabled,
+  isBackgroundLockIgnored,
+  setSessionLocked,
+} from './src/services/appLock';
 import { isOnboardingCompleted, setOnboardingCompleted } from './src/services/onboardingPreference';
 import { getAnalyticsClient } from './src/services/analytics';
 import { initializeAds } from './src/services/ads/initializeAds';
@@ -61,6 +65,7 @@ function AppContent() {
   const [appLockEnabled, setAppLockEnabledState] = useState(false);
   const [appLockReady, setAppLockReady] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [hasEnteredApp, setHasEnteredApp] = useState(false);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [onboardingReady, setOnboardingReady] = useState(false);
 
@@ -91,11 +96,13 @@ function AppContent() {
   // 'active' transition, since the Face ID/passcode prompt itself briefly
   // flips the app to 'inactive' and back to 'active' when it resolves.
   // Matching that too would re-lock the instant a correct unlock succeeds.
+  // StoreKit's manage-subscriptions sheet also backgrounds us; locking
+  // then would unmount Settings under the sheet and freeze the app.
   const appStateRef = useRef(AppState.currentState);
   useEffect(() => {
     if (!appLockEnabled) return;
     const subscription = AppState.addEventListener('change', (nextState) => {
-      if (appStateRef.current === 'background' && nextState === 'active') {
+      if (appStateRef.current === 'background' && nextState === 'active' && !isBackgroundLockIgnored()) {
         setIsLocked(true);
       }
       appStateRef.current = nextState;
@@ -106,6 +113,15 @@ function AppContent() {
   const handleAppLockChanged = useCallback((enabled: boolean) => {
     setAppLockEnabledState(enabled);
   }, []);
+
+  const handleUnlocked = useCallback(() => {
+    setIsLocked(false);
+    setHasEnteredApp(true);
+  }, []);
+
+  useEffect(() => {
+    setSessionLocked(isLocked && hasEnteredApp);
+  }, [isLocked, hasEnteredApp]);
 
   useEffect(() => {
     (async () => {
@@ -166,10 +182,14 @@ function AppContent() {
     );
   }
 
-  if (isLocked) {
+  // Cold start: don't mount the tabs until the first unlock, so the
+  // camera never starts behind a lock the user hasn't passed. After
+  // that, re-lock is an overlay — unmounting under a system sheet
+  // (StoreKit subscriptions, Face ID) freezes the app.
+  if (isLocked && !hasEnteredApp) {
     return (
       <SafeAreaProvider>
-        <AppLockScreen onUnlocked={() => setIsLocked(false)} />
+        <AppLockScreen onUnlocked={handleUnlocked} />
         <StatusBar style={mode === 'light' ? 'dark' : 'light'} />
       </SafeAreaProvider>
     );
@@ -200,6 +220,11 @@ function AppContent() {
             </Tab.Screen>
           </Tab.Navigator>
         </NavigationContainer>
+        {isLocked ? (
+          <View style={styles.lockCover} pointerEvents="auto">
+            <AppLockScreen onUnlocked={handleUnlocked} />
+          </View>
+        ) : null}
         <StatusBar style={mode === 'light' ? 'dark' : 'light'} />
       </SafeAreaProvider>
     </GestureHandlerRootView>
@@ -214,5 +239,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  lockCover: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 100,
   },
 });

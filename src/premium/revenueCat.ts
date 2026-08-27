@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import type { CustomerInfo, PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 import { REVENUECAT_API_KEY_IOS } from '../config/revenueCatEnv';
 import { isExpoGo } from '../services/ads/environment';
+import { finishSubscriptionManagement, startSubscriptionManagement } from './subscriptionManagement';
 
 /** Must match the entitlement identifier configured in the RevenueCat
  * dashboard that the monthly/yearly products both grant — RevenueCat →
@@ -134,9 +135,17 @@ export async function restorePurchases(): Promise<boolean> {
  * the same sheet as Settings → Apple ID → Subscriptions → Blippo) —
  * RevenueCat has no management UI of its own, the App Store owns the
  * actual billing relationship, so cancelling/changing plans always has
- * to go through Apple. No-op wherever purchases aren't supported. */
+ * to go through Apple. No-op wherever purchases aren't supported.
+ *
+ * Suppresses App Lock and waits out StoreKit teardown before returning,
+ * so callers can refresh customer info without deadlocking the sheet. */
 export async function showManageSubscriptions(): Promise<void> {
   if (!isSupported()) return;
-  const { default: Purchases } = await loadModule();
-  await Purchases.showManageSubscriptions();
+  startSubscriptionManagement();
+  try {
+    const { default: Purchases } = await loadModule();
+    await Purchases.showManageSubscriptions();
+  } finally {
+    await finishSubscriptionManagement();
+  }
 }

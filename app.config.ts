@@ -140,7 +140,7 @@ const config: ExpoConfig = {
   extra: {
     premiumTestingEnabled,
     eas: {
-      projectId: '0fcdbd1d-a033-4e16-9d2e-2cfaf89c0b3e',
+      projectId: '9ccd8633-974d-44d6-ac47-ea8e485c350e',
     },
   },
   locales: {

@@ -26,6 +26,7 @@ import { PillButton } from '../components/PillButton';
 import { usePremium } from '../premium/PremiumContext';
 import { isExpoGo } from '../services/ads/environment';
 import { consumeFreeScan, getRemainingFreeScans } from '../services/documentScanQuota';
+import { isSessionLocked, subscribeToSessionLocked } from '../services/appLock';
 import { playScanFeedback } from '../services/scanFeedback';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -129,6 +130,9 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
   // react-navigation's bottom tabs work), so without this the camera would
   // keep scanning — and adding history entries — in the background.
   const isFocused = useIsFocused();
+  const [isAppLocked, setIsAppLocked] = useState(isSessionLocked);
+
+  useEffect(() => subscribeToSessionLocked(setIsAppLocked), []);
 
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
@@ -176,7 +180,7 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
 
   const handleBarcodeScanned = useCallback(
     ({ data, type }: { data: string; type: string }) => {
-      if (!isFocused || hasHandledScanRef.current) return;
+      if (!isFocused || isAppLocked || hasHandledScanRef.current) return;
       hasHandledScanRef.current = true;
       playScanFeedback();
       onScanned(data, type === 'qr' ? 'qr' : 'barcode', 'camera');
@@ -189,7 +193,7 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
         }, BATCH_SCAN_COOLDOWN_MS);
       }
     },
-    [onScanned, batchMode, isFocused]
+    [onScanned, batchMode, isFocused, isAppLocked]
   );
 
   const handleUploadPhoto = useCallback(async () => {
@@ -280,7 +284,7 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
 
   return (
     <View style={styles.container}>
-      {isFocused ? (
+      {isFocused && !isAppLocked ? (
         <CameraView
           style={StyleSheet.absoluteFill}
           facing="back"

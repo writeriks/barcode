@@ -13,11 +13,11 @@ interface Props {
   onUnlocked: () => void;
 }
 
-/** Full-screen cover shown whenever the app is locked — on cold start and
- * every time it returns from the background, if the user has "Lock app"
- * enabled. Prompts immediately on mount so the biometric sheet appears
- * without an extra tap, with a button as a fallback if that prompt gets
- * dismissed. */
+/** Full-screen cover shown whenever the app is locked — on cold start as
+ * the only tree, and as an overlay on re-lock so native sheets keep their
+ * presenting view. Prompts immediately on mount so the biometric sheet
+ * appears without an extra tap, with a button as a fallback if that
+ * prompt gets dismissed. */
 export function AppLockScreen({ onUnlocked }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();

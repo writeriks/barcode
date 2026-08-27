@@ -141,8 +141,8 @@ export function SettingsScreen({
       await showManageSubscriptions();
     } finally {
       // The sheet is Apple's; cancellation is written there, not here.
-      // Drop the SDK cache so Settings can show cancelled / expired
-      // instead of the pre-sheet "Premium active" snapshot.
+      // showManageSubscriptions already waited out StoreKit teardown so
+      // this getCustomerInfo isn't racing the dismiss animation.
       await refreshPremium();
     }
   };

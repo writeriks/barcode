@@ -5,6 +5,7 @@ import { PaywallScreen } from '../screens/PaywallScreen';
 import { setAdsEnabled } from '../services/ads/adsEnabled';
 import { getPremiumDevOverride, setPremiumDevOverride } from './premiumPreference';
 import { setPremiumActive } from './premiumState';
+import { finishSubscriptionManagement, isSubscriptionManagementOpen } from './subscriptionManagement';
 import {
   configurePurchases,
   fetchPremiumEntitlement,
@@ -83,12 +84,23 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     setEntitlement(next);
   }, []);
 
+  const refreshGate = useRef({ inFlight: false, pending: false });
   const refreshPremium = useCallback(async () => {
+    const gate = refreshGate.current;
+    if (gate.inFlight) {
+      gate.pending = true;
+      return;
+    }
+    gate.inFlight = true;
+    gate.pending = false;
     try {
       const next = await fetchPremiumEntitlement({ refresh: true });
       applyEntitlement(next);
     } catch {
       // Keep the last known entitlement if Apple/RevenueCat is unreachable.
+    } finally {
+      gate.inFlight = false;
+      if (gate.pending) void refreshPremium();
     }
   }, [applyEntitlement]);
 
@@ -126,15 +138,23 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
 
   // Cancellation (and expiry) often happen while this app is in the
   // background — Apple's own Subscriptions screen, or the in-app manage
-  // sheet. Re-read on return so Settings doesn't keep saying "Premium
-  // active" from a stale cache.
+  // sheet. The in-app sheet usually only goes inactive, not background,
+  // and its native promise sometimes never resolves; both paths need a
+  // refresh or Settings keeps saying "Premium active".
   const appStateRef = useRef(AppState.currentState);
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
-      if (appStateRef.current === 'background' && nextState === 'active') {
-        void refreshPremium();
-      }
+      const previous = appStateRef.current;
       appStateRef.current = nextState;
+      if (nextState !== 'active' || previous === 'active') return;
+
+      const managing = isSubscriptionManagementOpen();
+      if (previous !== 'background' && !managing) return;
+
+      void (async () => {
+        if (managing) await finishSubscriptionManagement();
+        await refreshPremium();
+      })();
     });
     return () => subscription.remove();
   }, [refreshPremium]);

@@ -65,15 +65,27 @@ const SCANNED_TYPES = [
 ] as const;
 const VIEWFINDER_HEIGHT = 130;
 
-// A conservative safety margin for any still-image decoder — doesn't
-// hurt to give one more pixels per module on a small source image.
+// Still-image decoders want enough pixels per module, but a 48MP camera
+// photo can also fail them (Vision throws, CIDetector returns nothing).
+// Rasterising into this band as PNG also bakes EXIF orientation and
+// converts HEIC into something both loaders can actually open.
 const MIN_SCAN_WIDTH = 1000;
+const MAX_SCAN_WIDTH = 2048;
 
 async function prepareForScanning(uri: string, width: number): Promise<string> {
-  if (width >= MIN_SCAN_WIDTH) return uri;
-  const rendered = await ImageManipulator.manipulate(uri).resize({ width: MIN_SCAN_WIDTH }).renderAsync();
-  const saved = await rendered.saveAsync({ format: SaveFormat.PNG });
-  return saved.uri;
+  try {
+    let context = ImageManipulator.manipulate(uri);
+    if (!width || width < MIN_SCAN_WIDTH) {
+      context = context.resize({ width: MIN_SCAN_WIDTH });
+    } else if (width > MAX_SCAN_WIDTH) {
+      context = context.resize({ width: MAX_SCAN_WIDTH });
+    }
+    const rendered = await context.renderAsync();
+    const saved = await rendered.saveAsync({ format: SaveFormat.PNG });
+    return saved.uri;
+  } catch {
+    return uri;
+  }
 }
 
 /**
@@ -105,7 +117,13 @@ async function scanUploadedPhoto(uri: string): Promise<{ data: string; type: str
       // older build before this was added) — fall through.
     }
   }
-  return scanFromURLAsync(uri, [...SCANNED_TYPES]);
+  try {
+    return await scanFromURLAsync(uri, [...SCANNED_TYPES]);
+  } catch {
+    // Same image-loader failure Vision already threw — treat as no match
+    // rather than letting the upload path die without an alert.
+    return [];
+  }
 }
 
 /**
@@ -124,6 +142,10 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
   const placeholderColor = mode === 'light' ? 'rgba(36,25,51,0.35)' : 'rgba(255,246,233,0.4)';
   const [permission, requestPermission] = useCameraPermissions();
   const hasHandledScanRef = useRef(false);
+  // Live camera stays mounted behind the photo picker. Without this, a
+  // code in the viewfinder (or the lock left by a previous batch scan)
+  // wins the race and the upload is reported as "nothing in that photo".
+  const isReadingPhotoRef = useRef(false);
   const tabBarHeight = useBottomTabBarHeight();
   const insets = useSafeAreaInsets();
   // The Scanner tab stays mounted when another tab is active (that's how
@@ -138,6 +160,7 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
   const [manualValue, setManualValue] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [isReadingPhoto, setIsReadingPhoto] = useState(false);
   const [isScanningDocument, setIsScanningDocument] = useState(false);
   const { isPremium, openPaywall } = usePremium();
   // null until the keychain has been read — the badge stays hidden rather
@@ -180,7 +203,7 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
 
   const handleBarcodeScanned = useCallback(
     ({ data, type }: { data: string; type: string }) => {
-      if (!isFocused || isAppLocked || hasHandledScanRef.current) return;
+      if (!isFocused || isAppLocked || isReadingPhotoRef.current || hasHandledScanRef.current) return;
       hasHandledScanRef.current = true;
       playScanFeedback();
       onScanned(data, type === 'qr' ? 'qr' : 'barcode', 'camera');
@@ -200,25 +223,47 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) return;
 
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'] });
-    if (result.canceled || !result.assets[0]) return;
-
-    setIsUploading(true);
+    isReadingPhotoRef.current = true;
+    setIsReadingPhoto(true);
     try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 1,
+        preferredAssetRepresentationMode: 'compatible',
+      });
+      if (result.canceled || !result.assets[0]) return;
+
+      setIsUploading(true);
       const asset = result.assets[0];
       const scanUri = await prepareForScanning(asset.uri, asset.width);
-      const matches = await scanUploadedPhoto(scanUri);
-      if (matches.length > 0 && !hasHandledScanRef.current) {
+      let matches = await scanUploadedPhoto(scanUri);
+      if (matches.length === 0 && scanUri !== asset.uri) {
+        matches = await scanUploadedPhoto(asset.uri);
+      }
+      // A found code is a found code. The live-scan lock must not turn a
+      // successful decode into the "nothing in that photo" alert — and
+      // in batch mode that lock used to stay set after a photo, so the
+      // next upload always failed even when the picture was fine.
+      if (matches.length > 0) {
         hasHandledScanRef.current = true;
         playScanFeedback();
         onScanned(matches[0].data, matches[0].type === 'qr' ? 'qr' : 'barcode', 'photo');
+        if (batchMode) {
+          setTimeout(() => {
+            hasHandledScanRef.current = false;
+          }, BATCH_SCAN_COOLDOWN_MS);
+        }
       } else {
         Alert.alert(t('scanner.noBarcodeFound'));
       }
+    } catch {
+      Alert.alert(t('scanner.noBarcodeFound'));
     } finally {
       setIsUploading(false);
+      isReadingPhotoRef.current = false;
+      setIsReadingPhoto(false);
     }
-  }, [onScanned, t]);
+  }, [onScanned, t, batchMode]);
 
   // VisionKit's document camera + Vision's on-device OCR — both iOS-only
   // native APIs, same "never in Expo Go, always behind a dynamic import"
@@ -284,7 +329,7 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
 
   return (
     <View style={styles.container}>
-      {isFocused && !isAppLocked ? (
+      {isFocused && !isAppLocked && !isReadingPhoto ? (
         <CameraView
           style={StyleSheet.absoluteFill}
           facing="back"

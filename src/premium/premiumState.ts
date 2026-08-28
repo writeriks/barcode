@@ -27,3 +27,17 @@ export function isPremium(): boolean {
 export function isPremiumResolved(): boolean {
   return isResolved;
 }
+
+/**
+ * The two above combined, for the common case: premium, or not yet known.
+ *
+ * This is the reading a premium-only *setting* wants. A setting read
+ * during the launch gap would otherwise answer with the free default and
+ * quietly undo a paying user's choice for the first second of every
+ * session — beeping when they turned the beep off, saving history they
+ * asked not to keep. Erring the other way lasts a moment and undoes
+ * nothing.
+ */
+export function isPremiumOrUnresolved(): boolean {
+  return isPremiumActive || !isResolved;
+}

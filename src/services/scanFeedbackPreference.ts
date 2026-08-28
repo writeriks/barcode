@@ -1,22 +1,19 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getPremiumSetting, setPremiumSetting } from './premiumSetting';
 
 const VIBRATE_KEY = '@beep/scan_vibrate_enabled';
 const BEEP_KEY = '@beep/scan_beep_enabled';
 
-async function getFlag(key: string): Promise<boolean> {
-  const stored = await AsyncStorage.getItem(key);
-  return stored === null ? true : stored === 'true';
-}
-
 /** Both default to on, matching the reference behavior of "vibrate/beep on
- * a successful scan" being the expected out-of-the-box experience. */
-export const isVibrateEnabled = (): Promise<boolean> => getFlag(VIBRATE_KEY);
-export const isBeepEnabled = (): Promise<boolean> => getFlag(BEEP_KEY);
+ * a successful scan" being the expected out-of-the-box experience — and
+ * both are premium-only, so that default is also what a lapsed
+ * subscription falls back to (see premiumSetting). */
+export const isVibrateEnabled = (): Promise<boolean> => getPremiumSetting(VIBRATE_KEY, true);
+export const isBeepEnabled = (): Promise<boolean> => getPremiumSetting(BEEP_KEY, true);
 
 export async function setVibrateEnabled(enabled: boolean): Promise<void> {
-  await AsyncStorage.setItem(VIBRATE_KEY, String(enabled));
+  await setPremiumSetting(VIBRATE_KEY, enabled);
 }
 
 export async function setBeepEnabled(enabled: boolean): Promise<void> {
-  await AsyncStorage.setItem(BEEP_KEY, String(enabled));
+  await setPremiumSetting(BEEP_KEY, enabled);
 }

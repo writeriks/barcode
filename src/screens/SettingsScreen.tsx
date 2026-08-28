@@ -69,12 +69,19 @@ export function SettingsScreen({
 
   useEffect(() => {
     isPrivacyOptionsRequired().then(setShowPrivacyRow);
+  }, []);
+
+  // Re-read whenever premium changes, not just on mount. These switches
+  // answer with their free defaults once premium ends (see
+  // services/premiumSetting), and a row that still showed the old position
+  // would be describing behaviour the app no longer has.
+  useEffect(() => {
     isVibrateEnabled().then(setVibrateEnabledState);
     isBeepEnabled().then(setBeepEnabledState);
     isHistorySavingEnabled().then(setHistoryEnabledState);
     isDuplicateScansEnabled().then(setDuplicateScansEnabledState);
     isBatchScanEnabled().then(setBatchScanEnabledState);
-  }, []);
+  }, [isPremium]);
 
   const handleToggleVibrate = (value: boolean) => {
     setVibrateEnabledState(value);

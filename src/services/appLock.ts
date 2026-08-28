@@ -1,5 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { getPremiumSetting, setPremiumSetting } from './premiumSetting';
 
 const APP_LOCK_KEY = '@beep/app_lock_enabled';
 
@@ -46,13 +46,22 @@ export function subscribeToSessionLocked(listener: SessionLockListener): () => v
   return () => sessionLockListeners.delete(listener);
 }
 
+/**
+ * Off by default, and premium-only — so a subscription that ends takes the
+ * lock with it (see premiumSetting).
+ *
+ * Which way this errs while the entitlement is still unknown matters more
+ * here than for the other switches: unresolved counts as premium, so a
+ * locked app stays locked through the launch gap rather than opening
+ * itself for the second before RevenueCat answers. The caller reads this
+ * again once the answer is in — see App.tsx.
+ */
 export async function isAppLockEnabled(): Promise<boolean> {
-  const stored = await AsyncStorage.getItem(APP_LOCK_KEY);
-  return stored === 'true';
+  return getPremiumSetting(APP_LOCK_KEY, false);
 }
 
 export async function setAppLockEnabled(enabled: boolean): Promise<void> {
-  await AsyncStorage.setItem(APP_LOCK_KEY, String(enabled));
+  await setPremiumSetting(APP_LOCK_KEY, enabled);
 }
 
 /** True only if the device actually has Face ID/Touch ID/a passcode set up

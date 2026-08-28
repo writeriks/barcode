@@ -29,7 +29,7 @@ import {
 import { isOnboardingCompleted, setOnboardingCompleted } from './src/services/onboardingPreference';
 import { getAnalyticsClient } from './src/services/analytics';
 import { initializeAds } from './src/services/ads/initializeAds';
-import { PremiumProvider } from './src/premium/PremiumContext';
+import { PremiumProvider, usePremium } from './src/premium/PremiumContext';
 import { ThemeProvider, useThemeColors, useThemeMode, useThemePreference } from './src/theme/ThemeContext';
 import { getDeviceLanguageCode } from './src/utils/locale';
 
@@ -58,6 +58,7 @@ export default function App() {
 function AppContent() {
   const colors = useThemeColors();
   const mode = useThemeMode();
+  const { isPremium, isReady: isPremiumReady } = usePremium();
   const [themePreference, setThemePreference] = useThemePreference();
   const [fontsLoaded] = useFonts({ Fredoka_600SemiBold, Fredoka_700Bold });
   const [languageOverride, setLanguageOverrideState] = useState<SupportedLanguage | null>(null);
@@ -91,6 +92,16 @@ function AppContent() {
       setAppLockReady(true);
     });
   }, []);
+
+  // App Lock is premium-only, and the read above happens before
+  // RevenueCat has said whether this user still has premium — so ask
+  // again once it has. `isLocked` is deliberately left alone: an app that
+  // opened locked should be dismissed by the person holding it, not by a
+  // subscription check deciding to let them past.
+  useEffect(() => {
+    if (!isPremiumReady) return;
+    getAppLockEnabled().then(setAppLockEnabledState);
+  }, [isPremiumReady, isPremium]);
 
   // Re-lock when the app truly returns from the background — not on every
   // 'active' transition, since the Face ID/passcode prompt itself briefly

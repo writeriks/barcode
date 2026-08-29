@@ -1,7 +1,5 @@
 import * as LocalAuthentication from 'expo-local-authentication';
-import { getPremiumSetting, setPremiumSetting } from './premiumSetting';
-
-const APP_LOCK_KEY = '@beep/app_lock_enabled';
+import { PREMIUM_SETTINGS, getPremiumSetting, setPremiumSetting } from './premiumSetting';
 
 /** Timestamp until which returning from background must not show the lock
  * screen. `Infinity` while a system sheet (StoreKit manage-subscriptions)
@@ -57,11 +55,11 @@ export function subscribeToSessionLocked(listener: SessionLockListener): () => v
  * again once the answer is in — see App.tsx.
  */
 export async function isAppLockEnabled(): Promise<boolean> {
-  return getPremiumSetting(APP_LOCK_KEY, false);
+  return getPremiumSetting(PREMIUM_SETTINGS.appLock);
 }
 
 export async function setAppLockEnabled(enabled: boolean): Promise<void> {
-  await setPremiumSetting(APP_LOCK_KEY, enabled);
+  await setPremiumSetting(PREMIUM_SETTINGS.appLock, enabled);
 }
 
 /** True only if the device actually has Face ID/Touch ID/a passcode set up

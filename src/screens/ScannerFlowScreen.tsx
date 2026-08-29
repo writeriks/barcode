@@ -34,6 +34,11 @@ type Screen =
   | { name: 'qr-result'; data: string }
   | { name: 'document-result'; pageTexts: string[]; imageUris: string[]; timestamp: number };
 
+/** How long Done will wait for the last batch saves before going to
+ *  History anyway. Long enough for a write and a quick lookup, short
+ *  enough that a stalled network doesn't make the button feel broken. */
+const BATCH_SAVE_WAIT_MS = 2500;
+
 /** Maps the internal lookup status to the analytics-friendly value —
  * 'not-found' has a hyphen internally but reads oddly as an event
  * property, so it's normalized to 'not_found'. */
@@ -52,6 +57,14 @@ export function ScannerFlowScreen({ navigation }: Props) {
   const lastMethodRef = useRef<ScanMethod>('camera');
   const [isBatchMode, setIsBatchMode] = useState(false);
   const [batchCount, setBatchCount] = useState(0);
+  // Batch saves run in the background so the camera never waits on one.
+  // Done has to, though — see handleFinishBatch.
+  const pendingBatchSavesRef = useRef<Promise<unknown>[]>([]);
+  const trackBatchSave = useCallback((work: Promise<unknown>) => {
+    // Swallowed here rather than at the call site: a lookup that fails
+    // must not take the Done button's wait down with it.
+    pendingBatchSavesRef.current.push(work.catch(() => undefined));
+  }, []);
 
   // Re-checked on every focus so flipping the Settings toggle takes effect
   // as soon as you come back to this tab, without needing an app restart.
@@ -59,7 +72,10 @@ export function ScannerFlowScreen({ navigation }: Props) {
     useCallback(() => {
       isBatchScanEnabled().then((enabled) => {
         setIsBatchMode(enabled);
-        if (enabled) setBatchCount(0);
+        if (enabled) {
+          setBatchCount(0);
+          pendingBatchSavesRef.current = [];
+        }
       });
     }, [])
   );
@@ -124,12 +140,12 @@ export function ScannerFlowScreen({ navigation }: Props) {
       const timestamp = Date.now();
       if (kind === 'qr') {
         captureAnalyticsEvent('scan_completed', { kind: 'qr', method, result: 'found', batch: true });
-        void addHistoryEntry({ kind: 'qr', data, timestamp, contentType: classifyQrContent(data) });
+        trackBatchSave(addHistoryEntry({ kind: 'qr', data, timestamp, contentType: classifyQrContent(data) }));
         return;
       }
-      void runBatchBarcodeLookup(data, method, timestamp);
+      trackBatchSave(runBatchBarcodeLookup(data, method, timestamp));
     },
-    [runBatchBarcodeLookup]
+    [runBatchBarcodeLookup, trackBatchSave]
   );
 
   // `navigation` here is already the tab navigator's — this screen is a
@@ -137,8 +153,21 @@ export function ScannerFlowScreen({ navigation }: Props) {
   // returns undefined, so the optional call did nothing at all and Done
   // was a dead button. (History's copy of this line is right: that screen
   // sits inside HistoryStack, so it does have a tab navigator above it.)
-  const handleFinishBatch = useCallback(() => {
+  //
+  // The wait is the other half of the same complaint. A batch save is
+  // fired and not awaited — that is what keeps the camera responsive —
+  // and a barcode's save sits behind a network lookup first. History
+  // builds its list once, on focus, so arriving there before the last
+  // write lands shows a log that is still being written and never
+  // refreshes. The cap is there because Done must stay a button that
+  // responds, even on a lookup that hangs.
+  const handleFinishBatch = useCallback(async () => {
     setBatchCount(0);
+    await Promise.race([
+      Promise.all(pendingBatchSavesRef.current),
+      new Promise((resolve) => setTimeout(resolve, BATCH_SAVE_WAIT_MS)),
+    ]);
+    pendingBatchSavesRef.current = [];
     navigation.navigate('History');
   }, [navigation]);
 

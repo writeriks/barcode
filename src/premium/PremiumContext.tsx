@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 import { IS_PREMIUM_OVERRIDE_AVAILABLE } from '../config/premiumEnv';
 import { PaywallScreen } from '../screens/PaywallScreen';
 import { setAdsEnabled } from '../services/ads/adsEnabled';
+import { resetPremiumSettings } from '../services/premiumSetting';
 import { getPremiumDevOverride, setPremiumDevOverride } from './premiumPreference';
 import { setPremiumActive } from './premiumState';
 import { finishSubscriptionManagement, isSubscriptionManagementOpen } from './subscriptionManagement';
@@ -84,6 +85,11 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     setEntitlement(next);
   }, []);
 
+  // Whether the store has actually answered at least once. A failed fetch
+  // leaves the app looking not-premium, which is the right way to behave
+  // but the wrong thing to act destructively on.
+  const entitlementKnownRef = useRef(false);
+
   const refreshGate = useRef({ inFlight: false, pending: false });
   const refreshPremium = useCallback(async () => {
     const gate = refreshGate.current;
@@ -95,6 +101,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     gate.pending = false;
     try {
       const next = await fetchPremiumEntitlement({ refresh: true });
+      entitlementKnownRef.current = true;
       applyEntitlement(next);
     } catch {
       // Keep the last known entitlement if Apple/RevenueCat is unreachable.
@@ -116,11 +123,14 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
           IS_PREMIUM_OVERRIDE_AVAILABLE ? getPremiumDevOverride() : Promise.resolve(false),
         ]);
         if (cancelled) return;
+        entitlementKnownRef.current = true;
         applyEntitlement(next);
         setDevOverrideState(override);
       } catch {
         // Leave the empty default — isReady still has to flip so callers
-        // aren't stuck treating unresolved as premium forever.
+        // aren't stuck treating unresolved as premium forever. But it is
+        // a guess, not an answer: entitlementKnownRef stays false so the
+        // settings reset below doesn't fire on a phone with no signal.
       }
       if (cancelled) return;
       setIsReady(true);
@@ -191,6 +201,17 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isReady) return;
     setAdsEnabled(!isPremium);
+  }, [isPremium, isReady]);
+
+  // A subscription that ends takes its settings with it: the six switches
+  // go back to the free shape, in storage and not just in what the app
+  // reads, so they cannot come back on their own the next time premium
+  // does. Only on an answer the store actually gave — a fetch that failed
+  // looks identical to a lapse from here, and the cost of getting that
+  // wrong is a paying user's setup.
+  useEffect(() => {
+    if (!isReady || isPremium || !entitlementKnownRef.current) return;
+    void resetPremiumSettings();
   }, [isPremium, isReady]);
 
   const setPremium = useCallback((enabled: boolean) => {

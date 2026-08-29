@@ -229,7 +229,9 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         quality: 1,
-        preferredAssetRepresentationMode: 'compatible',
+        // The enum member, not the bare string it happens to equal — the
+        // option is typed as the enum, so the literal failed to compile.
+        preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
       });
       if (result.canceled || !result.assets[0]) return;
 

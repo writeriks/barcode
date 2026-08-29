@@ -14,6 +14,9 @@
     "cancel": "İptal",
     "batchCount": "{{count}} tarandı",
     "batchDone": "Bitti",
+    "batchNotSavedTitle": "Geçmişe hiçbir şey eklenmedi",
+    "batchNotSavedHistoryOff": "Ayarlar’da Geçmiş kapalı olduğu için bu taramalar kaydedilmedi.",
+    "batchNotSavedDuplicate": "Bunları daha önce taramışsın ve Ayarlar’da Tekrarlı taramalar kapalı.",
     "documentScanUnavailable": "Doküman tarama için uygulamanın yeniden derlenmesi gerekiyor — bu önizlemede yok",
     "documentScanFailed": "Doküman taranamadı"
   },

@@ -14,6 +14,9 @@
     "cancel": "Anuluj",
     "batchCount": "Zeskanowano: {{count}}",
     "batchDone": "Gotowe",
+    "batchNotSavedTitle": "Nic nie zostało dodane do historii",
+    "batchNotSavedHistoryOff": "Historia jest wyłączona w Ustawieniach, więc te skany nie zostały zapisane.",
+    "batchNotSavedDuplicate": "Już je skanowano, a Zduplikowane skany są wyłączone w Ustawieniach.",
     "documentScanUnavailable": "Skanowanie dokumentów wymaga ponownej kompilacji aplikacji — niedostępne w tym podglądzie",
     "documentScanFailed": "Nie udało się zeskanować dokumentu"
   },

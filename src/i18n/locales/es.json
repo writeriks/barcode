@@ -14,6 +14,9 @@
     "cancel": "Cancelar",
     "batchCount": "{{count}} escaneados",
     "batchDone": "Listo",
+    "batchNotSavedTitle": "No se añadió nada al historial",
+    "batchNotSavedHistoryOff": "El historial está desactivado en Ajustes, así que estos escaneos no se guardaron.",
+    "batchNotSavedDuplicate": "Ya los has escaneado antes y Escaneos duplicados está desactivado en Ajustes.",
     "documentScanUnavailable": "Escanear documentos requiere reconstruir la app — no disponible en esta vista previa",
     "documentScanFailed": "No se pudo escanear el documento"
   },

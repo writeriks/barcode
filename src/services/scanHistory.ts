@@ -90,17 +90,29 @@ export async function getHistory(): Promise<ScanHistoryEntry[]> {
   return entries.map(withResolvedDocumentUris);
 }
 
+/**
+ * What happened to a scan that was offered to the log.
+ *
+ * Two settings can turn a save into a no-op, and both used to do it
+ * silently. That is survivable when a result screen is on show — the user
+ * can see their scan — but batch mode has no result screen: its only
+ * output *is* the history entry. Counting a scan that was never kept, and
+ * then landing on a History screen without it, is the app lying about
+ * what it did. Callers that can say something now have something to say.
+ */
+export type AddHistoryResult = 'saved' | 'history-off' | 'duplicate';
+
 /** Prepends the newest scan and caps the log at FREE_MAX_ENTRIES (or
  * PREMIUM_MAX_ENTRIES for premium users). Respects the "save history" and
  * "save duplicate scans" toggles — a no-op when history saving is off, and
  * a no-op when duplicates are off and this exact barcode/QR content is
  * already in the log. */
-export async function addHistoryEntry(entry: ScanHistoryEntry): Promise<void> {
-  if (!(await isHistorySavingEnabled())) return;
+export async function addHistoryEntry(entry: ScanHistoryEntry): Promise<AddHistoryResult> {
+  if (!(await isHistorySavingEnabled())) return 'history-off';
 
   return serializeHistoryWrite(async () => {
     const existing = await readStoredHistory();
-    if (!(await isDuplicateScansEnabled()) && existing.some((e) => isSameScan(e, entry))) return;
+    if (!(await isDuplicateScansEnabled()) && existing.some((e) => isSameScan(e, entry))) return 'duplicate';
 
     // Trimming is destructive, so an unresolved premium state gets the
     // benefit of the doubt: scanning in the second before RevenueCat
@@ -108,6 +120,7 @@ export async function addHistoryEntry(entry: ScanHistoryEntry): Promise<void> {
     const useFreeCap = isPremiumResolved() && !isPremium();
     const next = [entry, ...existing].slice(0, useFreeCap ? FREE_MAX_ENTRIES : PREMIUM_MAX_ENTRIES);
     await persistHistory(next);
+    return 'saved' as const;
   });
 }
 

@@ -14,6 +14,9 @@
     "cancel": "Abbrechen",
     "batchCount": "{{count}} gescannt",
     "batchDone": "Fertig",
+    "batchNotSavedTitle": "Nichts zum Verlauf hinzugefügt",
+    "batchNotSavedHistoryOff": "Der Verlauf ist in den Einstellungen ausgeschaltet, deshalb wurden diese Scans nicht gesichert.",
+    "batchNotSavedDuplicate": "Du hast diese schon einmal gescannt, und Doppelte Scans ist in den Einstellungen aus.",
     "documentScanUnavailable": "Dokumentenscan erfordert einen neuen App-Build — in dieser Vorschau nicht verfügbar",
     "documentScanFailed": "Dokument konnte nicht gescannt werden"
   },

@@ -14,6 +14,9 @@
     "cancel": "Annuler",
     "batchCount": "{{count}} scanné(s)",
     "batchDone": "Terminé",
+    "batchNotSavedTitle": "Rien n’a été ajouté à l’historique",
+    "batchNotSavedHistoryOff": "L’historique est désactivé dans les Réglages, ces scans n’ont donc pas été conservés.",
+    "batchNotSavedDuplicate": "Vous les avez déjà scannés, et Scans en double est désactivé dans les Réglages.",
     "documentScanUnavailable": "La numérisation de documents nécessite une nouvelle version de l'app — indisponible dans cet aperçu",
     "documentScanFailed": "Impossible de numériser ce document"
   },

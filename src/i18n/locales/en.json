@@ -14,6 +14,9 @@
     "cancel": "Cancel",
     "batchCount": "{{count}} scanned",
     "batchDone": "Done",
+    "batchNotSavedTitle": "Nothing was added to History",
+    "batchNotSavedHistoryOff": "History saving is off in Settings, so these scans were not kept.",
+    "batchNotSavedDuplicate": "You have scanned these before, and Duplicate scans is off in Settings.",
     "documentScanUnavailable": "Document scanning needs a rebuilt app — not available in this preview",
     "documentScanFailed": "Couldn't scan that document"
   },

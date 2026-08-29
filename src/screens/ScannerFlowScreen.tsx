@@ -1,7 +1,8 @@
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FadeSwitcher } from '../components/FadeSwitcher';
 import { useScanInterstitial } from '../hooks/useScanInterstitial';
@@ -10,7 +11,7 @@ import { isFirstRunPaywallShown, setFirstRunPaywallShown } from '../services/fir
 import { captureAnalyticsEvent } from '../services/analytics';
 import { lookupProduct } from '../services/lookupProduct';
 import { recordSuccessfulScan } from '../services/reviewPrompt';
-import { addHistoryEntry } from '../services/scanHistory';
+import { addHistoryEntry, type AddHistoryResult } from '../services/scanHistory';
 import { isBatchScanEnabled } from '../services/scannerPreference';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -34,6 +35,11 @@ type Screen =
   | { name: 'qr-result'; data: string }
   | { name: 'document-result'; pageTexts: string[]; imageUris: string[]; timestamp: number };
 
+/** What one batch scan came to. Everything but `saved` means History has
+ *  nothing for it — two of those are a setting doing its job and worth
+ *  saying out loud, the third is a lookup that simply failed. */
+type BatchOutcome = AddHistoryResult | 'lookup-failed';
+
 /** How long Done will wait for the last batch saves before going to
  *  History anyway. Long enough for a write and a quick lookup, short
  *  enough that a stalled network doesn't make the button feel broken. */
@@ -49,6 +55,7 @@ function analyticsResultValue(status: LookupResult['status']): string {
 /** The scan → result flow. Takes `navigation` only to reset to the camera
  * view when the already-active Scanner tab is re-tapped. */
 export function ScannerFlowScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const [screen, setScreen] = useState<Screen>({ name: 'scanner' });
   const { countScan, maybeShowOnLeavingResult } = useScanInterstitial();
   const { isPremium, isReady: isPremiumReady, openPaywall } = usePremium();
@@ -60,10 +67,24 @@ export function ScannerFlowScreen({ navigation }: Props) {
   // Batch saves run in the background so the camera never waits on one.
   // Done has to, though — see handleFinishBatch.
   const pendingBatchSavesRef = useRef<Promise<unknown>[]>([]);
-  const trackBatchSave = useCallback((work: Promise<unknown>) => {
-    // Swallowed here rather than at the call site: a lookup that fails
-    // must not take the Done button's wait down with it.
-    pendingBatchSavesRef.current.push(work.catch(() => undefined));
+  // Why a batch scan didn't make it into History, if any didn't. Batch
+  // mode has no result screen, so the entry is the only thing the user
+  // gets — a scan that was silently dropped has to be accounted for.
+  const batchSkipReasonRef = useRef<Exclude<BatchOutcome, 'saved' | 'lookup-failed'> | null>(null);
+
+  const trackBatchSave = useCallback((work: Promise<BatchOutcome>) => {
+    const tracked = work
+      .then((result) => {
+        // The counter follows what was kept, not what was seen. Counting
+        // scans that were never saved and then landing on a History
+        // without them is the app describing work it did not do.
+        if (result === 'saved') setBatchCount((count) => count + 1);
+        else if (result !== 'lookup-failed') batchSkipReasonRef.current ??= result;
+      })
+      // Swallowed here rather than at the call site: a lookup that fails
+      // must not take the Done button's wait down with it.
+      .catch(() => undefined);
+    pendingBatchSavesRef.current.push(tracked);
   }, []);
 
   // Re-checked on every focus so flipping the Settings toggle takes effect
@@ -75,6 +96,7 @@ export function ScannerFlowScreen({ navigation }: Props) {
         if (enabled) {
           setBatchCount(0);
           pendingBatchSavesRef.current = [];
+          batchSkipReasonRef.current = null;
         }
       });
     }, [])
@@ -119,24 +141,36 @@ export function ScannerFlowScreen({ navigation }: Props) {
   // In batch mode the camera never leaves the scanner view, so a barcode's
   // lookup runs in the background instead of blocking the next scan —
   // there's no "loading"/"result" screen for it to drive.
-  const runBatchBarcodeLookup = useCallback(async (barcode: string, method: ScanMethod, timestamp: number) => {
-    const result = await lookupProduct(barcode);
-    captureAnalyticsEvent('scan_completed', {
-      kind: 'barcode',
-      method,
-      result: analyticsResultValue(result.status),
-      batch: true,
-    });
-    if (result.status === 'found' || result.status === 'incomplete') {
-      await addHistoryEntry({ kind: 'product', barcode, timestamp, status: result.status, product: result.product });
-    } else if (result.status === 'not-found') {
-      await addHistoryEntry({ kind: 'product', barcode, timestamp, status: 'not-found' });
-    }
-  }, []);
+  const runBatchBarcodeLookup = useCallback(
+    async (barcode: string, method: ScanMethod, timestamp: number): Promise<BatchOutcome> => {
+      const result = await lookupProduct(barcode);
+      captureAnalyticsEvent('scan_completed', {
+        kind: 'barcode',
+        method,
+        result: analyticsResultValue(result.status),
+        batch: true,
+      });
+      if (result.status === 'found' || result.status === 'incomplete') {
+        return addHistoryEntry({
+          kind: 'product',
+          barcode,
+          timestamp,
+          status: result.status,
+          product: result.product,
+        });
+      }
+      if (result.status === 'not-found') {
+        return addHistoryEntry({ kind: 'product', barcode, timestamp, status: 'not-found' });
+      }
+      // A lookup that failed outright saves nothing, and no setting is to
+      // blame — it counts as neither kept nor skipped.
+      return 'lookup-failed';
+    },
+    []
+  );
 
   const handleBatchScanned = useCallback(
     (data: string, kind: ScanKind, method: ScanMethod) => {
-      setBatchCount((count) => count + 1);
       const timestamp = Date.now();
       if (kind === 'qr') {
         captureAnalyticsEvent('scan_completed', { kind: 'qr', method, result: 'found', batch: true });
@@ -162,14 +196,26 @@ export function ScannerFlowScreen({ navigation }: Props) {
   // refreshes. The cap is there because Done must stay a button that
   // responds, even on a lookup that hangs.
   const handleFinishBatch = useCallback(async () => {
-    setBatchCount(0);
     await Promise.race([
       Promise.all(pendingBatchSavesRef.current),
       new Promise((resolve) => setTimeout(resolve, BATCH_SAVE_WAIT_MS)),
     ]);
     pendingBatchSavesRef.current = [];
+
+    // Say so before navigating. Landing on a History that is missing the
+    // scans, with nothing to explain it, is the part of this that reads
+    // as the app being broken rather than as a setting doing its job.
+    const skipped = batchSkipReasonRef.current;
+    batchSkipReasonRef.current = null;
+    setBatchCount(0);
+    if (skipped) {
+      Alert.alert(
+        t('scanner.batchNotSavedTitle'),
+        t(skipped === 'history-off' ? 'scanner.batchNotSavedHistoryOff' : 'scanner.batchNotSavedDuplicate')
+      );
+    }
     navigation.navigate('History');
-  }, [navigation]);
+  }, [navigation, t]);
 
   const handleScanned = useCallback(
     async (data: string, kind: ScanKind, method: ScanMethod) => {

@@ -9,6 +9,7 @@ import {
   parseVCardFields,
   splitMeCardName,
 } from '../utils/qrContentParsers';
+import { withSystemUi } from './systemUiSession';
 
 /**
  * Hands a scanned event to the calendar and a scanned contact to Contacts.
@@ -56,17 +57,20 @@ export async function addEventToCalendar(content: string): Promise<AddEventResul
   if (!granted) return 'denied';
 
   const reminder = Number(fields.reminderMinutes);
-  const result = await Calendar.createEventInCalendarAsync({
-    title: fields.title.trim(),
-    startDate: fields.startTime,
-    endDate: fields.endTime ?? new Date(fields.startTime.getTime() + DEFAULT_DURATION_MS),
-    location: fields.location.trim(),
-    notes: fields.notes.trim(),
-    url: fields.link.trim() || undefined,
-    alarms: Number.isFinite(reminder) && fields.reminderMinutes !== ''
-      ? [{ relativeOffset: -reminder }]
-      : [],
-  });
+  const startTime = fields.startTime;
+  const result = await withSystemUi(() =>
+    Calendar.createEventInCalendarAsync({
+      title: fields.title.trim(),
+      startDate: startTime,
+      endDate: fields.endTime ?? new Date(startTime.getTime() + DEFAULT_DURATION_MS),
+      location: fields.location.trim(),
+      notes: fields.notes.trim(),
+      url: fields.link.trim() || undefined,
+      alarms: Number.isFinite(reminder) && fields.reminderMinutes !== ''
+        ? [{ relativeOffset: -reminder }]
+        : [],
+    })
+  );
 
   // 'saved' is the confirmation; 'done' comes back when the screen closed
   // without one, which for a brand new event means nothing was added.
@@ -194,6 +198,6 @@ export async function addContactToDevice(
   const { granted } = await Contacts.requestPermissionsAsync();
   if (!granted) return 'denied';
 
-  await Contacts.presentFormAsync(null, contact, { isNew: true });
+  await withSystemUi(() => Contacts.presentFormAsync(null, contact, { isNew: true }));
   return 'shown';
 }

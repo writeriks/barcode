@@ -14,6 +14,7 @@ import { ShareFormatSheet, type ShareFormat } from '../components/ShareFormatShe
 import { captureAnalyticsEvent } from '../services/analytics';
 import { useKeyInformation } from '../hooks/useKeyInformation';
 import { shareDocument } from '../services/documentShare';
+import { withSystemUi } from '../services/systemUiSession';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -144,7 +145,7 @@ export function DocumentResultScreen({
     isSharePendingRef.current = true;
     try {
       if (format === 'pdf') await shareDocument([imageUri], label ?? t('document.typeDocument'), 'pdf');
-      else await Share.share({ url: imageUri });
+      else await withSystemUi(() => Share.share({ url: imageUri }));
     } catch {
       Alert.alert(t(format === 'pdf' ? 'document.pdfFailed' : 'document.shareFailed'));
     } finally {

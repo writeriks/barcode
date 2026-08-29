@@ -2,6 +2,7 @@ import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import type { ShareFormat } from '../components/ShareFormatSheet';
 import { buildPdf, canShareSeveralFiles, existingPages } from './documentShare';
+import { withSystemUi } from './systemUiSession';
 import type { ScanHistoryEntry } from '../types/history';
 
 function csvEscape(value: string): string {
@@ -85,7 +86,7 @@ export async function shareHistoryEntries(entries: ScanHistoryEntry[], format: S
     const files = exportable.length > 0 ? [...attachments, writeCsv(exportable).uri] : attachments;
     if (files.length === 0) return;
     const { shareFilesAsync } = await import('expo-document-scanner');
-    await shareFilesAsync(files);
+    await withSystemUi(() => shareFilesAsync(files));
     return;
   }
 
@@ -94,5 +95,7 @@ export async function shareHistoryEntries(entries: ScanHistoryEntry[], format: S
   const file = writeCsv(exportable);
   const canShare = await Sharing.isAvailableAsync();
   if (!canShare) return;
-  await Sharing.shareAsync(file.uri, { mimeType: 'text/csv', UTI: 'public.comma-separated-values-text' });
+  await withSystemUi(() =>
+    Sharing.shareAsync(file.uri, { mimeType: 'text/csv', UTI: 'public.comma-separated-values-text' })
+  );
 }

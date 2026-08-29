@@ -1,25 +1,25 @@
 import * as LocalAuthentication from 'expo-local-authentication';
 import { PREMIUM_SETTINGS, getPremiumSetting, setPremiumSetting } from './premiumSetting';
+import {
+  beginSystemUiSession,
+  endSystemUiSession,
+  isSystemUiSessionActive,
+} from './systemUiSession';
 
-/** Timestamp until which returning from background must not show the lock
- * screen. `Infinity` while a system sheet (StoreKit manage-subscriptions)
- * is up — that sheet backgrounds the app, and locking would unmount the
- * presenting tree under it, which freezes the UI. */
-let ignoreBackgroundLockUntil = 0;
-
-/** Call before presenting a system sheet that will background the app. */
+/** Call before presenting a system sheet that will background the app.
+ * Same session App Open ads listen to — a photo picker is not a resume. */
 export function beginIgnoringBackgroundLock(): void {
-  ignoreBackgroundLockUntil = Number.POSITIVE_INFINITY;
+  beginSystemUiSession();
 }
 
 /** Call after that sheet has settled. A short grace covers the trailing
  * `background → active` event that often arrives after our own cleanup. */
 export function endIgnoringBackgroundLock(graceMs = 1500): void {
-  ignoreBackgroundLockUntil = Date.now() + graceMs;
+  endSystemUiSession(graceMs);
 }
 
 export function isBackgroundLockIgnored(): boolean {
-  return Date.now() < ignoreBackgroundLockUntil;
+  return isSystemUiSessionActive();
 }
 
 /** True while the in-app lock overlay is up (not the cold-start lock,

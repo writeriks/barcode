@@ -27,6 +27,7 @@ import { usePremium } from '../premium/PremiumContext';
 import { isExpoGo } from '../services/ads/environment';
 import { consumeFreeScan, getRemainingFreeScans } from '../services/documentScanQuota';
 import { isSessionLocked, subscribeToSessionLocked } from '../services/appLock';
+import { withSystemUi } from '../services/systemUiSession';
 import { playScanFeedback } from '../services/scanFeedback';
 import { useThemeColors, useThemeMode } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
@@ -226,13 +227,15 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
     isReadingPhotoRef.current = true;
     setIsReadingPhoto(true);
     try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        quality: 1,
-        // The enum member, not the bare string it happens to equal — the
-        // option is typed as the enum, so the literal failed to compile.
-        preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
-      });
+      const result = await withSystemUi(() =>
+        ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'],
+          quality: 1,
+          // The enum member, not the bare string it happens to equal — the
+          // option is typed as the enum, so the literal failed to compile.
+          preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
+        })
+      );
       if (result.canceled || !result.assets[0]) return;
 
       setIsUploading(true);
@@ -287,7 +290,7 @@ export function ScannerScreen({ onScanned, onDocumentScanned, batchMode, batchCo
     setIsScanningDocument(true);
     try {
       const { scanDocumentAsync, recognizeTextAsync } = await import('expo-document-scanner');
-      const pageUris = await scanDocumentAsync();
+      const pageUris = await withSystemUi(() => scanDocumentAsync());
       // Backing out of the camera costs nothing — only a scan that actually
       // produced pages counts against the allowance.
       if (!pageUris || pageUris.length === 0) return;

@@ -23,8 +23,13 @@
  * user leaves a result, not when the result arrives — see
  * ScannerFlowScreen. Same number of ads, and none of them land between the
  * camera and the answer.
+ *
+ * The minute of quiet is shared with App Open (fullScreenAdCooldown) so
+ * an opening ad and a leaving-result ad cannot land thirty seconds apart.
+ * Warm-up is still this file's alone.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { canShowFullScreenAd, recordFullScreenAdShown, resetFullScreenAdCooldown } from './fullScreenAdCooldown';
 
 /** Scans that pass before the first ad is ever considered, counted across
  *  the app's whole life rather than the current launch. The point is that
@@ -43,7 +48,6 @@ const WARMUP_KEY = 'blippo.adWarmupScans';
 
 let warmupScans = 0;
 let warmupLoaded = false;
-let lastShownAt = 0;
 
 /**
  * Reads the stored warm-up count once per launch.
@@ -96,17 +100,17 @@ export function recordScan(): void {
  */
 export function canShowInterstitial(now = Date.now()): boolean {
   if (warmupScans <= WARMUP_SCANS) return false;
-  return lastShownAt === 0 || now - lastShownAt >= COOLDOWN_MS;
+  return canShowFullScreenAd(COOLDOWN_MS, now);
 }
 
 /** Call right after an ad has actually been shown. */
 export function recordInterstitialShown(now = Date.now()): void {
-  lastShownAt = now;
+  recordFullScreenAdShown(now);
 }
 
 /** Testing seam — the counters above live for the life of the process. */
 export function resetInterstitialSchedule(warmup = 0): void {
   warmupScans = warmup;
   warmupLoaded = true;
-  lastShownAt = 0;
+  resetFullScreenAdCooldown();
 }

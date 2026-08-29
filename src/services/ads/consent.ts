@@ -1,4 +1,5 @@
 import { isExpoGo } from './environment';
+import { withSystemUi } from '../systemUiSession';
 
 /**
  * Runs Google's UMP consent flow — shows the GDPR/US-states form only where
@@ -11,7 +12,7 @@ export async function gatherConsent(): Promise<boolean> {
   if (isExpoGo()) return false;
   const { AdsConsent } = await import('react-native-google-mobile-ads');
   try {
-    const info = await AdsConsent.gatherConsent();
+    const info = await withSystemUi(() => AdsConsent.gatherConsent());
     return info.canRequestAds;
   } catch {
     return false;
@@ -37,5 +38,5 @@ export async function isPrivacyOptionsRequired(): Promise<boolean> {
 export async function showPrivacyOptionsForm(): Promise<void> {
   if (isExpoGo()) return;
   const { AdsConsent } = await import('react-native-google-mobile-ads');
-  await AdsConsent.showPrivacyOptionsForm();
+  await withSystemUi(() => AdsConsent.showPrivacyOptionsForm());
 }

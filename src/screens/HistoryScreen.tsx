@@ -19,6 +19,7 @@ import { captureAnalyticsEvent } from '../services/analytics';
 import { createFolder, deleteFolder, getFolders } from '../services/historyFolders';
 import { maybeRequestReview } from '../services/reviewPrompt';
 import { shareHistoryEntries } from '../services/historyExport';
+import { withSystemUi } from '../services/systemUiSession';
 import {
   clearFolderFromEntries,
   deleteHistoryEntries,
@@ -368,7 +369,7 @@ export function HistoryScreen({ navigation }: Props) {
         setSharingEntries([entry]);
         return;
       }
-      Share.share({ message: entry.kind === 'qr' ? entry.data : entry.barcode });
+      void withSystemUi(() => Share.share({ message: entry.kind === 'qr' ? entry.data : entry.barcode }));
     }, SHEET_DISMISS_MS);
   };
 

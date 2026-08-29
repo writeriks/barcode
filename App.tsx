@@ -29,6 +29,7 @@ import {
 import { isOnboardingCompleted, setOnboardingCompleted } from './src/services/onboardingPreference';
 import { getAnalyticsClient } from './src/services/analytics';
 import { initializeAds } from './src/services/ads/initializeAds';
+import { useAppOpenAd } from './src/hooks/useAppOpenAd';
 import { PremiumProvider, usePremium } from './src/premium/PremiumContext';
 import { ThemeProvider, useThemeColors, useThemeMode, useThemePreference } from './src/theme/ThemeContext';
 import { getDeviceLanguageCode } from './src/utils/locale';
@@ -82,7 +83,7 @@ function AppContent() {
   // has read what the app is, not over a welcome screen they haven't.
   useEffect(() => {
     if (!onboardingReady || needsOnboarding) return;
-    initializeAds();
+    void initializeAds();
   }, [onboardingReady, needsOnboarding]);
 
   useEffect(() => {
@@ -167,6 +168,14 @@ function AppContent() {
       },
     };
   }, [colors, mode]);
+
+  // Past onboarding and the lock — never over a welcome screen, a Face ID
+  // prompt, or the spinner that holds the tree until those are decided.
+  useAppOpenAd({
+    adsSdkMayStart: onboardingReady && !needsOnboarding,
+    appIsInteractive:
+      fontsLoaded && languageReady && appLockReady && onboardingReady && !needsOnboarding && !isLocked,
+  });
 
   if (!fontsLoaded || !languageReady || !appLockReady || !onboardingReady) {
     return (

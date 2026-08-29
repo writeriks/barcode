@@ -8,6 +8,7 @@ import { brandLogoFor } from '../utils/brandLogos';
 import { classifyQrContent } from '../utils/classifyQrContent';
 import type { QrContentType } from '../utils/classifyQrContent';
 import { isQrEncodable } from '../utils/qrCapacity';
+import { withSystemUi } from '../services/systemUiSession';
 
 // How many frames to wait for the off-screen SVG to attach its ref. One
 // is usually enough; a few more covers a layout that landed a frame late.
@@ -18,7 +19,7 @@ const CAPTURE_FRAMES = 12;
 const SHARE_SIZE = 512;
 
 function shareText(content: string) {
-  void Share.share({ message: content });
+  void withSystemUi(() => Share.share({ message: content }));
 }
 
 interface ShareRequest {
@@ -100,8 +101,10 @@ export function useQrShare(onUnavailable?: () => void) {
           // Attaching a file and a message to one share sheet is iOS-only
           // behaviour of Share.share's {message, url} — on Android the
           // message alone still goes out.
-          await Share.share(
-            capture.parts.text ? { message: capture.content, url: file.uri } : { url: file.uri }
+          await withSystemUi(() =>
+            Share.share(
+              capture.parts.text ? { message: capture.content, url: file.uri } : { url: file.uri }
+            )
           );
         } catch {
           if (!cancelled && capture.parts.text) shareText(capture.content);

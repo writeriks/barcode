@@ -2,6 +2,7 @@ import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import type { ShareFormat } from '../components/ShareFormatSheet';
 import { isExpoGo } from './ads/environment';
+import { withSystemUi } from './systemUiSession';
 
 /** Of the given page files, the ones still on disk. A page deleted from
  * underneath its entry would otherwise reach the share sheet as a URL
@@ -32,7 +33,7 @@ export async function shareFiles(uris: string[]): Promise<void> {
   const files = existingPages(uris);
   if (files.length === 0) return;
   const { shareFilesAsync } = await import('expo-document-scanner');
-  await shareFilesAsync(files);
+  await withSystemUi(() => shareFilesAsync(files));
 }
 
 /** A filename the OS and every destination will accept: no separators, no

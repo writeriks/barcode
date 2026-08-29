@@ -62,6 +62,10 @@ export function ScannerFlowScreen({ navigation }: Props) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const lastMethodRef = useRef<ScanMethod>('camera');
+  // What the tab-press listener below is looking at. A ref rather than a
+  // dependency, so the listener isn't torn down and re-added every scan.
+  const screenRef = useRef(screen);
+  screenRef.current = screen;
   const [isBatchMode, setIsBatchMode] = useState(false);
   const [batchCount, setBatchCount] = useState(0);
   // Batch saves run in the background so the camera never waits on one.
@@ -101,17 +105,6 @@ export function ScannerFlowScreen({ navigation }: Props) {
       });
     }, [])
   );
-
-  // Re-tapping the already-active Scanner tab should feel like "start over",
-  // not do nothing — pop back to the camera view from wherever we are.
-  useEffect(() => {
-    return navigation.addListener('tabPress', () => {
-      if (navigation.isFocused()) {
-        setScreen({ name: 'scanner' });
-        setBatchCount(0);
-      }
-    });
-  }, [navigation]);
 
   const runLookup = useCallback(
     async (barcode: string, method: ScanMethod = lastMethodRef.current) => {
@@ -287,6 +280,29 @@ export function ScannerFlowScreen({ navigation }: Props) {
       openPaywall('firstScan');
     });
   }, [isPremium, isPremiumReady, maybeShowOnLeavingResult, openPaywall]);
+
+  // Re-tapping the already-active Scanner tab should feel like "start
+  // over", not do nothing — pop back to the camera view from wherever we
+  // are.
+  //
+  // It goes through goToScanner rather than just resetting the screen,
+  // because leaving a result this way is the same moment as leaving it by
+  // the button on the result screen. The ad — and the one-off upgrade
+  // pitch — belong to the moment the user is done with the answer, not to
+  // which control they used to say so; routing one of the two doors past
+  // them meant anyone who navigates by the tab bar never saw either.
+  //
+  // Only from a result, though. Tapping the tab while the camera is
+  // already up is not leaving anything, and an ad there would arrive out
+  // of nowhere.
+  useEffect(() => {
+    return navigation.addListener('tabPress', () => {
+      if (!navigation.isFocused()) return;
+      setBatchCount(0);
+      if (screenRef.current.name === 'scanner') return;
+      goToScanner();
+    });
+  }, [navigation, goToScanner]);
 
   // ScannerScreen is deliberately edge-to-edge (it's a camera viewfinder),
   // but the result screens below it have no navigation header of their own

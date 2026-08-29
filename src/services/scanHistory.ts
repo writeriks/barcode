@@ -59,6 +59,28 @@ async function persistHistory(entries: ScanHistoryEntry[]): Promise<void> {
   }
 }
 
+/**
+ * Runs one read-modify-write at a time.
+ *
+ * Every writer below reads the whole log, changes it, and writes it back,
+ * with awaits in between — so two that overlap both start from the same
+ * array and the second write erases the first one's change. Batch scanning
+ * is where this stopped being theoretical: it fires a save per code
+ * without waiting, and a barcode's save waits on a network lookup first,
+ * so a handful of codes scanned quickly landed as one entry or none. The
+ * user's report was that the scans simply were not in History.
+ *
+ * A queue rather than a lock: callers still just await their own call, and
+ * a writer that throws must not wedge the ones behind it.
+ */
+let historyWrites: Promise<unknown> = Promise.resolve();
+
+function serializeHistoryWrite<T>(work: () => Promise<T>): Promise<T> {
+  const run = historyWrites.then(work, work);
+  historyWrites = run.catch(() => undefined);
+  return run;
+}
+
 export async function getHistory(): Promise<ScanHistoryEntry[]> {
   const entries = await readStoredHistory();
   // A document's page URIs are re-pointed at the current app container
@@ -76,27 +98,31 @@ export async function getHistory(): Promise<ScanHistoryEntry[]> {
 export async function addHistoryEntry(entry: ScanHistoryEntry): Promise<void> {
   if (!(await isHistorySavingEnabled())) return;
 
-  const existing = await readStoredHistory();
-  if (!(await isDuplicateScansEnabled()) && existing.some((e) => isSameScan(e, entry))) return;
+  return serializeHistoryWrite(async () => {
+    const existing = await readStoredHistory();
+    if (!(await isDuplicateScansEnabled()) && existing.some((e) => isSameScan(e, entry))) return;
 
-  // Trimming is destructive, so an unresolved premium state gets the
-  // benefit of the doubt: scanning in the second before RevenueCat
-  // answers must never cut a paying user's log down to the free cap.
-  const useFreeCap = isPremiumResolved() && !isPremium();
-  const next = [entry, ...existing].slice(0, useFreeCap ? FREE_MAX_ENTRIES : PREMIUM_MAX_ENTRIES);
-  await persistHistory(next);
+    // Trimming is destructive, so an unresolved premium state gets the
+    // benefit of the doubt: scanning in the second before RevenueCat
+    // answers must never cut a paying user's log down to the free cap.
+    const useFreeCap = isPremiumResolved() && !isPremium();
+    const next = [entry, ...existing].slice(0, useFreeCap ? FREE_MAX_ENTRIES : PREMIUM_MAX_ENTRIES);
+    await persistHistory(next);
+  });
 }
 
 export async function clearHistory(): Promise<void> {
-  await AsyncStorage.removeItem(STORAGE_KEY);
+  return serializeHistoryWrite(() => AsyncStorage.removeItem(STORAGE_KEY));
 }
 
 export async function setEntriesFolder(keys: HistoryEntryKey[], folderId: string | null): Promise<void> {
-  const existing = await readStoredHistory();
-  const next = existing.map((entry) =>
-    keys.some((key) => entryMatchesKey(entry, key)) ? { ...entry, folderId: folderId ?? undefined } : entry
-  );
-  await persistHistory(next);
+  return serializeHistoryWrite(async () => {
+    const existing = await readStoredHistory();
+    const next = existing.map((entry) =>
+      keys.some((key) => entryMatchesKey(entry, key)) ? { ...entry, folderId: folderId ?? undefined } : entry
+    );
+    await persistHistory(next);
+  });
 }
 
 export async function setEntryFolder(
@@ -112,25 +138,36 @@ export async function setEntryFolder(
  * it again, falling back to that derived name. */
 export async function renameHistoryEntry(key: HistoryEntryKey, label: string): Promise<void> {
   const trimmed = label.trim();
-  const existing = await readStoredHistory();
-  const next = existing.map((entry) =>
-    entryMatchesKey(entry, key) ? { ...entry, label: trimmed || undefined } : entry
-  );
-  await persistHistory(next);
+  return serializeHistoryWrite(async () => {
+    const existing = await readStoredHistory();
+    const next = existing.map((entry) =>
+      entryMatchesKey(entry, key) ? { ...entry, label: trimmed || undefined } : entry
+    );
+    await persistHistory(next);
+  });
 }
 
 /** Unfiles every entry in a folder that's about to be deleted — the
  * entries themselves stay, only the folder reference is cleared. */
 export async function clearFolderFromEntries(folderId: string): Promise<void> {
+  return serializeHistoryWrite(async () => {
+    const existing = await readStoredHistory();
+    const next = existing.map((entry) => (entry.folderId === folderId ? { ...entry, folderId: undefined } : entry));
+    await persistHistory(next);
+  });
+}
+
+/** The delete itself, without taking the queue — so a writer that already
+ *  holds it (removeDocumentPages) can reuse this instead of deadlocking on
+ *  its own turn. */
+async function deleteEntriesUnqueued(keys: HistoryEntryKey[]): Promise<void> {
   const existing = await readStoredHistory();
-  const next = existing.map((entry) => (entry.folderId === folderId ? { ...entry, folderId: undefined } : entry));
+  const next = existing.filter((entry) => !keys.some((key) => entryMatchesKey(entry, key)));
   await persistHistory(next);
 }
 
 export async function deleteHistoryEntries(keys: HistoryEntryKey[]): Promise<void> {
-  const existing = await readStoredHistory();
-  const next = existing.filter((entry) => !keys.some((key) => entryMatchesKey(entry, key)));
-  await persistHistory(next);
+  return serializeHistoryWrite(() => deleteEntriesUnqueued(keys));
 }
 
 export async function deleteHistoryEntry(kind: ScanHistoryEntry['kind'], timestamp: number): Promise<void> {
@@ -143,38 +180,41 @@ export async function deleteHistoryEntry(kind: ScanHistoryEntry['kind'], timesta
  * entry's remaining page count so the caller can decide how to navigate
  * (collapse to the single-page Detail view, or close out entirely). */
 export async function removeDocumentPages(timestamp: number, pageIndexes: number[]): Promise<number> {
-  const existing = await readStoredHistory();
-  const entry = existing.find((e) => e.kind === 'document' && e.timestamp === timestamp) as
-    | Extract<ScanHistoryEntry, { kind: 'document' }>
-    | undefined;
-  if (!entry) return 0;
+  return serializeHistoryWrite(async () => {
+    const existing = await readStoredHistory();
+    const entry = existing.find((e) => e.kind === 'document' && e.timestamp === timestamp) as
+      | Extract<ScanHistoryEntry, { kind: 'document' }>
+      | undefined;
+    if (!entry) return 0;
 
-  const removeSet = new Set(pageIndexes);
-  const keptImageUris: string[] = [];
-  const keptPageTexts: string[] = [];
-  entry.imageUris.forEach((uri, index) => {
-    if (removeSet.has(index)) {
-      try {
-        new File(resolveDocumentScanUri(uri)).delete();
-      } catch {
-        // Best-effort — a file that's already missing shouldn't block removing the page's record.
+    const removeSet = new Set(pageIndexes);
+    const keptImageUris: string[] = [];
+    const keptPageTexts: string[] = [];
+    entry.imageUris.forEach((uri, index) => {
+      if (removeSet.has(index)) {
+        try {
+          new File(resolveDocumentScanUri(uri)).delete();
+        } catch {
+          // Best-effort — a file that's already missing shouldn't block removing the page's record.
+        }
+        return;
       }
-      return;
+      keptImageUris.push(uri);
+      keptPageTexts.push(entry.pageTexts[index] ?? '');
+    });
+
+    if (keptImageUris.length === 0) {
+      // The unqueued delete on purpose: this call already holds the queue.
+      await deleteEntriesUnqueued([{ kind: 'document', timestamp }]);
+      return 0;
     }
-    keptImageUris.push(uri);
-    keptPageTexts.push(entry.pageTexts[index] ?? '');
+
+    const next = existing.map((e) =>
+      e.kind === 'document' && e.timestamp === timestamp
+        ? { ...e, imageUris: keptImageUris, pageTexts: keptPageTexts }
+        : e
+    );
+    await persistHistory(next);
+    return keptImageUris.length;
   });
-
-  if (keptImageUris.length === 0) {
-    await deleteHistoryEntry('document', timestamp);
-    return 0;
-  }
-
-  const next = existing.map((e) =>
-    e.kind === 'document' && e.timestamp === timestamp
-      ? { ...e, imageUris: keptImageUris, pageTexts: keptPageTexts }
-      : e
-  );
-  await persistHistory(next);
-  return keptImageUris.length;
 }

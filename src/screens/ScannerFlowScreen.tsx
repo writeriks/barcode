@@ -1,4 +1,4 @@
-import type { BottomTabNavigationProp, BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
@@ -132,9 +132,14 @@ export function ScannerFlowScreen({ navigation }: Props) {
     [runBatchBarcodeLookup]
   );
 
+  // `navigation` here is already the tab navigator's — this screen is a
+  // Tab.Screen. Asking for its parent walks off the top of the tree and
+  // returns undefined, so the optional call did nothing at all and Done
+  // was a dead button. (History's copy of this line is right: that screen
+  // sits inside HistoryStack, so it does have a tab navigator above it.)
   const handleFinishBatch = useCallback(() => {
     setBatchCount(0);
-    navigation.getParent<BottomTabNavigationProp<RootTabParamList>>()?.navigate('History');
+    navigation.navigate('History');
   }, [navigation]);
 
   const handleScanned = useCallback(

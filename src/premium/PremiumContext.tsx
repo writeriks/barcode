@@ -174,13 +174,23 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [entitlement.isEntitled, entitlement.expirationDate, refreshPremium]);
 
-  // Ads and the history cap both run outside React and read their own
-  // module-level flags rather than this context, so keep those in sync
-  // here (see services/ads/adsEnabled.ts and premium/premiumState.ts).
+  // Synced during render, not in an effect. Effects run child-first, so a
+  // child that re-reads a premium-gated value in its own effect — Settings
+  // re-reading its switches, App re-reading App Lock — would run *before*
+  // the effect that told premiumState the answer changed, and read the
+  // previous one. A parent renders before any child effect, so this is the
+  // only ordering that holds. Setting a module variable is safe to repeat;
+  // React may render this twice and the second write is the same as the
+  // first.
+  if (isReady) setPremiumActive(isPremium);
+
+  // Ads keep their own flag too, but flipping it notifies live listeners
+  // (an already-mounted banner), and calling another component's setState
+  // during this one's render is exactly what React forbids — so this one
+  // stays in an effect.
   useEffect(() => {
     if (!isReady) return;
     setAdsEnabled(!isPremium);
-    setPremiumActive(isPremium);
   }, [isPremium, isReady]);
 
   const setPremium = useCallback((enabled: boolean) => {

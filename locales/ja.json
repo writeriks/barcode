@@ -1,0 +1,16 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "Blippo",
+    "NSCameraUsageDescription": "Blippoはカメラを使ってバーコード、QRコード、紙の書類を読み取ります。たとえばスーパーのバーコードに向けると商品がわかり、レシートを保存して文字をコピーできます。",
+    "NSUserTrackingUsageDescription": "この識別子は、より関連性の高い広告を表示するために使います。スキャンや書類が共有されることはありません。",
+    "NSPhotoLibraryUsageDescription": "選んだ写真の中にあるバーコードやQRコードを読み取るために、Blippoはその写真を開きます。チケット、搭乗券、誰かが画像で送ってきたWi-Fiコードなどです。",
+    "NSPhotoLibraryAddUsageDescription": "共有時に「画像を保存」を選ぶと、BlippoはスキャンしたページやQRコード画像を写真に保存します。",
+    "NSFaceIDUsageDescription": "ほかの人がiPhoneを手に取っても保存したスキャンや書類がプライベートなままになるよう、BlippoはFace IDでアプリのロックを解除します。",
+    "NSCalendarsUsageDescription": "BlippoはスキャンしたQRコードの予定をカレンダーに追加します。まず予定を表示し、カレンダー側の画面で確認します。すでに入っている予定は読み取りません。",
+    "NSCalendarsFullAccessUsageDescription": "BlippoはスキャンしたQRコードの予定をカレンダーに追加します。まず予定を表示し、カレンダー側の画面で確認します。すでに入っている予定は読み取りません。",
+    "NSContactsUsageDescription": "Blippoはスキャンした連絡先コードの人物を連絡先に追加します。新規連絡先の画面に入力し、保存は自分で行います。既存の連絡先は読み取ったり送信したりしません。"
+  },
+  "android": {
+    "app_name": "Blippo"
+  }
+}

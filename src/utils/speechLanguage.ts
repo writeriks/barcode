@@ -10,6 +10,9 @@ const SPEECH_LANGUAGE_TAGS: Record<string, string> = {
   fr: 'fr-FR',
   it: 'it-IT',
   de: 'de-DE',
+  ja: 'ja-JP',
+  'zh-Hans': 'zh-CN',
+  'zh-Hant': 'zh-TW',
 };
 
 export function resolveSpeechLanguage(languageCode: string): string {

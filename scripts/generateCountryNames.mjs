@@ -8,7 +8,13 @@
 // the two can't drift apart.
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const LANGUAGES = ['en', 'tr', 'pl', 'es', 'fr', 'it', 'de'];
+// Keep in step with SUPPORTED_LANGUAGES in src/i18n/languages.ts
+const LANGUAGES = ['en', 'tr', 'pl', 'es', 'fr', 'it', 'de', 'ja', 'zh-Hans', 'zh-Hant'];
+
+function objectKey(language) {
+  return /^[A-Za-z_$][\w$]*$/.test(language) ? language : `'${language}'`;
+}
+
 const SOURCE = 'src/utils/countryCallingCodes.ts';
 const TARGET = 'src/utils/countryNames.ts';
 
@@ -19,7 +25,7 @@ const blocks = LANGUAGES.map((language) => {
   const entries = isoCodes
     .map((iso2) => `    ${iso2}: '${displayNames.of(iso2).replace(/'/g, "\\'")}',`)
     .join('\n');
-  return `  ${language}: {\n${entries}\n  },`;
+  return `  ${objectKey(language)}: {\n${entries}\n  },`;
 }).join('\n');
 
 writeFileSync(

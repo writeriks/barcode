@@ -1,0 +1,16 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "Blippo",
+    "NSCameraUsageDescription": "Blippo 使用相机扫描条码、二维码和纸质文档。例如，对准超市条码即可查看商品，或对准收据以保存并复制其中的文字。",
+    "NSUserTrackingUsageDescription": "此标识符用于向你展示更相关的广告。你的扫描和文档绝不会被分享。",
+    "NSPhotoLibraryUsageDescription": "Blippo 会打开你选择的照片，以读取其中已有的条码或二维码 — 例如门票、登机牌，或别人以图片发给你的 Wi-Fi 码。",
+    "NSPhotoLibraryAddUsageDescription": "在分享时选择「存储图像」，Blippo 会将扫描的页面或二维码图片保存到你的照片中。",
+    "NSFaceIDUsageDescription": "Blippo 使用面容 ID 解锁应用，这样即使别人拿起你的 iPhone，已保存的扫描和文档仍保持私密。",
+    "NSCalendarsUsageDescription": "Blippo 会将扫描到的二维码中的日程添加到日历。它会先显示该日程，你在日历自己的界面中确认 — 不会读取日历中已有的内容。",
+    "NSCalendarsFullAccessUsageDescription": "Blippo 会将扫描到的二维码中的日程添加到日历。它会先显示该日程，你在日历自己的界面中确认 — 不会读取日历中已有的内容。",
+    "NSContactsUsageDescription": "Blippo 会将扫描到的联系人码中的人物添加到通讯录。它会填好新建联系人界面，由你自行存储 — 现有联系人不会被读取或发送到任何地方。"
+  },
+  "android": {
+    "app_name": "Blippo"
+  }
+}

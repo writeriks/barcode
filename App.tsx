@@ -19,7 +19,7 @@ import { MyCodesScreen } from './src/screens/MyCodesScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { ScannerFlowScreen } from './src/screens/ScannerFlowScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
-import i18n, { isSupportedLanguage, type SupportedLanguage } from './src/i18n';
+import i18n, { resolveDeviceLanguage, type SupportedLanguage } from './src/i18n';
 import { getLanguageOverride, setLanguageOverride } from './src/i18n/languagePreference';
 import {
   isAppLockEnabled as getAppLockEnabled,
@@ -32,7 +32,6 @@ import { initializeAds } from './src/services/ads/initializeAds';
 import { useAppOpenAd } from './src/hooks/useAppOpenAd';
 import { PremiumProvider, usePremium } from './src/premium/PremiumContext';
 import { ThemeProvider, useThemeColors, useThemeMode, useThemePreference } from './src/theme/ThemeContext';
-import { getDeviceLanguageCode } from './src/utils/locale';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
@@ -148,9 +147,7 @@ function AppContent() {
 
   const handleSelectLanguage = useCallback(async (code: SupportedLanguage | null) => {
     await setLanguageOverride(code);
-    const deviceLanguage = getDeviceLanguageCode();
-    const next = code ?? (isSupportedLanguage(deviceLanguage) ? deviceLanguage : 'en');
-    await i18n.changeLanguage(next);
+    await i18n.changeLanguage(code ?? resolveDeviceLanguage());
     setLanguageOverrideState(code);
   }, []);
 

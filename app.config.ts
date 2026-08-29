@@ -151,6 +151,9 @@ const config: ExpoConfig = {
     fr: './locales/fr.json',
     it: './locales/it.json',
     de: './locales/de.json',
+    ja: './locales/ja.json',
+    'zh-Hans': './locales/zh-Hans.json',
+    'zh-Hant': './locales/zh-Hant.json',
   },
   plugins: [
     [

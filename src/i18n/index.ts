@@ -1,20 +1,34 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { getDeviceLanguageCode } from '../utils/locale';
+import { getDeviceLocale } from '../utils/locale';
 import de from './locales/de.json';
 import en from './locales/en.json';
 import es from './locales/es.json';
 import fr from './locales/fr.json';
 import it from './locales/it.json';
+import ja from './locales/ja.json';
 import pl from './locales/pl.json';
 import tr from './locales/tr.json';
+import zhHans from './locales/zh-Hans.json';
+import zhHant from './locales/zh-Hant.json';
+import { SUPPORTED_LANGUAGES, isSupportedLanguage, type SupportedLanguage } from './languages';
+import { resolveSupportedLanguage } from './resolveLanguage';
 
-export const SUPPORTED_LANGUAGES = ['en', 'tr', 'pl', 'es', 'fr', 'it', 'de'] as const;
-export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+export { SUPPORTED_LANGUAGES, isSupportedLanguage, type SupportedLanguage };
+export { resolveSupportedLanguage };
 
-export function isSupportedLanguage(code: string): code is SupportedLanguage {
-  return (SUPPORTED_LANGUAGES as readonly string[]).includes(code);
+function resolveDeviceLanguage(): SupportedLanguage {
+  const locale = getDeviceLocale();
+  return (
+    resolveSupportedLanguage(locale.languageCode, {
+      languageTag: locale.languageTag,
+      languageScriptCode: locale.languageScriptCode,
+      regionCode: locale.regionCode,
+    }) ?? 'en'
+  );
 }
+
+export { resolveDeviceLanguage };
 
 const resources = {
   en: { translation: en },
@@ -24,14 +38,14 @@ const resources = {
   fr: { translation: fr },
   it: { translation: it },
   de: { translation: de },
+  ja: { translation: ja },
+  'zh-Hans': { translation: zhHans },
+  'zh-Hant': { translation: zhHant },
 };
-
-const deviceLanguage = getDeviceLanguageCode();
-const initialLanguage = isSupportedLanguage(deviceLanguage) ? deviceLanguage : 'en';
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: initialLanguage,
+  lng: resolveDeviceLanguage(),
   fallbackLng: 'en',
   interpolation: { escapeValue: false },
 });

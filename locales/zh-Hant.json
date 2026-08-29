@@ -1,0 +1,16 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "Blippo",
+    "NSCameraUsageDescription": "Blippo 使用相機掃描條碼、QR 碼和紙本文件。例如，對準超市條碼即可查看商品，或對準收據以儲存並拷貝其中的文字。",
+    "NSUserTrackingUsageDescription": "此識別碼用於向你顯示更相關的廣告。你的掃描和文件絕不會被分享。",
+    "NSPhotoLibraryUsageDescription": "Blippo 會打開你選擇的照片，以讀取其中已有的條碼或 QR 碼 — 例如門票、登機證，或別人以圖片傳給你的 Wi-Fi 碼。",
+    "NSPhotoLibraryAddUsageDescription": "在分享時選擇「儲存影像」，Blippo 會將掃描的頁面或 QR 碼圖片儲存到你的照片中。",
+    "NSFaceIDUsageDescription": "Blippo 使用 Face ID 解鎖 App，這樣即使別人拿起你的 iPhone，已儲存的掃描和文件仍保持私密。",
+    "NSCalendarsUsageDescription": "Blippo 會將掃描到的 QR 碼中的行程加入行事曆。它會先顯示該行程，你在行事曆自己的畫面中確認 — 不會讀取行事曆中已有的內容。",
+    "NSCalendarsFullAccessUsageDescription": "Blippo 會將掃描到的 QR 碼中的行程加入行事曆。它會先顯示該行程，你在行事曆自己的畫面中確認 — 不會讀取行事曆中已有的內容。",
+    "NSContactsUsageDescription": "Blippo 會將掃描到的聯絡人碼中的人物加入聯絡人。它會填好新增聯絡人畫面，由你自行儲存 — 現有聯絡人不會被讀取或傳送到任何地方。"
+  },
+  "android": {
+    "app_name": "Blippo"
+  }
+}

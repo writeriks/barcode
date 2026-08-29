@@ -40,3 +40,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# App Store screenshot renderer scratch
+store/screenshots/.chrome-profile/

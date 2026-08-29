@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Blippo App Store — Scan QR Do More</title>
+  <style>
+    @font-face {
+      font-family: Fredoka;
+      src: url("assets/fonts/Fredoka-SemiBold.ttf") format("truetype");
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: Fredoka;
+      src: url("assets/fonts/Fredoka-Bold.ttf") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 1242px;
+      height: 2688px;
+      overflow: hidden;
+      background: #14092A;
+    }
+
+    .artboard {
+      position: relative;
+      width: 1242px;
+      height: 2688px;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse 820px 560px at 50% 210px, rgba(255, 62, 127, 0.22) 0%, rgba(90, 40, 140, 0.10) 42%, transparent 72%),
+        linear-gradient(180deg, #2E1652 0%, #1C0D38 48%, #14092A 100%);
+    }
+
+    .headline {
+      position: absolute;
+      top: 72px;
+      left: 60px;
+      right: 60px;
+      text-align: center;
+      z-index: 3;
+    }
+
+    .line1 {
+      margin: 0;
+      font-family: Fredoka, sans-serif;
+      font-weight: 600;
+      font-size: 80px;
+      line-height: 1.05;
+      letter-spacing: -1.2px;
+      color: #E4D6FA;
+    }
+
+    .line2 {
+      margin: 6px 0 0;
+      font-family: Fredoka, sans-serif;
+      font-weight: 700;
+      font-size: 130px;
+      line-height: 1.0;
+      letter-spacing: -2.4px;
+      color: #FF3E7F;
+    }
+
+    .stage {
+      position: absolute;
+      top: 340px;
+      left: 0;
+      width: 1242px;
+      height: 1920px;
+      perspective: 2400px;
+      perspective-origin: 50% 42%;
+      z-index: 2;
+    }
+
+    .rig {
+      position: absolute;
+      left: 50%;
+      top: 52%;
+      width: 836px;
+      height: 1754px;
+      margin-left: -418px;
+      margin-top: -877px;
+      transform-style: preserve-3d;
+      transform: rotateY(-13deg) rotateZ(-8deg) rotateX(3deg);
+    }
+
+    .shadow {
+      position: absolute;
+      left: 6%;
+      right: 2%;
+      bottom: -36px;
+      height: 90px;
+      background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.22) 46%, transparent 76%);
+      filter: blur(18px);
+      transform: translateZ(-40px) rotateX(70deg) scale(1.04);
+      pointer-events: none;
+    }
+
+    .phone {
+      position: absolute;
+      inset: 0;
+      transform-style: preserve-3d;
+    }
+
+    .edge {
+      position: absolute;
+      top: 28px;
+      right: -11px;
+      width: 16px;
+      height: calc(100% - 56px);
+      border-radius: 6px;
+      background: linear-gradient(180deg, #F4EDE1 0%, #D8CBB6 28%, #B9A88F 70%, #A3927A 100%);
+      transform: rotateY(90deg) translateZ(8px);
+      box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.28);
+    }
+
+    .btn-power {
+      position: absolute;
+      top: 292px;
+      right: -15px;
+      width: 7px;
+      height: 118px;
+      border-radius: 3px;
+      background: linear-gradient(180deg, #E8DCCB, #B7A48C);
+      transform: rotateY(90deg) translateZ(10px);
+    }
+
+    .btn-vol {
+      position: absolute;
+      top: 248px;
+      left: -14px;
+      width: 7px;
+      height: 168px;
+      border-radius: 3px;
+      background: linear-gradient(180deg, #E8DCCB, #B7A48C);
+      transform: rotateY(-90deg) translateZ(10px);
+    }
+
+    .shell {
+      position: absolute;
+      inset: 0;
+      border-radius: 98px;
+      background:
+        linear-gradient(155deg, #F7F2E8 0%, #E6DAC8 38%, #CDBDA6 72%, #B7A48C 100%);
+      box-shadow:
+        0 28px 70px rgba(0, 0, 0, 0.38),
+        0 8px 22px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55),
+        inset 0 -1px 0 rgba(80, 60, 40, 0.18);
+    }
+
+    .shell::before {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      border-radius: 95px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 28%, transparent 72%, rgba(80, 60, 40, 0.12));
+      pointer-events: none;
+    }
+
+    .bezel {
+      position: absolute;
+      inset: 14px;
+      border-radius: 86px;
+      background: #0B0B0E;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    }
+
+    .screen {
+      position: absolute;
+      inset: 7px;
+      border-radius: 79px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .screen img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      border: 0;
+    }
+
+    .card {
+      position: absolute;
+      left: 60px;
+      right: 60px;
+      bottom: 64px;
+      height: 196px;
+      border-radius: 54px;
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      padding: 0 32px;
+      box-sizing: border-box;
+      box-shadow: 0 18px 40px rgba(8, 2, 20, 0.28);
+      z-index: 4;
+    }
+
+    .icon-sq {
+      flex: 0 0 108px;
+      width: 108px;
+      height: 108px;
+      border-radius: 30px;
+      background: #FFE4EE;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-sq svg {
+      width: 54px;
+      height: 54px;
+    }
+
+    .card-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .card-title {
+      font-family: Fredoka, sans-serif;
+      font-weight: 700;
+      font-size: 44px;
+      line-height: 1.05;
+      letter-spacing: -0.6px;
+      color: #1B1330;
+      margin: 0 0 8px;
+    }
+
+    .card-sub {
+      font-family: Fredoka, sans-serif;
+      font-weight: 600;
+      font-size: 28px;
+      line-height: 1.25;
+      color: #6B5F80;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="artboard">
+    <div class="headline">
+      <p class="line1">Scan QR</p>
+      <p class="line2">Do More</p>
+    </div>
+
+    <div class="stage">
+      <div class="rig">
+        <div class="shadow"></div>
+        <div class="phone">
+          <div class="btn-vol"></div>
+          <div class="edge"></div>
+          <div class="btn-power"></div>
+          <div class="shell">
+            <div class="bezel">
+              <div class="screen">
+                <img src="assets/source-scanner.jpg" alt="" width="1284" height="2778" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="icon-sq" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="3.2" y="4.6" width="17.6" height="16.2" rx="3.2" stroke="#FF3E7F" stroke-width="1.9"/>
+          <path d="M3.2 9.4h17.6" stroke="#FF3E7F" stroke-width="1.9"/>
+          <path d="M8 3.2v4.2M16 3.2v4.2" stroke="#FF3E7F" stroke-width="1.9" stroke-linecap="round"/>
+          <rect x="7.1" y="12.2" width="3.1" height="3.1" rx="0.7" fill="#FF3E7F"/>
+          <rect x="10.45" y="12.2" width="3.1" height="3.1" rx="0.7" fill="#FF3E7F" opacity="0.45"/>
+          <rect x="13.8" y="12.2" width="3.1" height="3.1" rx="0.7" fill="#FF3E7F"/>
+        </svg>
+      </div>
+      <div class="card-copy">
+        <p class="card-title">Instant Actions</p>
+        <p class="card-sub">Events, Wi-Fi, contacts, links &amp; more.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

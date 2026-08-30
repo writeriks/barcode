@@ -1,7 +1,8 @@
 import type { OpenFoodFactsNutriments } from './openFoodFacts';
 
 /** Stable ids for every lookup source we ship. A new API adds a member
- *  here, a provider file, and a line in the provider registry. */
+ *  here, a provider file with `rank()`, and a line in the provider
+ *  registry. Merge and the result UI never switch on these ids. */
 export type LookupSourceId =
   | 'open-food-facts'
   | 'open-beauty-facts'

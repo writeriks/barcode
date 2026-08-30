@@ -8,10 +8,10 @@ import {
 import { taobaoBarcodeProvider } from './taobaoBarcode';
 import { yahooShoppingProvider } from './yahooShopping';
 
-/** The live lookup set. Append a provider to include it in every camera,
- *  photo, manual, and batch scan — merge and the result sections pick up
- *  whatever slices it fills. No other file has to change unless the API
- *  introduces a new *kind* of field. */
+/** The live lookup set. Append a provider (with `rank`) to include it
+ *  in every camera, photo, manual, and batch scan. Merge never names
+ *  sources — it folds whatever slices arrive, ranked by each provider.
+ *  A new *kind* of field also needs a slice composer + result section. */
 export const PRODUCT_LOOKUP_PROVIDERS: ProductLookupProvider[] = [
   openFoodFactsProvider,
   openBeautyFactsProvider,

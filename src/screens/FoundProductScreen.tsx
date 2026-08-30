@@ -10,8 +10,8 @@ import { useToast } from '../hooks/useToast';
 import { useThemeColors } from '../theme/ThemeContext';
 import type { ColorTheme } from '../theme/colors';
 import type { Product, ProductSource } from '../types/product';
+import { ProductResultBody } from './productResult/compose';
 import { ProductResultProvider } from './productResult/ProductResultContext';
-import { PRODUCT_RESULT_SECTIONS } from './productResult/sections';
 
 interface Props {
   product: Product;
@@ -36,10 +36,7 @@ export function FoundProductScreen({ product, source, onScanAgain }: Props) {
             style={styles.barcodeChip}
             onCopied={() => showToast(t('qr.copied'))}
           />
-          {PRODUCT_RESULT_SECTIONS.map((section) => {
-            const Section = section.Component;
-            return <Section key={section.id} />;
-          })}
+          <ProductResultBody />
           {onScanAgain ? (
             <PillButton title={t('result.scanAnother')} onPress={onScanAgain} variant="punch" />
           ) : null}

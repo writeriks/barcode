@@ -1,108 +1,61 @@
 import type { Product } from '../../types/product';
-import {
-  isChineseLanguage,
-  isJapaneseLanguage,
-} from './barcode';
-import type { LookupSourceId, ProductSlice } from './types';
+import { PRODUCT_SLICE_COMPOSERS } from './composers';
+import { present, sortByRank } from './pick';
+import type { ProductLookupProvider, ProductSlice, RankedSlice, SliceComposer } from './types';
 
-const OFF_FAMILY: LookupSourceId[] = [
-  'open-food-facts',
-  'open-beauty-facts',
-  'open-products-facts',
-  'open-pet-food-facts',
-];
-
-function identityOrder(language: string): LookupSourceId[] {
-  if (isJapaneseLanguage(language)) {
-    return ['yahoo-shopping', ...OFF_FAMILY, 'taobao'];
-  }
-  if (isChineseLanguage(language)) {
-    return ['taobao', ...OFF_FAMILY, 'yahoo-shopping'];
-  }
-  return [...OFF_FAMILY, 'yahoo-shopping', 'taobao'];
-}
-
-function shoppingOrder(language: string): LookupSourceId[] {
-  if (isChineseLanguage(language)) return ['taobao', 'yahoo-shopping'];
-  return ['yahoo-shopping', 'taobao'];
-}
-
-function present<T>(value: T | undefined): value is T {
-  if (value === undefined || value === null) return false;
-  if (typeof value === 'string') return value.trim().length > 0;
-  if (Array.isArray(value)) return value.length > 0;
-  return true;
-}
-
-function pick<T>(
-  order: LookupSourceId[],
-  slices: ProductSlice[],
-  read: (slice: ProductSlice) => T | undefined
-): T | undefined {
-  const byId = new Map(slices.map((slice) => [slice.sourceId, slice]));
-  for (const id of order) {
-    const slice = byId.get(id);
-    if (!slice) continue;
-    const value = read(slice);
-    if (present(value)) return value;
-  }
-  for (const slice of slices) {
-    if (order.includes(slice.sourceId)) continue;
-    const value = read(slice);
-    if (present(value)) return value;
-  }
-  return undefined;
-}
+export { present } from './pick';
 
 export function hasDisplayableIdentity(product: Pick<Product, 'productName' | 'imageUrl'>): boolean {
   return present(product.productName) || present(product.imageUrl);
 }
 
-/** Folds every hit into one Product. Language only ranks sources for a
- *  given field — every hit still contributes whatever the others left empty. */
-export function mergeSlices(barcode: string, language: string, slices: ProductSlice[]): Product {
-  const identityRank = identityOrder(language);
-  const shoppingRank = shoppingOrder(language);
-
-  const productName = pick(identityRank, slices, (slice) => slice.identity?.name);
-  const brands = pick(identityRank, slices, (slice) => slice.identity?.brand);
-  const imageUrl = pick(identityRank, slices, (slice) => slice.identity?.imageUrl);
-
-  const price = pick(shoppingRank, slices, (slice) => slice.shopping?.price);
-  const currency = pick(shoppingRank, slices, (slice) => slice.shopping?.currency);
-  const category = pick(shoppingRank, slices, (slice) => slice.shopping?.category);
-  const url = pick(shoppingRank, slices, (slice) => slice.shopping?.url);
-  const attribution = pick(shoppingRank, slices, (slice) => slice.shopping?.attribution);
-
-  const nutriments = pick(OFF_FAMILY, slices, (slice) => slice.nutrition?.nutriments);
-  const nutriscoreGrade = pick(OFF_FAMILY, slices, (slice) => {
-    const grade = slice.nutrition?.nutriscoreGrade?.toLowerCase();
-    if (!grade || grade === 'unknown' || grade === 'not-applicable') return undefined;
-    return slice.nutrition?.nutriscoreGrade;
+/** Stamp each hit with the matching provider's language rank. Unknown
+ *  source ids get rank 0 — they still fill fields nobody else filled. */
+export function rankSlices(
+  slices: ProductSlice[],
+  language: string,
+  providers: ProductLookupProvider[]
+): RankedSlice[] {
+  const meta = new Map(providers.map((provider, order) => [provider.id, { rank: provider.rank(language), order }]));
+  return slices.map((slice, index) => {
+    const known = meta.get(slice.sourceId);
+    return {
+      ...slice,
+      rank: known?.rank ?? 0,
+      order: known?.order ?? index,
+    };
   });
-  const novaGroup = pick(OFF_FAMILY, slices, (slice) => slice.nutrition?.novaGroup);
+}
 
-  const ingredientsText = pick(OFF_FAMILY, slices, (slice) => slice.ingredients?.text);
-  const allergens = pick(OFF_FAMILY, slices, (slice) => slice.ingredients?.allergens);
-  const allergensTags = pick(OFF_FAMILY, slices, (slice) => slice.ingredients?.allergensTags);
+export function mergeForLanguage(
+  barcode: string,
+  language: string,
+  slices: ProductSlice[],
+  providers: ProductLookupProvider[],
+  composers?: SliceComposer[]
+): Product {
+  return mergeSlices(barcode, rankSlices(slices, language, providers), composers);
+}
 
-  const shopping =
-    present(price) || present(category) || present(url)
-      ? { price, currency, category, url, attribution }
-      : undefined;
+/** Folds ranked hits through the composer list. Language ranking lives
+ *  on each provider (`rank`); this function never names a source. */
+export function mergeSlices(
+  barcode: string,
+  slices: RankedSlice[],
+  composers: SliceComposer[] = PRODUCT_SLICE_COMPOSERS
+): Product {
+  const withOrder = slices.map((slice, index) => ({
+    ...slice,
+    order: slice.order ?? index,
+  }));
+  const ranked = sortByRank(withOrder);
+  const sources = [...withOrder]
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((slice) => slice.sourceId);
 
-  return {
-    code: barcode,
-    productName,
-    brands,
-    imageUrl,
-    ingredientsText,
-    allergens,
-    allergensTags,
-    nutriments,
-    nutriscoreGrade,
-    novaGroup,
-    shopping,
-    sources: slices.map((slice) => slice.sourceId),
-  };
+  let product: Product = { code: barcode, sources };
+  for (const composer of composers) {
+    product = composer.compose(product, ranked);
+  }
+  return product;
 }

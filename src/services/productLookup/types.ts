@@ -1,5 +1,5 @@
 import type { OpenFoodFactsNutriments } from '../../types/openFoodFacts';
-import type { LookupSourceId } from '../../types/product';
+import type { LookupSourceId, Product } from '../../types/product';
 
 export type { LookupSourceId };
 
@@ -33,7 +33,8 @@ export interface IngredientsSlice {
  * One provider's contribution. Empty optional groups are omitted.
  * `lookupProduct` merges slices; the result screen renders whichever
  * groups survived. A new API that only fills `identity` needs no UI
- * change. A new *kind* of data adds a group here plus a result section.
+ * change. A new *kind* of data adds a group here, a slice composer,
+ * and a result section.
  */
 export interface ProductSlice {
   sourceId: LookupSourceId;
@@ -58,5 +59,23 @@ export interface LookupContext {
 
 export interface ProductLookupProvider {
   readonly id: LookupSourceId;
+  /** Higher wins a contested field. Language-aware so a JP marketplace
+   *  outranks a wiki DB for Japanese identity without merge naming it.
+   *  Registry order breaks ties. */
+  rank(language: string): number;
   fetch(ctx: LookupContext): Promise<ProviderOutcome>;
+}
+
+/** A hit plus the provider's rank/order at lookup time. Merge never
+ *  looks up source ids — it only sorts these. */
+export type RankedSlice = ProductSlice & {
+  rank: number;
+  order?: number;
+};
+
+/** One *kind* of product data. Adding reviews / similar-items / etc. is
+ *  a composer file + a result section; merge itself does not change. */
+export interface SliceComposer {
+  readonly key: string;
+  compose(product: Product, slices: RankedSlice[]): Product;
 }

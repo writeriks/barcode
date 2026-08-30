@@ -1,1 +1,1 @@
-export { lookupProduct } from './productLookup/lookupProduct';
+export { composeLookup, lookupProduct } from './productLookup/lookupProduct';

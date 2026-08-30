@@ -2,6 +2,7 @@ import { USER_AGENT } from '../../config/appInfo';
 import type { OpenFoodFactsProduct, OpenFoodFactsResponse } from '../../types/openFoodFacts';
 import { resolveIngredientsText } from '../../utils/locale';
 import { offLanguageCode } from './barcode';
+import { wikiDbRank } from './ranks';
 import type { IngredientsSlice, LookupContext, LookupSourceId, ProductLookupProvider, ProviderOutcome } from './types';
 
 const REQUESTED_FIELDS = [
@@ -74,6 +75,7 @@ function hasAnyContent(raw: OpenFoodFactsProduct, language: string): boolean {
 function createOffFamilyProvider(id: LookupSourceId, host: string): ProductLookupProvider {
   return {
     id,
+    rank: wikiDbRank,
 
     async fetch(ctx: LookupContext): Promise<ProviderOutcome> {
       const lc = offLanguageCode(ctx.language);

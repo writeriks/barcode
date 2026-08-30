@@ -1,8 +1,8 @@
 # Privacy Policy — Blippo
 
-_Last updated: August 8, 2026_
+_Last updated: August 30, 2026_
 
-This policy describes how the Blippo barcode and QR scanner app ("Blippo", "the app", "we") handles information. Blippo has no account system, no login, and no backend server of its own — almost everything you do in the app stays on your device.
+This policy describes how the Blippo barcode and QR scanner app ("Blippo", "the app", "we") handles information. Blippo has no account system and no login — almost everything you do in the app stays on your device.
 
 ## What stays on your device only
 
@@ -17,7 +17,9 @@ Uninstalling the app or clearing its storage deletes all of this, since there is
 
 ## What we send to third parties, and why
 
-- **Open Food Facts** — when you scan a barcode, the app sends that barcode number (and your device's language code, to get results in your language) to [Open Food Facts](https://world.openfoodfacts.org), an open, third-party food product database, to look up product information. See Open Food Facts's own privacy policy on their website for how they handle that request.
+- **Open Food Facts** — when you scan a barcode, the app sends that barcode number (and your app language, to get results in that language) to [Open Food Facts](https://world.openfoodfacts.org) and its sibling projects (Open Beauty Facts, Open Products Facts, Open Pet Food Facts), open third-party product databases. See Open Food Facts's own privacy policy on their website for how they handle that request.
+- **Yahoo Shopping** — when a Yahoo Shopping application ID is configured, the same barcode is also sent to [Yahoo! JAPAN's shopping search API](https://developer.yahoo.co.jp/webapi/shopping/) so a Japanese listing (name, photo, price) can fill in when the open databases have little or nothing. See Yahoo's own developer terms for how they handle that request.
+- **Taobao** — only if a lookup proxy URL is configured in the build. In that case the barcode is sent to that proxy so it can query Taobao's barcode API on our behalf. The app never stores Taobao credentials. If that URL is not configured, nothing is sent to Taobao.
 - **QR codes** — decoding a QR code happens entirely on your device. Nothing about a scanned QR code (its content, or the fact that you scanned it) is sent anywhere by us.
 - **Analytics (PostHog)** — we use [PostHog](https://posthog.com) to understand how the app is used, so we know what to improve. Events we send are things like "a scan completed", "a setting was changed", or "a QR action was taken" — along with generic metadata such as the scan method, the code's type (link, email, Wi-Fi, etc.), or the setting's new value. We never send the actual barcode number, the decoded QR content, product names, or anything else you scanned or typed. Analytics data is tied to an anonymous device identifier, not to your name or any account, since the app doesn't have one.
 

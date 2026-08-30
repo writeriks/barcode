@@ -24,10 +24,14 @@ export interface OpenFoodFactsNutriments {
 export interface OpenFoodFactsProduct {
   code: string;
   product_name?: string;
+  product_name_ja?: string;
+  product_name_zh?: string;
   brands?: string;
   image_url?: string;
   ingredients_text?: string;
   ingredients_text_en?: string;
+  ingredients_text_ja?: string;
+  ingredients_text_zh?: string;
   allergens_tags?: string[];
   /** Comma-separated, human-readable allergen names localized to the `lc`
    * query param we sent. Canonical/language-independent IDs live in

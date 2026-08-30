@@ -68,7 +68,12 @@
     "units": {
       "kcalPer100g": "kcal / 100g",
       "gPer100g": "g / 100g"
-    }
+    },
+    "price": "价格",
+    "category": "分类",
+    "openInStore": "在商店中打开",
+    "attributionYahoo": "Yahoo! Shopping",
+    "attributionTaobao": "淘宝"
   },
   "missing": {
     "unknownHeadline": "还没有人扫描过这个",

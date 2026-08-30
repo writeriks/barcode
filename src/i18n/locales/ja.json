@@ -68,7 +68,12 @@
     "units": {
       "kcalPer100g": "kcal / 100g",
       "gPer100g": "g / 100g"
-    }
+    },
+    "price": "価格",
+    "category": "カテゴリ",
+    "openInStore": "ショップで開く",
+    "attributionYahoo": "Yahoo!ショッピング",
+    "attributionTaobao": "Taobao"
   },
   "missing": {
     "unknownHeadline": "まだ誰もスキャンしていません",

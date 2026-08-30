@@ -1,14 +1,31 @@
 import type { OpenFoodFactsNutriments } from './openFoodFacts';
 
+/** Stable ids for every lookup source we ship. A new API adds a member
+ *  here, a provider file, and a line in the provider registry. */
+export type LookupSourceId =
+  | 'open-food-facts'
+  | 'open-beauty-facts'
+  | 'open-products-facts'
+  | 'open-pet-food-facts'
+  | 'yahoo-shopping'
+  | 'taobao';
+
+export interface ProductShopping {
+  price?: number;
+  currency?: string;
+  category?: string;
+  url?: string;
+  attribution?: string;
+}
+
 /** Normalized product model used throughout the app. Every field except
- * `code` is optional — never assume OFF filled in a given field. */
+ * `code` is optional — never assume a given source filled a given field. */
 export interface Product {
   code: string;
   productName?: string;
   brands?: string;
   imageUrl?: string;
-  /** Ingredients text resolved for the device's locale (see
-   * resolveIngredientsText), already picked between _en and the default. */
+  /** Ingredients text resolved for the lookup language. */
   ingredientsText?: string;
   /** Localized, human-readable allergen names (from OFF's `allergens`
    * field, respecting the `lc` we requested). Prefer this for display;
@@ -21,19 +38,21 @@ export interface Product {
   novaGroup?: number;
   completeness?: number;
   statesTags?: string[];
+  shopping?: ProductShopping;
+  sources?: LookupSourceId[];
 }
 
 export type ProductSource = 'cache' | 'network';
 
-/** Why a lookup was treated as incomplete, per the OFF completeness rules. */
+/** Why a lookup was treated as incomplete, per the OFF completeness rules.
+ *  Live lookup no longer emits this — kept so History entries saved under
+ *  the old rule still type-check. */
 export type IncompleteReason = 'low-completeness' | 'ingredients-to-be-completed';
 
 /**
- * Discriminated union returned by lookupProduct(). `incomplete` and
- * `not-found` are both "misses" from the UI's point of view (render the
- * "we don't have this one yet" state), but incomplete still carries
- * whatever partial product data OFF returned so the UI can show a name/brand
- * if available.
+ * Discriminated union returned by lookupProduct(). `found` means at least
+ * a name or image survived the merge. `incomplete` is only still listed
+ * so History snapshots from older builds decode.
  */
 export type LookupResult =
   | { status: 'found'; product: Product; source: ProductSource }

@@ -1,7 +1,7 @@
 import { USER_AGENT } from '../../config/appInfo';
 import { YAHOO_SHOPPING_APP_ID } from '../../config/lookupEnv';
 import { normalizeBarcode } from './barcode';
-import { marketplaceRank } from './ranks';
+import { marketplaceEnabled, marketplaceRank } from './ranks';
 import type { LookupContext, ProductLookupProvider, ProviderOutcome } from './types';
 
 const ENDPOINT = 'https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch';
@@ -29,8 +29,10 @@ function firstHit(hits: YahooHit[] | undefined): YahooHit | undefined {
 export const yahooShoppingProvider: ProductLookupProvider = {
   id: 'yahoo-shopping',
   rank: (language) => marketplaceRank('ja', language),
+  enabled: (language) => marketplaceEnabled('ja', language),
 
   async fetch(ctx: LookupContext): Promise<ProviderOutcome> {
+    if (!marketplaceEnabled('ja', ctx.language)) return { kind: 'miss' };
     if (!YAHOO_SHOPPING_APP_ID) return { kind: 'miss' };
 
     const jan = normalizeBarcode(ctx.barcode);

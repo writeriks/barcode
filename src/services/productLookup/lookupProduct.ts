@@ -4,6 +4,7 @@ import { getCachedProduct, setCachedProduct } from '../cache';
 import { PRODUCT_SLICE_COMPOSERS } from './composers';
 import { hasDisplayableIdentity, mergeSlices, rankSlices } from './merge';
 import { PRODUCT_LOOKUP_PROVIDERS } from './providers';
+import { selectProviders } from './select';
 import type { ProductLookupProvider, ProductSlice, ProviderOutcome, SliceComposer } from './types';
 
 const TIMEOUT_MS = 5000;
@@ -36,8 +37,8 @@ async function fetchWithRetry(
 /**
  * Bind a provider list (and optional extra composers) into a lookup
  * function. Camera / photo / manual / batch all call the default
- * `lookupProduct`. A new barcode API is: provider file + `rank()` +
- * one line in `providers.ts`.
+ * `lookupProduct`. Providers with `enabled === false` for the UI
+ * language are skipped (Yahoo for non-Japanese, Taobao for non-Chinese).
  */
 export function composeLookup(
   providers: ProductLookupProvider[],
@@ -50,7 +51,8 @@ export function composeLookup(
       return { status: 'found', product: cached, source: 'cache' };
     }
 
-    const outcomes = await Promise.all(providers.map((provider) => fetchWithRetry(provider, barcode, language)));
+    const active = selectProviders(providers, language);
+    const outcomes = await Promise.all(active.map((provider) => fetchWithRetry(provider, barcode, language)));
     const slices: ProductSlice[] = [];
     const errors: string[] = [];
     for (const outcome of outcomes) {
@@ -59,7 +61,7 @@ export function composeLookup(
     }
 
     if (slices.length > 0) {
-      const product = mergeSlices(barcode, rankSlices(slices, language, providers), composers);
+      const product = mergeSlices(barcode, rankSlices(slices, language, active), composers);
       if (hasDisplayableIdentity(product)) {
         await setCachedProduct(product, language);
         return { status: 'found', product, source: 'network' };

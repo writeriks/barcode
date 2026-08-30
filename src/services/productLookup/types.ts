@@ -63,6 +63,9 @@ export interface ProductLookupProvider {
    *  outranks a wiki DB for Japanese identity without merge naming it.
    *  Registry order breaks ties. */
   rank(language: string): number;
+  /** When false, `composeLookup` does not call this provider. Omit to
+   *  always fetch (wiki DBs). Marketplaces enable only their home UI. */
+  enabled?(language: string): boolean;
   fetch(ctx: LookupContext): Promise<ProviderOutcome>;
 }
 

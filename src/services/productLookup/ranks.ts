@@ -11,7 +11,12 @@ export function wikiDbRank(language: string): number {
 export function marketplaceRank(home: 'ja' | 'zh', language: string): number {
   if (home === 'ja' && isJapaneseLanguage(language)) return 100;
   if (home === 'zh' && isChineseLanguage(language)) return 100;
-  /** Below wiki DBs, above the other marketplace, so en still prefers
-   *  OFF names but keeps Yahoo shopping over Taobao. */
   return home === 'ja' ? 40 : 30;
+}
+
+/** Yahoo only runs for Japanese UI, Taobao only for Chinese. A German
+ *  scan must not wait on a JP listing whose name the user cannot read. */
+export function marketplaceEnabled(home: 'ja' | 'zh', language: string): boolean {
+  if (home === 'ja') return isJapaneseLanguage(language);
+  return isChineseLanguage(language);
 }

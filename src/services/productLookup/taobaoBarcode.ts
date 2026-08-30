@@ -1,7 +1,7 @@
 import { USER_AGENT } from '../../config/appInfo';
 import { TAOBAO_LOOKUP_URL } from '../../config/lookupEnv';
 import { normalizeBarcode } from './barcode';
-import { marketplaceRank } from './ranks';
+import { marketplaceEnabled, marketplaceRank } from './ranks';
 import type { LookupContext, ProductLookupProvider, ProviderOutcome } from './types';
 
 /** Shape the optional proxy must return. Keep this narrow — the app never
@@ -26,8 +26,10 @@ function toNumber(value: number | string | undefined): number | undefined {
 export const taobaoBarcodeProvider: ProductLookupProvider = {
   id: 'taobao',
   rank: (language) => marketplaceRank('zh', language),
+  enabled: (language) => marketplaceEnabled('zh', language),
 
   async fetch(ctx: LookupContext): Promise<ProviderOutcome> {
+    if (!marketplaceEnabled('zh', ctx.language)) return { kind: 'miss' };
     if (!TAOBAO_LOOKUP_URL) return { kind: 'miss' };
 
     const barcode = normalizeBarcode(ctx.barcode);

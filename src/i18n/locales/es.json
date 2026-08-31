@@ -68,7 +68,12 @@
     "units": {
       "kcalPer100g": "kcal / 100g",
       "gPer100g": "g / 100g"
-    }
+    },
+    "price": "Precio",
+    "category": "Categoría",
+    "openInStore": "Abrir en la tienda",
+    "attributionYahoo": "Yahoo! Shopping",
+    "attributionTaobao": "Taobao"
   },
   "missing": {
     "unknownHeadline": "Nadie ha escaneado este producto todavía",
